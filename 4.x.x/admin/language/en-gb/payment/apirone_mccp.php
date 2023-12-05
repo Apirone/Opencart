@@ -5,13 +5,21 @@ $_['heading_title'] = 'Apirone Crypto Payments';
 // Text
 $_['text_extension'] = 'Extensions';
 $_['text_success'] = 'Success: You have modified Apirone account details!';
-$_['text_edit'] = 'Edit Apirone';
+$_['text_edit'] = 'Edit Apirone Crypto Payments';
 $_['text_apirone_mccp'] = '<a href="https://apirone.com/" target="_blank"><img src="/extension/apirone/admin/view/image/payment/apirone-logo.svg" alt="" title="" width="128"/></a>';
 $_['text_test_currency'] = 'WARNING: Test currency';
 $_['text_test_currency_tooltip'] = 'Use this currency for testing purposes only! It is displayed on the front end for `Test currency customer` (see the parameter below)!';
 $_['text_test_currency_customer'] = 'Enter an email of the registered customer to whom the test currencies will be shown.';
 $_['text_missing'] = 'Missing orders';
-$_['text_plugin_version'] = 'ver.: ';
+$_['text_plugin_version'] = 'Plugin version';
+$_['text_apirone_account'] = 'Apirone account';
+$_['text_fee_plan'] = 'Fee plan';
+
+# Tabs
+$_['tab_settings'] = 'Settings';
+$_['tab_currencies'] = 'Currencies';
+$_['tab_statuses'] = 'Statuses';
+$_['tab_info'] = 'Info';
 
 // Entry
 $_['currency_activate_tooltip'] = 'Enter valid address to activate %s currency';

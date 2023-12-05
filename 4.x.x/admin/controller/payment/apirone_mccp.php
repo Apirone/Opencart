@@ -86,6 +86,7 @@ class ApironeMccp extends \Opencart\System\Engine\Controller
         $this->setValue($data, 'payment_apirone_mccp_merchantname');
         $this->setValue($data, 'payment_apirone_mccp_secret');
         $this->setValue($data, 'payment_apirone_mccp_testcustomer');
+        $data['payment_apirone_mccp_account'] = $account->account;
 
         if ($active_currencies == 0 || $data['payment_apirone_mccp_timeout'] <= 0) {
             $errors_count++;
@@ -99,7 +100,7 @@ class ApironeMccp extends \Opencart\System\Engine\Controller
 
             $json = [];
             if ($errors_count == 0) {
-                $_settings['payment_apirone_mccp_account'] = PLUGIN_VERSION;
+                $_settings['payment_apirone_mccp_version'] = PLUGIN_VERSION;
                 $_settings['payment_apirone_mccp_account'] = serialize($account);
                 $_settings['payment_apirone_mccp_secret'] = $secret;
                 $_settings['payment_apirone_mccp_currencies'] = serialize($currencies);
