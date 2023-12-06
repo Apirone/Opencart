@@ -42,6 +42,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             $currency->address = '';
             $currency->currency_tooltip = sprintf($this->language->get('currency_activate_tooltip'), $item->name);
             $currency->testnet = $item->testnet;
+            $currency->icon = Apirone::currencyIcon($item->abbr);
 
             // Set address from config
             if ($plugin_currencies) {
@@ -50,12 +51,12 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             // Set address from config
             if ($this->request->server['REQUEST_METHOD'] == 'POST') {
                 $currency->address = $_POST['address'][$item->abbr];
-                if ($currency->address != '') {
-                    $result = Apirone::setTransferAddress($account, $item->abbr, $currency->address);
-                    if ($result == false) {
-                        $currency->error = 1;
-                        $errors_count++;
-                    }
+                $processing_fee = $_POST['apirone_mccp_processing_fee'];
+                $address = ($currency->address) ?? null;
+                $result = Apirone::setTransferAddress($account, $item->abbr, $address, $processing_fee);
+                if ($result == false) {
+                    $currency->error = 1;
+                    $errors_count++;
                 }
             }
             // Set tooltip
@@ -83,6 +84,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         $this->setValue($data, 'apirone_mccp_merchantname');
         $this->setValue($data, 'apirone_mccp_secret');
         $this->setValue($data, 'apirone_mccp_testcustomer');
+        $this->setValue($data, 'apirone_mccp_processing_fee');
 
         if ($active_currencies == 0 || $data['apirone_mccp_timeout'] <= 0 || count($currencies) == 0) {
             $errors_count++;
@@ -111,6 +113,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
                 $_settings['apirone_mccp_sort_order'] = $_POST['apirone_mccp_sort_order'];
                 $_settings['apirone_mccp_merchantname'] = $_POST['apirone_mccp_merchantname'];
                 $_settings['apirone_mccp_testcustomer'] = $_POST['apirone_mccp_testcustomer'];
+                $_settings['apirone_mccp_processing_fee'] = $_POST['apirone_mccp_processing_fee'];
 
                 $this->model_setting_setting->editSetting('apirone_mccp', $_settings);
                 $data['success'] = $this->language->get('text_success');
@@ -151,7 +154,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         }
 
         $this->getBreadcrumbsAndActions($data);
-        $data['apirone_mccp_account'] = $account->account;
+        $data['apirone_mccp_account_account'] = $account->account;
         $data['errors'] = $this->error;
         $data['header'] = $this->load->controller('common/header');
         $data['column_left'] = $this->load->controller('common/column_left');

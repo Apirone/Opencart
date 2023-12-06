@@ -32,10 +32,10 @@
             <div class="panel-body">
                 <form action="{{ action }}" method="post" id="form-apirone" class="form-horizontal">
                 <ul class="nav nav-tabs">
-                    <li class="active"><a href="#tab-settings" data-toggle="tab">{{ tab_settings }}</a></li>
-                    <li><a href="#tab-currencies" data-toggle="tab">{{ tab_currencies }}</a></li>
-                    <li><a href="#tab-statuses" data-toggle="tab">{{ tab_statuses }}</a></li>
-                    <li><a href="#tab-info" data-toggle="tab">{{ tab_info }}</a></li>
+                    <li class="active"><a href="#tab-settings" data-toggle="tab"><i class="fa fa-cog"></i> {{ tab_settings }}</a></li>
+                    <li><a href="#tab-currencies" data-toggle="tab"><i class="fa fa-bitcoin"></i> {{ tab_currencies }}</a></li>
+                    <li><a href="#tab-statuses" data-toggle="tab"><i class="fa fa-check"></i> {{ tab_statuses }}</a></li>
+                    <li><a href="#tab-info" data-toggle="tab"><i class="fa fa-info-circle"></i> {{ tab_info }}</a></li>
                 </ul>
                 <div class="tab-content">
                     <div class="tab-pane active" id="tab-settings">
@@ -50,7 +50,7 @@
                             <label class="col-sm-2 control-label" for="input-testcustomer">{{ entry_testcustomer }}</label>
                             <div class="col-sm-10">
                                 <input type="email" name="payment_apirone_mccp_testcustomer" value="{{ payment_apirone_mccp_testcustomer }}" placeholder="{{ entry_testcustomer_placeholder }}" id="input-testcustomer" class="form-control" />
-                                <label class="contorl-label">{{ text_test_currency_customer }}</label>
+                                <span class="contorl-label mt-1">{{ text_test_currency_customer }}</span>
                             </div>
                         </div>
 
@@ -61,6 +61,26 @@
                                 {% if errors.payment_apirone_mccp_timeout %}
                                 <div class=" text-danger">{{ errors.payment_apirone_mccp_timeout }}</div>
                                 {% endif %}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label" for="input-processing-fee">{{ entry_processing_fee_policy }}</label>
+                            <div class="col-sm-10">
+                                <select name="payment_apirone_mccp_processing_fee" id="input-processing-fee" class="form-control">
+                                    {% if payment_apirone_mccp_processing_fee == 'fixed' %}
+                                    <option value="fixed" selected="selected">{{ text_processing_fee_fixed }}</option>
+                                    {% else %}
+                                    <option value="fixed">{{ text_processing_fee_fixed }}</option>
+                                    {% endif %}
+                                    </option>
+                                    {% if payment_apirone_mccp_processing_fee == 'percentage' %}
+                                    <option value="percentage" selected="selected">{{ text_processing_fee_percentage }}</option>
+                                    {% else %}
+                                    <option value="percentage">{{ text_processing_fee_percentage }}</option>
+                                    {% endif %}
+                                    </option>
+                                </select>
+
                             </div>
                         </div>
                         <div class="form-group">
@@ -204,15 +224,21 @@
                     </div>
                         <div class="tab-pane" id="tab-info">
                             <div class="form-group">
-                                <label class="col-sm-2 control-label" for="input-sort-order">{{ text_apirone_account }}</label>
+                                <label class="col-sm-2 control-label">{{ text_apirone_account }}</label>
                                 <div class="col-sm-10">
                                     <span class="form-control">{{ payment_apirone_mccp_account }}
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label class="col-sm-2 control-label" for="input-sort-order">{{ text_plugin_version }}</label>
+                                <label class="col-sm-2 control-label">{{ text_plugin_version }}</label>
                                 <div class="col-sm-10">
                                     <span class="form-control">{{ payment_apirone_mccp_version }}
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">{{ text_php_version }}</label>
+                                <div class="col-sm-10">
+                                    <span class="form-control">{{ phpversion }}</span>
                                 </div>
                             </div>
                         </div>

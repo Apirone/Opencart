@@ -53,12 +53,12 @@ class ApironeMccp extends \Opencart\System\Engine\Controller
             // Set address from config
             if ($this->request->server['REQUEST_METHOD'] == 'POST') {
                 $currency->address = $_POST['address'][$item->abbr];
-                if ($currency->address != '') {
-                    $result = \ApironeApi\Apirone::setTransferAddress($account, $item->abbr, $currency->address);
-                    if ($result == false) {
-                        $currency->error = 1;
-                        $errors_count++;
-                    }
+                $processing_fee = $_POST['payment_apirone_mccp_processing_fee'];
+                $address = ($currency->address) ?? null;
+                $result = \ApironeApi\Apirone::setTransferAddress($account, $item->abbr, $address, $processing_fee);
+                if ($result == false) {
+                    $currency->error = 1;
+                    $errors_count++;
                 }
             }
             // Set tooltip
@@ -86,7 +86,9 @@ class ApironeMccp extends \Opencart\System\Engine\Controller
         $this->setValue($data, 'payment_apirone_mccp_merchantname');
         $this->setValue($data, 'payment_apirone_mccp_secret');
         $this->setValue($data, 'payment_apirone_mccp_testcustomer');
+        $this->setValue($data, 'payment_apirone_mccp_processing_fee');
         $data['payment_apirone_mccp_account'] = $account->account;
+        $data['phpversion'] = phpversion();
 
         if ($active_currencies == 0 || $data['payment_apirone_mccp_timeout'] <= 0) {
             $errors_count++;
@@ -117,6 +119,7 @@ class ApironeMccp extends \Opencart\System\Engine\Controller
                 $_settings['payment_apirone_mccp_sort_order'] = $_POST['payment_apirone_mccp_sort_order'];
                 $_settings['payment_apirone_mccp_merchantname'] = $_POST['payment_apirone_mccp_merchantname'];
                 $_settings['payment_apirone_mccp_testcustomer'] = $_POST['payment_apirone_mccp_testcustomer'];
+                $_settings['payment_apirone_mccp_processing_fee'] = $_POST['payment_apirone_mccp_processing_fee'];
 
                 $this->model_setting_setting->editSetting('payment_apirone_mccp', $_settings);
             } else {

@@ -33,14 +33,13 @@
             <div class="panel-body">
                 <form action="<?php echo $action; ?>" method="post" id="form-apirone" class="form-horizontal">
                 <ul class="nav nav-tabs">
-                    <li class="active"><a href="#tab-settings" data-toggle="tab"><?php echo $tab_settings; ?></a></li>
-                    <li><a href="#tab-currencies" data-toggle="tab"><?php echo $tab_currencies; ?></a></li>
-                    <li><a href="#tab-statuses" data-toggle="tab"><?php echo $tab_statuses; ?></a></li>
-                    <li><a href="#tab-info" data-toggle="tab"><?php echo $tab_info; ?></a></li>
+                    <li class="active"><a href="#tab-settings" data-toggle="tab"><i class="fa fa-cog"></i> <?php echo $tab_settings; ?></a></li>
+                    <li><a href="#tab-currencies" data-toggle="tab"><i class="fa fa-bitcoin"></i> <?php echo $tab_currencies; ?></a></li>
+                    <li><a href="#tab-statuses" data-toggle="tab"><i class="fa fa-check"></i> <?php echo $tab_statuses; ?></a></li>
+                    <li><a href="#tab-info" data-toggle="tab"><i class="fa fa-info-circle"></i> <?php echo $tab_info; ?></a></li>
                 </ul>
                 <div class="tab-content">
                     <div class="tab-pane active" id="tab-settings">
-
                         <div class="form-group">
                             <label class="col-sm-2 control-label" for="input-sort-order"><?php echo $entry_merchantname; ?></label>
                             <div class="col-sm-10">
@@ -52,7 +51,7 @@
                             <label class="col-sm-2 control-label" for="input-testcustomer"><?php echo $entry_testcustomer; ?></label>
                             <div class="col-sm-10">
                                 <input type="email" name="apirone_mccp_testcustomer" value="<?php echo $apirone_mccp_testcustomer; ?>" placeholder="<?php echo $entry_testcustomer_placeholder; ?>" id="input-testcustomer" class="form-control" />
-                                <label class="contorl-label"><?php echo $text_test_currency_customer; ?></label>
+                                <span class="contorl-label" style="margin-top: 4px; display: inline-block;"><?php echo $text_test_currency_customer; ?></span>
                             </div>
                         </div>
 
@@ -63,6 +62,20 @@
                                 <?php if (isset($errors['apirone_mccp_timeout']) && $errors['apirone_mccp_timeout']) : ?>
                                 <div class=" text-danger"><?php echo $errors['apirone_mccp_timeout']; ?></div>
                                 <?php endif; ?>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label" for="input-processing-fee"><?php echo $entry_processing_fee_policy; ?></label>
+                            <div class="col-sm-10">
+                                <select name="apirone_mccp_processing_fee" id="input-processing-fee" class="form-control">
+                                    <option value="fixed"<?php echo $apirone_mccp_processing_fee == 'fixed' ? ' selected' : ''; ?>>
+                                        <?php echo $text_processing_fee_fixed; ?>
+                                    </option>
+                                    <option value="percentage"<?php echo $apirone_mccp_processing_fee == 'percentage' ? ' selected' : ''; ?>>
+                                        <?php echo $text_processing_fee_percentage; ?>
+                                    </option>
+                                </select>
+
                             </div>
                         </div>
                         <div class="form-group">
@@ -207,13 +220,19 @@
                         <div class="form-group">
                             <label class="col-sm-2 control-label" for="apirone-account"><?php echo $text_apirone_account; ?></label>
                             <div class="col-sm-10">
-                                <span class="form-control"><?php echo $apirone_mccp_account; ?></span>
+                                <span class="form-control"><?php echo $apirone_mccp_account_account; ?></span>
                             </div>
                         </div>
                         <div class="form-group">
                             <label class="col-sm-2 control-label" for="plugin-version"><?php echo $text_plugin_version; ?></label>
                             <div class="col-sm-10">
                                 <span class="form-control" id="plugin-version"><?php echo $apirone_mccp_version; ?></span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label" for="plugin-version"><?php echo $text_php_version; ?></label>
+                            <div class="col-sm-10">
+                                <span class="form-control" id="plugin-version"><?php echo phpversion(); ?></span>
                             </div>
                         </div>
                     </div>

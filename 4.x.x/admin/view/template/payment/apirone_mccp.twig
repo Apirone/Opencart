@@ -26,16 +26,16 @@
                 <form action="{{ save }}" method="post" id="form-apirone" class="form-horizontal"  data-oc-toggle="ajax">
                     <ul class="nav nav-tabs">
                         <li class="nav-item" role="presentatin">
-                            <a href="#tab-settings" data-bs-toggle="tab" class="nav-link active" aria-selected="true" role="tab">{{ tab_settings }}</a>
+                            <a href="#tab-settings" data-bs-toggle="tab" class="nav-link active" aria-selected="true" role="tab"><i class="fa fa-cog"></i> {{ tab_settings }}</a>
                         </li>
                         <li class="nav-item" role="presentatin">
-                            <a href="#tab-currencies" data-bs-toggle="tab" class="nav-link" aria-selected="true" role="tab">{{ tab_currencies }}</a>
+                            <a href="#tab-currencies" data-bs-toggle="tab" class="nav-link" aria-selected="true" role="tab"><i class="fa-brands fa-bitcoin-sign"></i> {{ tab_currencies }}</a>
                         </li>
                         <li class="nav-item" role="presentatin">
-                            <a href="#tab-statuses" data-bs-toggle="tab" class="nav-link" aria-selected="true" role="tab">{{ tab_statuses }}</a>
+                            <a href="#tab-statuses" data-bs-toggle="tab" class="nav-link" aria-selected="true" role="tab"><i class="fa fa-check"></i> {{ tab_statuses }}</a>
                         </li>
                         <li class="nav-item" role="presentatin">
-                            <a href="#tab-info" data-bs-toggle="tab" class="nav-link" aria-selected="true" role="tab">{{ tab_info }}</a>
+                            <a href="#tab-info" data-bs-toggle="tab" class="nav-link" aria-selected="true" role="tab"><i class="fa fa-check-circle"></i> {{ tab_info }}</a>
                         </li>
                     </ul>
                     <div class="tab-content">
@@ -60,6 +60,26 @@
                                 <div class="col-sm-10">
                                     <input type="number" name="payment_apirone_mccp_timeout" value="{{ payment_apirone_mccp_timeout }}" placeholder="{{ entry_timeout }}" id="input-timeout" class="form-control" />
                                     <div id="error-timeout" class="invalid-feedback"></div>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <label class="col-sm-2 col-form-label" for="input-processing-fee">{{ entry_processing_fee_policy }}</label>
+                                <div class="col-sm-10">
+                                    <select name="payment_apirone_mccp_processing_fee" id="input-processing-fee" class="form-control">
+                                        {% if payment_apirone_mccp_processing_fee == 'fixed' %}
+                                        <option value="fixed" selected="selected">{{ text_processing_fee_fixed }}</option>
+                                        {% else %}
+                                        <option value="fixed">{{ text_processing_fee_fixed }}</option>
+                                        {% endif %}
+                                        </option>
+                                        {% if payment_apirone_mccp_processing_fee == 'percentage' %}
+                                        <option value="percentage" selected="selected">{{ text_processing_fee_percentage }}</option>
+                                        {% else %}
+                                        <option value="percentage">{{ text_processing_fee_percentage }}</option>
+                                        {% endif %}
+                                        </option>
+                                    </select>
+
                                 </div>
                             </div>
                             <div class="row mb-3">
@@ -211,6 +231,12 @@
                                 <label class="col-sm-2 col-form-label">{{ text_plugin_version }}</label>
                                 <div class="col-sm-10">
                                     <span class="form-control">{{ payment_apirone_mccp_version }}</span>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <label class="col-sm-2 col-form-label">{{ text_php_version }}</label>
+                                <div class="col-sm-10">
+                                    <span class="form-control">{{ phpversion }}</span>
                                 </div>
                             </div>
                         </div>

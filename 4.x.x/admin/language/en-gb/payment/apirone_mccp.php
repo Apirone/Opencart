@@ -12,8 +12,10 @@ $_['text_test_currency_tooltip'] = 'Use this currency for testing purposes only!
 $_['text_test_currency_customer'] = 'Enter an email of the registered customer to whom the test currencies will be shown.';
 $_['text_missing'] = 'Missing orders';
 $_['text_plugin_version'] = 'Plugin version';
+$_['text_php_version'] = 'PHP version';
 $_['text_apirone_account'] = 'Apirone account';
-$_['text_fee_plan'] = 'Fee plan';
+$_['text_processing_fee_fixed'] = 'Fixed';
+$_['text_processing_fee_percentage'] = 'Percentage';
 
 # Tabs
 $_['tab_settings'] = 'Settings';
@@ -33,6 +35,8 @@ $_['entry_invoice_partpaid'] = 'Invoice Partpaid';
 $_['entry_invoice_overpaid'] = 'Invoice Overpaid';
 $_['entry_invoice_completed'] = 'Invoice Completed';
 $_['entry_invoice_expired'] = 'Invoice Expired';
+
+$_['entry_processing_fee_policy'] = 'Processing fee plan';
 
 $_['entry_geo_zone'] = 'Geo Zone';
 $_['entry_status'] = 'Status';
