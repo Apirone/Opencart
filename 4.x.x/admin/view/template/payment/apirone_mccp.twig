@@ -35,7 +35,7 @@
                             <a href="#tab-statuses" data-bs-toggle="tab" class="nav-link" aria-selected="true" role="tab"><i class="fa fa-check"></i> {{ tab_statuses }}</a>
                         </li>
                         <li class="nav-item" role="presentatin">
-                            <a href="#tab-info" data-bs-toggle="tab" class="nav-link" aria-selected="true" role="tab"><i class="fa fa-check-circle"></i> {{ tab_info }}</a>
+                            <a href="#tab-info" data-bs-toggle="tab" class="nav-link" aria-selected="true" role="tab"><i class="fa fa-info-circle"></i> {{ tab_info }}</a>
                         </li>
                     </ul>
                     <div class="tab-content">
@@ -225,24 +225,30 @@
                             </div>
                         </div>
                         <div id="tab-info" class="tab-pane" role="tabpanel">
-                            <div class="row mb-3">
-                                <label class="col-sm-2 col-form-label">{{ text_apirone_account }}</label>
-                                <div class="col-sm-10">
-                                    <span class="form-control">{{ payment_apirone_mccp_account }}</span>
-                                </div>
+                            <div style="padding: 1rem; margin-bottom: 1rem">
+                                <h4>{{ heading_testnet_hint }}</h4>
+                                <hr>
+                                <p>{{ text_testnet_hint }}</p>
+                                <a target="_blank" href="https://coinfaucet.eu/en/btc-testnet/?lid=apirone">Coinfaucet</a><br>
+                                <a target="_blank" href="https://bitcoinfaucet.uo1.net?lid=apirone">Bitcoinfaucet</a><br>
+                                <a target="_blank" href="https://testnet-faucet.com/btc-testnet/?lid=apirone">Testnet faucet</a><br>
+                                <a target="_blank" href="https://kuttler.eu/en/bitcoin/btc/faucet/?lid=apirone">Kuttler</a>
+                                <hr>
+                                <p class="mb-0"><strong>Read more:</strong> <a href="https://apirone.com/faq" target="_blank">https://apirone.com/faq</a></p>
                             </div>
-                            <div class="row mb-3">
-                                <label class="col-sm-2 col-form-label">{{ text_plugin_version }}</label>
-                                <div class="col-sm-10">
-                                    <span class="form-control">{{ payment_apirone_mccp_version }}</span>
-                                </div>
+                            <div class="_alert _alert-info" role="alert" style="padding: 1rem; margin-bottom: 1rem">
+                                <h4>{{ heading_plugin_info }}</h4>
+                                <hr>
+                                <p>
+                                    <strong>{{ text_apirone_account }}:</strong> {{ payment_apirone_mccp_account }}<br/>
+                                    <strong>{{ text_plugin_version }}:</strong> {{ payment_apirone_mccp_version }}<br/>
+                                    <strong>{{ text_php_version }}:</strong> {{ phpversion }}<br/>
+                                    <strong>{{ text_oc_version }}</strong>: {{ oc_version }}<br/>
+                                </p>
+                                <hr>
+                                <p class="mb-0"><strong>Apirone support:</strong> <a href="mailto:support@apirone.com">support@apirone.com</a></p>
                             </div>
-                            <div class="row mb-3">
-                                <label class="col-sm-2 col-form-label">{{ text_php_version }}</label>
-                                <div class="col-sm-10">
-                                    <span class="form-control">{{ phpversion }}</span>
-                                </div>
-                            </div>
+                        </div>
                         </div>
                     </div>
                 </form>

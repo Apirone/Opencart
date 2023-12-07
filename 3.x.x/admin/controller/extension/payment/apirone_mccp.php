@@ -154,6 +154,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         $this->getBreadcrumbsAndActions($data);
         $data['payment_apirone_mccp_account'] = $account->account;
         $data['phpversion'] = phpversion();
+        $data['oc_version'] = VERSION;
         $data['errors'] = $this->error;
         $data['header'] = $this->load->controller('common/header');
         $data['column_left'] = $this->load->controller('common/column_left');

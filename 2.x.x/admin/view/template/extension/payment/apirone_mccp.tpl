@@ -221,23 +221,28 @@
                         </div>
                     </div>
                     <div class="tab-pane" id="tab-info">
-                        <div class="form-group">
-                            <label class="col-sm-2 control-label" for="apirone-account"><?php echo $text_apirone_account; ?></label>
-                            <div class="col-sm-10">
-                                <span class="form-control"><?php echo $apirone_mccp_account_account; ?></span>
-                            </div>
+                        <div style="padding: 1rem; margin-bottom: 1rem">
+                            <h4><?php echo $heading_testnet_hint; ?></h4>
+                            <hr>
+                            <p><?php echo $text_testnet_hint; ?></p>
+                            <a target="_blank" href="https://coinfaucet.eu/en/btc-testnet/?lid=apirone">Coinfaucet</a><br>
+                            <a target="_blank" href="https://bitcoinfaucet.uo1.net?lid=apirone">Bitcoinfaucet</a><br>
+                            <a target="_blank" href="https://testnet-faucet.com/btc-testnet/?lid=apirone">Testnet faucet</a><br>
+                            <a target="_blank" href="https://kuttler.eu/en/bitcoin/btc/faucet/?lid=apirone">Kuttler</a>
+                            <hr>
+                            <p class="mb-0"><strong>Read more:</strong> <a href="https://apirone.com/faq" target="_blank">https://apirone.com/faq</a></p>
                         </div>
-                        <div class="form-group">
-                            <label class="col-sm-2 control-label" for="plugin-version"><?php echo $text_plugin_version; ?></label>
-                            <div class="col-sm-10">
-                                <span class="form-control" id="plugin-version"><?php echo $apirone_mccp_version; ?></span>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-sm-2 control-label" for="plugin-version"><?php echo $text_php_version; ?></label>
-                            <div class="col-sm-10">
-                                <span class="form-control" id="plugin-version"><?php echo phpversion(); ?></span>
-                            </div>
+                        <div class="_alert _alert-info" role="alert" style="padding: 1rem; margin-bottom: 1rem">
+                            <h4><?php echo $heading_plugin_info; ?></h4>
+                            <hr>
+                            <p>
+                                <strong><?php echo $text_apirone_account; ?>:</strong> <?php echo $apirone_mccp_account; ?><br/>
+                                <strong><?php echo $text_plugin_version; ?>:</strong> <?php echo $apirone_mccp_version; ?><br/>
+                                <strong><?php echo $text_php_version; ?>:</strong> <?php echo $phpversion; ?><br/>
+                                <strong><?php echo $text_oc_version; ?></strong>: <?php echo $oc_version; ?><br/>
+                            </p>
+                            <hr>
+                            <p class="mb-0"><strong>Apirone support:</strong> <a href="mailto:support@apirone.com">support@apirone.com</a></p>
                         </div>
                     </div>
                 </div>

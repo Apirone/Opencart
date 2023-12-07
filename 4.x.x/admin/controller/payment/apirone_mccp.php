@@ -89,6 +89,7 @@ class ApironeMccp extends \Opencart\System\Engine\Controller
         $this->setValue($data, 'payment_apirone_mccp_processing_fee');
         $data['payment_apirone_mccp_account'] = $account->account;
         $data['phpversion'] = phpversion();
+        $data['oc_version'] = VERSION;
 
         if ($active_currencies == 0 || $data['payment_apirone_mccp_timeout'] <= 0) {
             $errors_count++;
