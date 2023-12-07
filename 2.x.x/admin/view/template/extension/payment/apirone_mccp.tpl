@@ -117,7 +117,11 @@
                     <div class="tab-pane" id="tab-currencies">
                         <?php foreach ($currencies as $currency) : ?>
                             <div class="form-group">
-                                <label class="col-sm-2 control-label" for="input-merchant"><span data-toggle="tooltip" data-original-title="<?php echo $currency->currency_tooltip; ?>"><img src="<?php echo $currency->icon; ?>" width="16" alt="" title=""/> <?php echo $currency->name; ?></span></label>
+                                <label class="col-sm-2 control-label" for="input-merchant">
+                                    <span data-toggle="tooltip" data-original-title="<?php echo $currency->currency_tooltip; ?>" syle="padding:10px 0;">
+                                        <img src="<?php echo $currency->icon; ?>" width="24"<?php echo $currency->abbr == 'tbtc' ? ' style="filter: grayscale(1)"' : '';  ?>>&nbsp;<?php echo $currency->name; ?>
+                                    </span>
+                                </label>
                                 <div class="col-sm-10">
                                     <input type="text" name="address[<?php echo $currency->abbr; ?>]" value="<?php echo $currency->address; ?>" id="address_<?php echo $currency->abbr; ?>" class="form-control" />
                                     <?php if (property_exists($currency, 'error') && $currency->error) : ?>

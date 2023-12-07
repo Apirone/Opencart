@@ -123,7 +123,11 @@
                     <div class="tab-pane" id="tab-currencies">
                     {% for currency in currencies %}
                         <div class="form-group">
-                            <label class="col-sm-2 control-label" for="input-merchant"><span data-toggle="tooltip" data-original-title="{{ currency.currency_tooltip }}"><img src="{{ currency.icon }}" width="16" alt="" title=""/> {{ currency.name }}</span></label>
+                            <label class="col-sm-2 control-label" for="input-merchant">
+                                <span data-toggle="tooltip" data-original-title="{{ currency.currency_tooltip }}" style="padding: 5px 0;">
+                                    <img src="{{ currency.icon }}" width="24"{{ (currency.abbr == 'tbtc') ? ' style="filter: grayscale(1)"' : '' }}>&nbsp;{{ currency.name }}
+                                </span>
+                            </label>
                             <div class="col-sm-10">
                                 <input type="text" name="payment_address[{{ currency.abbr }}]" value="{{ currency.address }}" id="payment_address_{{ currency.abbr }}" class="form-control" />
                                 {% if currency.error %}

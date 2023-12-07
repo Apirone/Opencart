@@ -42,7 +42,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             $currency->address = '';
             $currency->currency_tooltip = sprintf($this->language->get('currency_activate_tooltip'), $item->name);
             $currency->testnet = $item->testnet;
-            $currency->icon = Apirone::currencyIcon($item->abbr);
+            $currency->icon = $item->icon;
 
             // Set address from config
             if ($plugin_currencies) {
