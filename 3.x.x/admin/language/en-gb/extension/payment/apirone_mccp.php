@@ -11,6 +11,7 @@ $_['text_edit'] = 'Edit Apirone Crypto Payments';
 $_['text_apirone_mccp'] = '<a href="https://apirone.com/" target="_blank"><img src="view/image/payment/apirone-logo.svg" alt="" title="" width="128"/></a>';
 $_['text_test_currency'] = 'WARNING: Test currency';
 $_['text_test_currency_tooltip'] = 'Use this currency for testing purposes only! It is displayed on the front end for `Test currency customer`.';
+$_['text_factor_tooltip'] = 'If you want to add/substract percent to/from the payment amount, use the following  price adjustment factor multiplied by the amount.<br />For example: 100% * 0.99 = 99%, 100% * 1.01 = 101%';
 $_['text_test_currency_customer'] = 'Enter an email of the registered customer to whom the test currencies will be shown.';
 $_['text_missing'] = 'Missing orders';
 $_['text_plugin_version'] = 'Plugin version';
@@ -39,6 +40,7 @@ $_['entry_invoice_partpaid'] = 'Invoice Partpaid';
 $_['entry_invoice_overpaid'] = 'Invoice Overpaid';
 $_['entry_invoice_completed'] = 'Invoice Completed';
 $_['entry_invoice_expired'] = 'Invoice Expired';
+$_['entry_factor'] = 'Payment adjustment factor';
 
 $_['entry_processing_fee_policy'] = 'Processing fee plan';
 
@@ -59,3 +61,4 @@ $_['error_empty_currencies'] = 'At least one of the addresses is required.';
 $_['error_permission'] = 'Warning: You do not have permission to modify payment Apirone!';
 $_['error_apirone_mccp_timeout'] = 'The required field. Please, specify value in seconds.';
 $_['error_apirone_mccp_timeout_positive'] = 'Value must be positive. Please, specify value in seconds.';
+$_['error_apirone_mccp_factor'] = 'Value must be positive. See tooltip for details.';

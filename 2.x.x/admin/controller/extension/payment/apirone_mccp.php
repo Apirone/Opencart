@@ -85,8 +85,9 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         $this->setValue($data, 'apirone_mccp_secret');
         $this->setValue($data, 'apirone_mccp_testcustomer');
         $this->setValue($data, 'apirone_mccp_processing_fee');
+        $this->setValue($data, 'apirone_mccp_factor', true);
 
-        if ($active_currencies == 0 || $data['apirone_mccp_timeout'] <= 0 || count($currencies) == 0) {
+        if ($active_currencies == 0 || $data['apirone_mccp_timeout'] <= 0 || $data['apirone_mccp_factor'] <= 0 || count($currencies) == 0) {
             $errors_count++;
         }
 
@@ -113,11 +114,13 @@ class ControllerExtensionPaymentApironeMccp extends Controller
                 $_settings['apirone_mccp_sort_order'] = $_POST['apirone_mccp_sort_order'];
                 $_settings['apirone_mccp_merchantname'] = $_POST['apirone_mccp_merchantname'];
                 $_settings['apirone_mccp_testcustomer'] = $_POST['apirone_mccp_testcustomer'];
+                $_settings['apirone_mccp_factor'] = $_POST['apirone_mccp_factor'];
                 $_settings['apirone_mccp_processing_fee'] = $_POST['apirone_mccp_processing_fee'];
 
                 $this->model_setting_setting->editSetting('apirone_mccp', $_settings);
                 $data['success'] = $this->language->get('text_success');
-            } else {
+            }
+            else {
                 // No addresses
                 if ($active_currencies == 0) {
                     $data['error'] = $this->language->get('error_empty_currencies');
@@ -129,7 +132,9 @@ class ControllerExtensionPaymentApironeMccp extends Controller
                 if($data['apirone_mccp_timeout'] === '') {
                     $this->error['apirone_mccp_timeout'] = $this->language->get('error_apirone_mccp_timeout');
                 }
-
+                if($data['apirone_mccp_factor'] <= 0 || empty($data['apirone_mccp_factor'])) {
+                    $this->error['apirone_mccp_factor'] = $this->language->get('error_apirone_mccp_factor');
+                }
             }
         }
 
@@ -219,6 +224,10 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             'apirone_mccp_invoice_completed_status_id' => '5',
             'apirone_mccp_invoice_expired_status_id' => '16',
             'apirone_mccp_timeout' => '1800',
+            'apirone_mccp_factor' => '1',
+            'apirone_mccp_processing_fee' => 'percentage',
+            'apirone_mccp_status' => '0',
+            'apirone_mccp_geo_zone_id' => '0',
             'apirone_mccp_sort_order' => '0',
         );
 

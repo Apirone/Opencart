@@ -78,6 +78,17 @@
 
                             </div>
                         </div>
+                        <div class="form-group required">
+                            <label class="col-sm-2 control-label" for="input-factor">
+                                <span data-toggle="tooltip" data-original-title="<?php echo $text_factor_tooltip; ?>"><?php echo $entry_factor; ?></span>
+                            </label>
+                            <div class="col-sm-10">
+                                <input name="apirone_mccp_factor" type="number" min="0.01" step='0.01' value="<?php echo $apirone_mccp_factor; ?>" id="input-factor" class="form-control" />
+                                <?php if (isset($errors['apirone_mccp_factor'])) : ?>
+                                <div class=" text-danger"><?php echo $errors['apirone_mccp_factor']; ?></div>
+                                <?php endif; ?>
+                            </div>
+                        </div>
                         <div class="form-group">
                             <label class="col-sm-2 control-label" for="input-geo-zone"><?php echo $entry_geo_zone; ?></label>
                             <div class="col-sm-10">
