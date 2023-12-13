@@ -77,7 +77,6 @@ class Request
                 return $error;
             }
 
-            // return json_decode($body, true);
             return $body;
         }
     }

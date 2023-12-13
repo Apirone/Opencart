@@ -251,10 +251,6 @@ class Apirone
      */
     static public function currencyIcon ($abbr)
     {
-        if ( $abbr[0] == 't') {
-            $abbr = substr($abbr, 1);
-        }
-
         return sprintf(self::$currencyIconUrl, str_replace('@', '_', $abbr));
     }
 }
