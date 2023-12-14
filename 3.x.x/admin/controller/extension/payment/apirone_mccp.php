@@ -89,6 +89,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         $this->setValue($data, 'payment_apirone_mccp_testcustomer');
         $this->setValue($data, 'payment_apirone_mccp_processing_fee');
         $this->setValue($data, 'payment_apirone_mccp_factor', true);
+        $this->setValue($data, 'payment_apirone_mccp_debug');
 
         if ($active_currencies == 0 || $data['payment_apirone_mccp_timeout'] <= 0 || $data['payment_apirone_mccp_factor'] <= 0  || count($currencies) == 0) {
             $errors_count++;
@@ -119,6 +120,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
                 $_settings['payment_apirone_mccp_testcustomer'] = $_POST['payment_apirone_mccp_testcustomer'];
                 $_settings['payment_apirone_mccp_factor'] = $_POST['payment_apirone_mccp_factor'];
                 $_settings['payment_apirone_mccp_processing_fee'] = $_POST['payment_apirone_mccp_processing_fee'];
+                $_settings['payment_apirone_mccp_debug'] = $_POST['payment_apirone_mccp_debug'];
 
                 $this->model_setting_setting->editSetting('payment_apirone_mccp', $_settings);
                 $data['success'] = $this->language->get('text_success');

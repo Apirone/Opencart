@@ -81,6 +81,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         $this->setValue($data, 'apirone_mccp_invoice_overpaid_status_id');
         $this->setValue($data, 'apirone_mccp_invoice_completed_status_id');
         $this->setValue($data, 'apirone_mccp_invoice_expired_status_id');
+        $this->setValue($data, 'apirone_mccp_status');
         $this->setValue($data, 'apirone_mccp_geo_zone_id');
         $this->setValue($data, 'apirone_mccp_status');
         $this->setValue($data, 'apirone_mccp_sort_order');
@@ -89,6 +90,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         $this->setValue($data, 'apirone_mccp_testcustomer');
         $this->setValue($data, 'apirone_mccp_processing_fee');
         $this->setValue($data, 'apirone_mccp_factor', true);
+        $this->setValue($data, 'apirone_mccp_debug');
 
         if ($active_currencies == 0 || $data['apirone_mccp_timeout'] <= 0 || $data['apirone_mccp_factor'] <= 0 || count($currencies) == 0) {
             $errors_count++;
@@ -119,6 +121,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
                 $_settings['apirone_mccp_testcustomer'] = $_POST['apirone_mccp_testcustomer'];
                 $_settings['apirone_mccp_factor'] = $_POST['apirone_mccp_factor'];
                 $_settings['apirone_mccp_processing_fee'] = $_POST['apirone_mccp_processing_fee'];
+                $_settings['apirone_mccp_debug'] = $_POST['apirone_mccp_debug'];
 
                 $this->model_setting_setting->editSetting('apirone_mccp', $_settings);
                 $data['success'] = $this->language->get('text_success');

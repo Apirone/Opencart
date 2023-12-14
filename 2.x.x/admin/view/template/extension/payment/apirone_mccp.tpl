@@ -90,6 +90,21 @@
                             </div>
                         </div>
                         <div class="form-group">
+                            <label class="col-sm-2 control-label" for="input-debug"><?php echo $entry_debug; ?></label>
+                            <div class="col-sm-10">
+                                <select name="apirone_mccp_debug" id="input-debug" class="form-control">
+                                    <?php if ($apirone_mccp_debug) : ?>
+                                    <option value="1" selected="selected"><?php echo $text_enabled; ?></option>
+                                    <option value="0"><?php echo $text_disabled; ?></option>
+                                    <?php else : ?>
+                                    <option value="1"><?php echo $text_enabled; ?></option>
+                                    <option value="0" selected="selected"><?php echo $text_disabled; ?></option>
+                                    <?php endif; ?>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
                             <label class="col-sm-2 control-label" for="input-geo-zone"><?php echo $entry_geo_zone; ?></label>
                             <div class="col-sm-10">
                                 <select name="apirone_mccp_geo_zone_id" id="input-geo-zone" class="form-control">

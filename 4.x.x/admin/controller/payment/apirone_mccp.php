@@ -93,6 +93,8 @@ class ApironeMccp extends \Opencart\System\Engine\Controller
         $this->setValue($data, 'payment_apirone_mccp_testcustomer');
         $this->setValue($data, 'payment_apirone_mccp_processing_fee');
         $this->setValue($data, 'payment_apirone_mccp_factor', true);
+        $this->setValue($data, 'payment_apirone_mccp_debug');
+        
         $data['payment_apirone_mccp_account'] = $account->account;
         $data['phpversion'] = phpversion();
         $data['oc_version'] = VERSION;
@@ -128,6 +130,7 @@ class ApironeMccp extends \Opencart\System\Engine\Controller
                 $_settings['payment_apirone_mccp_testcustomer'] = $_POST['payment_apirone_mccp_testcustomer'];
                 $_settings['payment_apirone_mccp_factor'] = $_POST['payment_apirone_mccp_factor'];
                 $_settings['payment_apirone_mccp_processing_fee'] = $_POST['payment_apirone_mccp_processing_fee'];
+                $_settings['payment_apirone_mccp_debug'] = $_POST['payment_apirone_mccp_debug'];
 
                 $this->model_setting_setting->editSetting('payment_apirone_mccp', $_settings);
             }
