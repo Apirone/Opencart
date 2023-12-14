@@ -107,21 +107,21 @@ class ControllerExtensionPaymentApironeMccp extends Controller
                 $_settings['apirone_mccp_secret'] = $secret;
                 $_settings['apirone_mccp_currencies'] = serialize($currencies);
 
-                $_settings['apirone_mccp_timeout'] = $_POST['apirone_mccp_timeout'];
-                $_settings['apirone_mccp_invoice_created_status_id'] = $_POST['apirone_mccp_invoice_created_status_id'];
-                $_settings['apirone_mccp_invoice_paid_status_id'] = $_POST['apirone_mccp_invoice_paid_status_id'];
-                $_settings['apirone_mccp_invoice_partpaid_status_id'] = $_POST['apirone_mccp_invoice_partpaid_status_id'];
-                $_settings['apirone_mccp_invoice_overpaid_status_id'] = $_POST['apirone_mccp_invoice_overpaid_status_id'];
-                $_settings['apirone_mccp_invoice_completed_status_id'] = $_POST['apirone_mccp_invoice_completed_status_id'];
-                $_settings['apirone_mccp_invoice_expired_status_id'] = $_POST['apirone_mccp_invoice_expired_status_id'];
-                $_settings['apirone_mccp_geo_zone_id'] = $_POST['apirone_mccp_geo_zone_id'];
-                $_settings['apirone_mccp_status'] = $_POST['apirone_mccp_status'];
-                $_settings['apirone_mccp_sort_order'] = $_POST['apirone_mccp_sort_order'];
-                $_settings['apirone_mccp_merchantname'] = $_POST['apirone_mccp_merchantname'];
-                $_settings['apirone_mccp_testcustomer'] = $_POST['apirone_mccp_testcustomer'];
-                $_settings['apirone_mccp_factor'] = $_POST['apirone_mccp_factor'];
-                $_settings['apirone_mccp_processing_fee'] = $_POST['apirone_mccp_processing_fee'];
-                $_settings['apirone_mccp_debug'] = $_POST['apirone_mccp_debug'];
+                $_settings['apirone_mccp_timeout'] = $this->request->post['apirone_mccp_timeout'];
+                $_settings['apirone_mccp_invoice_created_status_id'] = $this->request->post['apirone_mccp_invoice_created_status_id'];
+                $_settings['apirone_mccp_invoice_paid_status_id'] = $this->request->post['apirone_mccp_invoice_paid_status_id'];
+                $_settings['apirone_mccp_invoice_partpaid_status_id'] = $this->request->post['apirone_mccp_invoice_partpaid_status_id'];
+                $_settings['apirone_mccp_invoice_overpaid_status_id'] = $this->request->post['apirone_mccp_invoice_overpaid_status_id'];
+                $_settings['apirone_mccp_invoice_completed_status_id'] = $this->request->post['apirone_mccp_invoice_completed_status_id'];
+                $_settings['apirone_mccp_invoice_expired_status_id'] = $this->request->post['apirone_mccp_invoice_expired_status_id'];
+                $_settings['apirone_mccp_geo_zone_id'] = $this->request->post['apirone_mccp_geo_zone_id'];
+                $_settings['apirone_mccp_status'] = $this->request->post['apirone_mccp_status'];
+                $_settings['apirone_mccp_sort_order'] = $this->request->post['apirone_mccp_sort_order'];
+                $_settings['apirone_mccp_merchantname'] = $this->request->post['apirone_mccp_merchantname'];
+                $_settings['apirone_mccp_testcustomer'] = $this->request->post['apirone_mccp_testcustomer'];
+                $_settings['apirone_mccp_factor'] = $this->request->post['apirone_mccp_factor'];
+                $_settings['apirone_mccp_processing_fee'] = $this->request->post['apirone_mccp_processing_fee'];
+                $_settings['apirone_mccp_debug'] = $this->request->post['apirone_mccp_debug'];
 
                 $this->model_setting_setting->editSetting('apirone_mccp', $_settings);
                 $data['success'] = $this->language->get('text_success');
