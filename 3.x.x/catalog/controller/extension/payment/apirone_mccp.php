@@ -47,7 +47,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller {
 
         $currencyInfo = Apirone::getCurrency($currency);
 
-        // Is order invoice aready exists
+        // Is order invoice already exists
         $orderInvoice = $this->model_extension_payment_apirone_mccp->getInvoiceByOrderId($order_id);
         if ($orderInvoice) {
             // Update invoice when page loaded or reloaded & status != 0 (expired || completed)

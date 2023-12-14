@@ -68,7 +68,7 @@ class Apirone
         return $currencies; 
     }
 
-    public static function accountCurrencyList($account, $actvieOnly = true)
+    public static function accountCurrencyList($account, $activeOnly = true)
     {
         $accountInfo = self::accountInfo($account);
         $serviceInfo = self::serviceInfo();
@@ -102,12 +102,12 @@ class Apirone
             $item->address = $destinations[$item->abbr];
             $item->icon = self::currencyIcon($item->abbr);
             $item->testnet = (substr_count(strtolower($item->name), 'testnet') > 0) ? 1 : 0;
-            if($actvieOnly && !empty($item->address)) {
+            if($activeOnly && !empty($item->address)) {
                 $activeCurrencies[] = $item;
             }
         }
 
-        return ($actvieOnly) ? $activeCurrencies : $currencies;
+        return ($activeOnly) ? $activeCurrencies : $currencies;
     }
 
     /**
@@ -130,7 +130,7 @@ class Apirone
     }
 
     /**
-     * Create new acoount
+     * Create new account
      * 
      * @return json|false 
      */
@@ -190,7 +190,7 @@ class Apirone
     }
 
 
-    // INVOICES MOTHODS
+    // INVOICES METHODS
 
     /**
      * 
