@@ -15,6 +15,14 @@ class ApironeMccp extends \Opencart\System\Engine\Controller
 {
     private $error = array();
 
+    public function __construct($registry)
+    {
+        parent::__construct($registry);
+        $logger = new \Opencart\System\Library\Log('apirone.log');
+        $debug = (bool) $this->config->get('payment_apirone_mccp_debug');
+        Apirone::setLogger($logger, $debug);
+    }
+
     public function index(): void
     {
         $this->update();

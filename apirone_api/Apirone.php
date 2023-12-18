@@ -3,21 +3,19 @@
 namespace ApironeApi;
 
 require_once(__DIR__ . '/Request.php');
-require_once(__DIR__ . '/Log.php');
+require_once(__DIR__ . '/LoggerWrapper.php');
 require_once(__DIR__ . '/Db.php');
 
 require_once(__DIR__ . '/Utils.php');
 
 
 use \ApironeApi\Request as Request;
-use \ApironeApi\Log as Log;
+use \ApironeApi\LoggerWrapper as LoggerWrapper;
 
 class Apirone
 {
 
     use Utils;
-
-    static $LogFilePath = '';
 
     static $currencyIconUrl = 'https://apirone.com/static/img2/%s.svg';
 
@@ -227,20 +225,8 @@ class Apirone
 
     // HELPERS METHODS
 
-    /**
-     * Check is response has error
-     * 
-     * @param mixed $response 
-     * @return bool 
-     */
-    public static function isResponseError($response)
-    {
-        return  ($response instanceof \ApironeApi\Error) ? true : false;
-    }
-
-    public static function setLogFile($filepath)
-    {
-        self::$LogFilePath = $filepath;
+    public static function setLogger($logger, $debug = false) {
+        LoggerWrapper::setLogger($logger, $debug);   
     }
 
     /**

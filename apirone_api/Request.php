@@ -4,12 +4,11 @@ namespace ApironeApi;
 
 require_once (__DIR__ . '/Error.php');
 
-use ApironeApi\Error;
+use ApironeApi\Error as Error;
 
 class Request
 {
     const API_URL = 'https://apirone.com/api';
-    const ERROR = false;
 
     public static function execute($method, $url, $params = array(), $json = false)
     {
@@ -96,6 +95,6 @@ class Request
 
     public static function isResponseError($response)
     {
-        return  ($response instanceof \ApironeApi\Error) ? true : false;
+        return  ($response instanceof Error) ? true : false;
     }
 }
