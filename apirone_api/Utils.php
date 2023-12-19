@@ -14,7 +14,7 @@ trait Utils
     public static function getExplorerHref($currency, $type, $hash = '')
     {
         $explorer = 'blockchair.com';
-        $currencyName = strtolower(str_replace([' ', '(', ')'], ['-', '/', ''], $currency->getName()));
+        $currencyName = strtolower(str_replace([' ', '(', ')'], ['-', '/', ''], $currency->name));
         $from = '?from=apirone';
         if ($currency->abbr == 'tbtc') {
             $currencyName = 'bitcoin/testnet';
@@ -138,12 +138,7 @@ trait Utils
         );
         $result = Request::execute('get', $endpoint, $params );
 
-        if (Request::isResponseError($result)) {
-            Log::debug($result);
-            return false;
-        }
-        else
-            return (float) $result;
+        return (float) $result;
     }
 
     static public function getAssets($filename, $minify = false)

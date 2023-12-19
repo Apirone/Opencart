@@ -11,6 +11,7 @@ require_once(__DIR__ . '/Utils.php');
 
 use \ApironeApi\Request as Request;
 use \ApironeApi\LoggerWrapper as LoggerWrapper;
+use InvalidArgumentException;
 
 class Apirone
 {
@@ -66,6 +67,13 @@ class Apirone
         return $currencies; 
     }
 
+    /**
+     * Returns a list of set currencies
+     *
+     * @param mixed $account 
+     * @param bool $activeOnly 
+     * @return mixed 
+     */
     public static function accountCurrencyList($account, $activeOnly = true)
     {
         $accountInfo = self::accountInfo($account);
@@ -117,14 +125,8 @@ class Apirone
     public static function serviceInfo ($type = 'accounts')
     {
         $endpoint = '/v2/' . $type;
-        $result = Request::execute('options', $endpoint);
 
-        if (Request::isResponseError($result)) {
-            Log::debug($result);
-            return false;
-        }
-        else
-            return json_decode($result);
+        return Request::execute('options', $endpoint);
     }
 
     /**
@@ -135,14 +137,8 @@ class Apirone
     public static function accountCreate ()
     {
         $endpoint = '/v2/accounts';
-        $result = Request::execute('post', $endpoint);
 
-        if (Request::isResponseError($result)) {
-            Log::debug($result);
-            return false;
-        }
-        else
-            return json_decode($result);
+        return Request::execute('post', $endpoint);
     }
 
     /**
@@ -156,14 +152,8 @@ class Apirone
     {
         $endpoint = '/v2/accounts/' . $account_id;
         $params = ($currency) ? array('currency' => $currency) : array();
-        $result = Request::execute('get', $endpoint, $params);
 
-        if (Request::isResponseError($result)) {
-            Log::debug($result);
-            return false;
-        }
-        else
-            return json_decode($result);
+        return Request::execute('get', $endpoint, $params);
     }
 
     public static function setTransferAddress($account, $currency, $address, $policy = 'percentage')
@@ -178,17 +168,8 @@ class Apirone
             $params['destinations'][] = array("address" => $address);
         }
 
-        $result = Request::execute('patch', $endpoint, json_encode($params), true);
-        if (Request::isResponseError($result)) {
-            Log::debug($result);
-            return false;
-        }
-
-        return $result;
+        return Request::execute('patch', $endpoint, $params, true);
     }
-
-
-    // INVOICES METHODS
 
     /**
      * 
@@ -199,34 +180,28 @@ class Apirone
     public static function invoiceCreate ($account, $invoiceData)
     {
         $endpoint = '/v2/accounts/' . $account->account . '/invoices';
-        $result = Request::execute('post', $endpoint, json_encode($invoiceData), true);
 
-        if (Request::isResponseError($result)) {
-            Log::debug($result);
-            return $result;
-        }
-        else
-            return json_decode($result);
+        return Request::execute('post', $endpoint, $invoiceData, true);
     }
 
     public static function invoiceInfoPublic($invoice_id)
     {
         $endpoint = '/v2/invoices/' . $invoice_id;
-        $result = Request::execute('get', $endpoint);
 
-        if (Request::isResponseError($result)) {
-            Log::debug($result);
-            return false;
-        }
-        else
-            return json_decode($result);
-
+        return Request::execute('get', $endpoint);
     }
 
-    // HELPERS METHODS
-
-    public static function setLogger($logger, $debug = false) {
-        LoggerWrapper::setLogger($logger, $debug);   
+    /**
+     * Configure logger
+     *
+     * @param mixed $loggerInstance 
+     * @param bool $debugMode 
+     * @return void 
+     * @throws InvalidArgumentException 
+     */
+    public static function setLogger($loggerInstance, $debugMode = false)
+    {
+        LoggerWrapper::setLogger($loggerInstance, $debugMode);   
     }
 
     /**

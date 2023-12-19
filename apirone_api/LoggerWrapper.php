@@ -46,12 +46,7 @@ class LoggerWrapper
 
     protected static function prepareMessage($replace, $message)
     {
-        foreach ($replace as $key => $object) {
-            $label = trim($key, "{}");
-            $message .= " \n{$label}: {$object}";
-        }
-
-        return $message;
+        return $message . ' ' . print_r(json_encode($replace, JSON_UNESCAPED_LINE_TERMINATORS), true);
     }
 
     protected static function prepareContext($context)
@@ -59,12 +54,10 @@ class LoggerWrapper
         if (!$context) {
             return;
         }
-
-        $replace = array();
-        foreach ($context as $key => $value) {
-            $replace['{'.$key.'}'] = (is_array($value) || is_object($value)) ? json_encode($value, JSON_PRETTY_PRINT) : $value;
+        if (is_string($context)) {
+            $context = json_decode($context);
         }
 
-        return $replace;
+        return $context;
     }
 }

@@ -7,12 +7,15 @@ require_once(DIR_EXTENSION . 'apirone/system/library/apirone_api/Payment.php');
 use ApironeApi\Apirone;
 use ApironeApi\Payment;
 
-function pa($mixed) {
-    echo '<pre>';
-    print_r($mixed);
-    echo '</pre>';
-}
 class ApironeMccp extends \Opencart\System\Engine\Controller {
+
+    public function __construct($registry)
+    {
+        parent::__construct($registry);
+        $logger = new \Opencart\System\Library\Log('apirone.log');
+        $debug = (bool) $this->config->get('payment_apirone_mccp_debug');
+        Apirone::setLogger($logger, $debug);
+    }
 
     public function index() {
 

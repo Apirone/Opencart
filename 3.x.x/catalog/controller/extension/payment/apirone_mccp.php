@@ -8,6 +8,14 @@ require_once(DIR_SYSTEM . 'library/apirone_api/Payment.php');
 
 class ControllerExtensionPaymentApironeMccp extends Controller {
 
+    public function __construct($registry)
+    {
+        parent::__construct($registry);
+        $logger = new \Log('apirone.log');
+        $debug = (bool) $this->config->get('payment_apirone_mccp_debug');
+        Apirone::setLogger($logger, $debug);
+    }
+
     public function index() {
 
         $data['button_confirm'] = $this->language->get('button_confirm');
