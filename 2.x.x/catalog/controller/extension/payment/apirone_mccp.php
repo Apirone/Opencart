@@ -1,12 +1,27 @@
 <?php
 
 use ApironeApi\Apirone;
+use ApironeApi\LoggerWrapper;
 use ApironeApi\Payment;
 
 require_once(DIR_SYSTEM . 'library/apirone_api/Apirone.php');
+require_once(DIR_SYSTEM . 'library/apirone_api/LoggerWrapper.php');
 require_once(DIR_SYSTEM . 'library/apirone_api/Payment.php');
 
 class ControllerExtensionPaymentApironeMccp extends Controller {
+
+    public function __construct($registry)
+    {
+        parent::__construct($registry);
+        $logger = new \Log('apirone.log');
+        $debug = (bool) $this->config->get('apirone_mccp_debug');
+        try {
+            Apirone::setLogger($logger, $debug);
+        }
+        catch (Exception $e) {
+            $this->log->write($e->getMessage());
+        }
+    }
 
     public function index() {
 
@@ -87,7 +102,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller {
         }
         else {
             $this->response->redirect($this->url->link('checkout/cart'));
-            return;
+            // return;
         }
     }
 
@@ -103,12 +118,18 @@ class ControllerExtensionPaymentApironeMccp extends Controller {
 
         if (!$params) {
             http_response_code(400);
-            $this->response->setOutput("Data not received");
+            $message = "Data not received";
+            $this->response->setOutput($message);
+            LoggerWrapper::callbackError($message);
+
             return;
         }
         if (!property_exists($params, 'invoice') || !property_exists($params, 'status')) {
             http_response_code(400);
-            $this->response->setOutput("Wrong params received: " . json_encode($params));
+            $message = "Wrong params received: " . json_encode($params);
+            $this->response->setOutput($message);
+            LoggerWrapper::callbackError($message);
+
             return;        
         }
 
@@ -120,13 +141,19 @@ class ControllerExtensionPaymentApironeMccp extends Controller {
         
         if (!$invoice) {
             http_response_code(404);
-            $this->response->setOutput("Invoice not found: " . $params->invoice);
+            $message = "Invoice not found: " . $params->invoice;
+            $this->response->setOutput($message);
+            LoggerWrapper::callbackError($message);
+
             return;
         }
 
         if (!Payment::checkInvoiceSecret($callback_secret, $secret, $invoice->order_id)) {
             http_response_code(403);
+            $message = "Secret not valid: " . $callback_secret;
             $this->response->setOutput("Secret not valid: " . $callback_secret);
+            LoggerWrapper::callbackError($message);
+
             return;
         }
 

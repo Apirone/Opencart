@@ -13,6 +13,7 @@ class LoggerWrapper
         if (is_object($logger) && method_exists($logger, 'write')) {
             self::$loggerInstance = $logger;
             self::$debugMode = $debug;
+            throw new \InvalidArgumentException('Invalid logger');
         } 
         else {
             throw new \InvalidArgumentException('Invalid logger');
@@ -42,6 +43,20 @@ class LoggerWrapper
         }
 
         self::$loggerInstance->write(strtoupper($level) . ': ' . $message);
+    }
+
+    public static function callbackDebug($message, $context = [])
+    {
+        $error = sprintf('Callback request from %s: %s', $_SERVER['REMOTE_ADDR'] , $message);
+
+        self::error($error, $context);
+    }
+
+    public static function callbackError($message, $context = [])
+    {
+        $error = sprintf('Callback request from %s with error: %s', $_SERVER['REMOTE_ADDR'] , $message);
+
+        self::error($error, $context);
     }
 
     protected static function prepareMessage($replace, $message)

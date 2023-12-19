@@ -13,7 +13,12 @@ class ControllerExtensionPaymentApironeMccp extends Controller {
         parent::__construct($registry);
         $logger = new \Log('apirone.log');
         $debug = (bool) $this->config->get('payment_apirone_mccp_debug');
-        Apirone::setLogger($logger, $debug);
+        try {
+            Apirone::setLogger($logger, $debug);
+        }
+        catch (Exception $e) {
+            $this->log->write($e->getMessage());
+        }
     }
 
     public function index() {
