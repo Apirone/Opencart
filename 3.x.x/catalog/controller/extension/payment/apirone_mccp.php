@@ -143,6 +143,8 @@ class ControllerExtensionPaymentApironeMccp extends Controller {
         if($invoiceUpdated) {
             $this->model_extension_payment_apirone_mccp->updateInvoice($invoice->order_id, $invoiceUpdated);
         }
+
+        LoggerWrapper::callbackDebug('', $params);
     }
 
     public function status() {
