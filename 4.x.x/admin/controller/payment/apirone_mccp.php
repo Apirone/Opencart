@@ -7,7 +7,6 @@ require_once(DIR_EXTENSION . 'apirone/system/library/apirone_api/Db.php');
 
 use ApironeApi\Apirone;
 
-// Define Plugin version
 define('PLUGIN_VERSION', '1.2.4');
 
 
@@ -188,9 +187,7 @@ class ApironeMccp extends \Opencart\System\Engine\Controller
             return;
         }
 
-        // =============================================================================================
         // Set template variables
-
         $this->document->setTitle($this->language->get('heading_title'));
 
         $data = array_merge($data, $this->load->language('apirone_mccp'));
@@ -227,19 +224,19 @@ class ApironeMccp extends \Opencart\System\Engine\Controller
         $data['breadcrumbs'] = array();
         $data['breadcrumbs'][] = array(
             'text' => $this->language->get('text_home'),
-            'href' => $this->url->link('common/dashboard', 'user_token='. $this->session->data['user_token'], true)
+            'href' => $this->url->link('common/dashboard', 'user_token=' . $this->session->data['user_token'], true)
         );
         $data['breadcrumbs'][] = array(
             'text' => $this->language->get('text_extension'),
-            'href' => $this->url->link('marketplace/extension', 'user_token='. $this->session->data['user_token'] . '&type=payment', true)
+            'href' => $this->url->link('marketplace/extension', 'user_token=' . $this->session->data['user_token'] . '&type=payment', true)
         );
         $data['breadcrumbs'][] = array(
             'text' => $this->language->get('heading_title'),
-            'href' => $this->url->link('extension/apirone/payment/apirone_mccp', 'user_token='. $this->session->data['user_token'], true)
+            'href' => $this->url->link('extension/apirone/payment/apirone_mccp', 'user_token=' . $this->session->data['user_token'], true)
         );
 
-        $data['save'] = $this->url->link('extension/apirone/payment/apirone_mccp', 'user_token='. $this->session->data['user_token'], true);
-        $data['back'] = $this->url->link('marketplace/extension', 'user_token='. $this->session->data['user_token'] . '&type=payment', true);
+        $data['save'] = $this->url->link('extension/apirone/payment/apirone_mccp', 'user_token=' . $this->session->data['user_token'], true);
+        $data['back'] = $this->url->link('marketplace/extension', 'user_token=' . $this->session->data['user_token'] . '&type=payment', true);
     }
 
     protected function setValue(&$data, $value, $required = false)
@@ -261,7 +258,7 @@ class ApironeMccp extends \Opencart\System\Engine\Controller
         $this->load->model('setting/setting');
 
         $data = array(
-            'payment_apirone_mccp_secret' => md5(time(). $this->session->data['user_token']),
+            'payment_apirone_mccp_secret' => md5(time() . $this->session->data['user_token']),
             'payment_apirone_mccp_version' => PLUGIN_VERSION,
             'payment_apirone_mccp_invoice_created_status_id' => '1',
             'payment_apirone_mccp_invoice_paid_status_id' => '1',

@@ -8,8 +8,8 @@ require_once(DIR_SYSTEM . 'library/apirone_api/Apirone.php');
 require_once(DIR_SYSTEM . 'library/apirone_api/LoggerWrapper.php');
 require_once(DIR_SYSTEM . 'library/apirone_api/Payment.php');
 
-class ControllerExtensionPaymentApironeMccp extends Controller {
-
+class ControllerExtensionPaymentApironeMccp extends Controller
+{
     public function __construct($registry)
     {
         parent::__construct($registry);
@@ -23,7 +23,8 @@ class ControllerExtensionPaymentApironeMccp extends Controller {
         }
     }
 
-    public function index() {
+    public function index()
+    {
 
         $data['button_confirm'] = $this->language->get('button_confirm');
         $this->load->model('checkout/order');
@@ -46,8 +47,8 @@ class ControllerExtensionPaymentApironeMccp extends Controller {
         return $this->load->view('extension/payment/apirone_mccp', $data);
     }
 
-    public function confirm() {
-
+    public function confirm()
+    {
         $this->load->model('checkout/order');
         $this->load->language('extension/payment/apirone_mccp');
         $this->load->model('extension/payment/apirone_mccp');
@@ -100,13 +101,11 @@ class ControllerExtensionPaymentApironeMccp extends Controller {
 
             return;
         }
-        else {
-            $this->response->redirect($this->url->link('checkout/cart'));
-            // return;
-        }
+        $this->response->redirect($this->url->link('checkout/cart'));
     }
 
-    public function callback() {
+    public function callback()
+    {
         $this->load->model('checkout/order');
         $this->load->model('extension/payment/apirone_mccp');
         $params = false;
@@ -166,15 +165,16 @@ class ControllerExtensionPaymentApironeMccp extends Controller {
         LoggerWrapper::callbackDebug('', $params);
     }
 
-    public function status() {
+    public function status()
+    {
         $this->load->model('extension/payment/apirone_mccp');
         $id = $this->request->get['id'];
 
         echo Payment::invoiceStatus($this->model_extension_payment_apirone_mccp->getInvoiceById($id));
     }
     
-    protected function showInvoice($invoice, &$currency, $clear_cart = false) {
-
+    protected function showInvoice($invoice, &$currency, $clear_cart = false)
+    {
         $merchant = $this->config->get('apirone_mccp_merchantname');
 
         if ($merchant == '') {
@@ -196,5 +196,4 @@ class ControllerExtensionPaymentApironeMccp extends Controller {
         $this->response->setOutput($this->load->view('extension/payment/apirone_mccp_invoice', $data));
         return;
     }
-
 }

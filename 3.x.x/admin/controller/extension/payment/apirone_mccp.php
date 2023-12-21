@@ -4,7 +4,6 @@ use ApironeApi\Apirone;
 
 require_once(DIR_SYSTEM . 'library/apirone_api/Apirone.php');
 
-// Define Plugin version
 define('PLUGIN_VERSION', '1.2.4');
 
 class ControllerExtensionPaymentApironeMccp extends Controller
@@ -157,9 +156,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             }
         }
 
-        // =============================================================================================
         // Set template variables
-
         $this->document->setTitle($this->language->get('heading_title'));
 
         $this->load->model('localisation/order_status');
@@ -232,7 +229,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
 
         $data = array(
             'payment_apirone_mccp_version' => PLUGIN_VERSION,
-            'payment_apirone_mccp_secret' => md5(time().$this->session->data['user_token']),
+            'payment_apirone_mccp_secret' => md5(time() . $this->session->data['user_token']),
             'payment_apirone_mccp_invoice_created_status_id' => '1',
             'payment_apirone_mccp_invoice_paid_status_id' => '1',
             'payment_apirone_mccp_invoice_partpaid_status_id' => '1',
@@ -352,5 +349,4 @@ class ControllerExtensionPaymentApironeMccp extends Controller
 
         return $data['payment_apirone_mccp_version'];
     }
-
 }

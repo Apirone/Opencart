@@ -4,7 +4,6 @@ use ApironeApi\Apirone;
 
 require_once(DIR_SYSTEM . 'library/apirone_api/Apirone.php');
 
-// Define Plugin version
 define('PLUGIN_VERSION', '1.2.4');
 
 class ControllerExtensionPaymentApironeMccp extends Controller
@@ -158,9 +157,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             }
         }
 
-        // =============================================================================================
         // Set template variables
-
         $this->document->setTitle($this->language->get('heading_title'));
 
         $data = array_merge($data, $this->load->language('apirone_mccp'));
@@ -199,20 +196,20 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         $data['breadcrumbs'] = array();
         $data['breadcrumbs'][] = array(
             'text' => $this->language->get('text_home'),
-            'href' => $this->url->link('common/dashboard', 'token='. $this->session->data['token'], true)
+            'href' => $this->url->link('common/dashboard', 'token=' . $this->session->data['token'], true)
         );
         $data['breadcrumbs'][] = array(
             'text' => $this->language->get('text_extension'),
-            'href' => $this->url->link('extension/extension', 'token='. $this->session->data['token'] . '&type=payment', true)
+            'href' => $this->url->link('extension/extension', 'token=' . $this->session->data['token'] . '&type=payment', true)
         );
         $data['breadcrumbs'][] = array(
             'text' => $this->language->get('heading_title'),
-            'href' => $this->url->link('extension/payment/apirone_mccp', 'token='. $this->session->data['token'], true)
+            'href' => $this->url->link('extension/payment/apirone_mccp', 'token=' . $this->session->data['token'], true)
         );
 
-        $data['action'] = $this->url->link('extension/payment/apirone_mccp', 'token='. $this->session->data['token'], true);
+        $data['action'] = $this->url->link('extension/payment/apirone_mccp', 'token=' . $this->session->data['token'], true);
 
-        $data['cancel'] = $this->url->link('extension/extension', 'token='. $this->session->data['token'] . '&type=payment', true);
+        $data['cancel'] = $this->url->link('extension/extension', 'token=' . $this->session->data['token'] . '&type=payment', true);
     }
 
     protected function setValue(&$data, $value, $required = false)
@@ -236,7 +233,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
 
         $data = array(
             'apirone_mccp_version' => PLUGIN_VERSION,
-            'apirone_mccp_secret' => md5(time().'token='. $this->session->data['token']),
+            'apirone_mccp_secret' => md5(time() . 'token=' . $this->session->data['token']),
             'apirone_mccp_invoice_created_status_id' => '1',
             'apirone_mccp_invoice_paid_status_id' => '1',
             'apirone_mccp_invoice_partpaid_status_id' => '1',
