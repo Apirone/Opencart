@@ -23,6 +23,7 @@ $_['text_oc_version'] = 'OpenCart version';
 $_['text_testnet_hint'] = "Please do not spend real crypto if you want to test the plugin. Testnet is free and such coins will not be stuck in case the network fee will be too high. Free faucets to get testnet coins are as follows:";
 $_['text_read_more'] = "Read more";
 $_['text_apirone_support'] = "Apirone support";
+$_['text_apirone_survey'] = 'Please <a href="https://www.smartsurvey.co.uk/s/YAWKC7/" target="_blank">fill-up</a> our survey to improve the Opencart plugin. The results will help us shape a road map for the future.';
 
 # Tabs
 $_['tab_settings'] = 'Settings';

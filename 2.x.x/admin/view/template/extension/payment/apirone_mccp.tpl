@@ -247,7 +247,7 @@
                         </div>
                     </div>
                     <div class="tab-pane" id="tab-info">
-                        <div style="padding: 1rem; margin-bottom: 1rem">
+                        <div style="padding: 1rem 0; margin-bottom: 1rem">
                             <h4><?php echo $heading_testnet_hint; ?></h4>
                             <hr>
                             <p><?php echo $text_testnet_hint; ?></p>
@@ -258,7 +258,7 @@
                             <hr>
                             <p class="mb-0"><strong><?php echo $text_read_more; ?>:</strong> <a href="https://apirone.com/faq" target="_blank">https://apirone.com/faq</a></p>
                         </div>
-                        <div class="_alert _alert-info" role="alert" style="padding: 1rem; margin-bottom: 1rem">
+                        <div style="padding: 1rem 0; margin-bottom: 1rem">
                             <h4><?php echo $heading_plugin_info; ?></h4>
                             <hr>
                             <p>
@@ -273,6 +273,9 @@
                     </div>
                 </div>
             </form>
+            </div>
+            <div class="panel-footer">
+                <?php echo $text_apirone_survey; ?>
             </div>
         </div>
     </div>

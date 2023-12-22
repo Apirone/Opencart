@@ -79,9 +79,9 @@
                                         {% endif %}
                                         </option>
                                     </select>
-
                                 </div>
                             </div>
+
                             <div class="row mb-3 required">
                                 <label class="col-sm-2 col-form-label" for="input-factor">
                                     <span data-bs-toggle="tooltip" data-bs-original-title="{{ text_factor_tooltip }}">{{ entry_factor }}</span>
@@ -91,6 +91,7 @@
                                     <div id="error-factor" class="invalid-feedback"></div>
                                 </div>
                             </div>
+
                             <div class="row mb-3">
                                 <label class="col-sm-2 col-form-label" for="input-debug">{{ entry_debug }}</label>
                                 <div class="col-sm-10">
@@ -105,6 +106,7 @@
                                     </select>
                                 </div>
                             </div>
+
                             <div class="row mb-3">
                                 <label class="col-sm-2 col-form-label" for="input-geo-zone">{{ entry_geo_zone }}</label>
                                 <div class="col-sm-10">
@@ -120,6 +122,7 @@
                                     </select>
                                 </div>
                             </div>
+
                             <div class="row mb-3">
                                 <label class="col-sm-2 col-form-label" for="input-status">{{ entry_status }}</label>
                                 <div class="col-sm-10">
@@ -134,6 +137,7 @@
                                     </select>
                                 </div>
                             </div>
+
                             <div class="row mb-3">
                                 <label class="col-sm-2 col-form-label" for="input-sort-order">{{ entry_sort_order }}</label>
                                 <div class="col-sm-10">
@@ -144,22 +148,23 @@
 
                         <div id="tab-currencies" class="tab-pane" role="tabpanel">
                             {% for currency in currencies %}
-                                <div class="row mb-3{{ error_empty_currencies ? ' has-error' : '' }}">
-                                    <label class="col-sm-2 col-form-label" for="input-merchant">
-                                        <span data-bs-toggle="tooltip" data-bs-original-title="{{ currency.currency_tooltip }}" class="py-1">
-                                            <img src="{{ currency.icon }}" width="24"{{ (currency.abbr == 'tbtc') ? ' style="filter: grayscale(1)"' : '' }}>&nbsp;{{ currency.name }}
-                                        </span>
-                                    </label>
-                                    <div class="col-sm-10">
-                                        <input type="text" name="address[{{ currency.abbr }}]" value="{{ currency.address }}" id="address_{{ currency.abbr }}" class="form-control" />
-                                        <div id="error-address-{{ currency.abbr }}" class="invalid-feedback"></div>
-                                        {% if currency.testnet %}
-                                        <label class="col-form-label" style="color: inherit !important;"><span data-bs-toggle="tooltip" data-bs-original-title="{{ text_test_currency_tooltip }}">{{ text_test_currency }}</span></label>
-                                        {% endif %}
-                                    </div>
+                            <div class="row mb-3{{ error_empty_currencies ? ' has-error' : '' }}">
+                                <label class="col-sm-2 col-form-label" for="input-merchant">
+                                    <span data-bs-toggle="tooltip" data-bs-original-title="{{ currency.currency_tooltip }}" class="py-1">
+                                        <img src="{{ currency.icon }}" width="24"{{ (currency.abbr == 'tbtc') ? ' style="filter: grayscale(1)"' : '' }}>&nbsp;{{ currency.name }}
+                                    </span>
+                                </label>
+                                <div class="col-sm-10">
+                                    <input type="text" name="address[{{ currency.abbr }}]" value="{{ currency.address }}" id="address_{{ currency.abbr }}" class="form-control" />
+                                    <div id="error-address-{{ currency.abbr }}" class="invalid-feedback"></div>
+                                    {% if currency.testnet %}
+                                    <label class="col-form-label" style="color: inherit !important;"><span data-bs-toggle="tooltip" data-bs-original-title="{{ text_test_currency_tooltip }}">{{ text_test_currency }}</span></label>
+                                    {% endif %}
                                 </div>
+                            </div>
                             {% endfor %}
                         </div>
+
                         <div id="tab-statuses" class="tab-pane" role="tabpanel">
                             <div class="row mb-3">
                                 <label class="col-sm-2 col-form-label" for="input-invoice-created">{{ entry_invoice_created }}</label>
@@ -190,6 +195,7 @@
                                     </select>
                                 </div>
                             </div>
+
                             <div class="row mb-3">
                                 <label class="col-sm-2 col-form-label" for="input-invoice-partpaid">{{ entry_invoice_partpaid }}</label>
                                 <div class="col-sm-10">
@@ -204,6 +210,7 @@
                                     </select>
                                 </div>
                             </div>
+
                             <div class="row mb-3">
                                 <label class="col-sm-2 col-form-label" for="input-invoce-overpaid">{{ entry_invoice_overpaid }}</label>
                                 <div class="col-sm-10">
@@ -218,6 +225,7 @@
                                     </select>
                                 </div>
                             </div>
+
                             <div class="row mb-3">
                                 <label class="col-sm-2 col-form-label" for="input-invoice-completed">{{ entry_invoice_completed }}</label>
                                 <div class="col-sm-10">
@@ -232,6 +240,7 @@
                                     </select>
                                 </div>
                             </div>
+
                             <div class="row mb-3">
                                 <label class="col-sm-2 col-form-label" for="input-invoice-expired">{{ entry_invoice_expired }}</label>
                                 <div class="col-sm-10">
@@ -247,6 +256,7 @@
                                 </div>
                             </div>
                         </div>
+
                         <div id="tab-info" class="tab-pane" role="tabpanel">
                             <div style="padding: 1rem; margin-bottom: 1rem">
                                 <h4>{{ heading_testnet_hint }}</h4>
@@ -272,10 +282,10 @@
                                 <p class="mb-0"><strong>{{ text_apirone_support }}:</strong> <a href="mailto:support@apirone.com">support@apirone.com</a></p>
                             </div>
                         </div>
-                        </div>
                     </div>
                 </form>
             </div>
+            <div class="card-footer text-muted">{{ text_apirone_survey }}</div>
         </div>
     </div>
 </div>
