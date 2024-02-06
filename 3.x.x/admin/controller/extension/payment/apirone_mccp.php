@@ -66,7 +66,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
                 $currency->address = $this->request->post['address'][$item->abbr];
                 $processing_fee = $this->request->post['payment_apirone_mccp_processing_fee'];
                 $address = ($currency->address) ?? null;
-                if ($processing_fee != $saved_processing_fee || $address != $saved_currencies[$item->abbr]->address) {
+                if ($processing_fee != $saved_processing_fee || $address != @$saved_currencies[$item->abbr]->address) {
                     $result = Apirone::setTransferAddress($account, $item->abbr, $address, $processing_fee);
                     if ($result == false) {
                         $currency->error = 1;
