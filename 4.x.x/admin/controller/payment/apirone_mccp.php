@@ -258,16 +258,23 @@ class ApironeMccp extends \Opencart\System\Engine\Controller
         $this->load->model('setting/setting');
 
         $data = array(
-            'payment_apirone_mccp_secret' => md5(time() . $this->session->data['user_token']),
             'payment_apirone_mccp_version' => PLUGIN_VERSION,
+            'payment_apirone_mccp_secret' => md5(time() . $this->session->data['user_token']),
+            'payment_apirone_mccp_merchantname' => '',
+            'payment_apirone_mccp_testcustomer' => '',
+            'payment_apirone_mccp_timeout' => '1800',
+            'payment_apirone_mccp_processing_fee' => 'percentage',
+            'payment_apirone_mccp_factor' => '1',
+            'payment_apirone_mccp_debug' => '0',
+            'payment_apirone_mccp_geo_zone_id' => '0',
+            'payment_apirone_mccp_status' => '0',
+            'payment_apirone_mccp_sort_order' => '0',
             'payment_apirone_mccp_invoice_created_status_id' => '1',
             'payment_apirone_mccp_invoice_paid_status_id' => '1',
             'payment_apirone_mccp_invoice_partpaid_status_id' => '1',
             'payment_apirone_mccp_invoice_overpaid_status_id' => '1',
             'payment_apirone_mccp_invoice_completed_status_id' => '5',
             'payment_apirone_mccp_invoice_expired_status_id' => '16',
-            'payment_apirone_mccp_timeout' => '1800',
-            'payment_apirone_mccp_sort_order' => '0',
         );
 
         $account = \ApironeApi\Apirone::accountCreate();

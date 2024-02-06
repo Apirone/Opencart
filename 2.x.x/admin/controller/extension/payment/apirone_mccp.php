@@ -234,18 +234,21 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         $data = array(
             'apirone_mccp_version' => PLUGIN_VERSION,
             'apirone_mccp_secret' => md5(time() . 'token=' . $this->session->data['token']),
+            'apirone_mccp_merchantname' => '',
+            'apirone_mccp_testcustomer' => '',
+            'apirone_mccp_timeout' => '1800',
+            'apirone_mccp_processing_fee' => 'percentage',
+            'apirone_mccp_factor' => '1',
+            'apirone_mccp_debug' => '0',
+            'apirone_mccp_geo_zone_id' => '0',
+            'apirone_mccp_status' => '0',
+            'apirone_mccp_sort_order' => '0',
             'apirone_mccp_invoice_created_status_id' => '1',
             'apirone_mccp_invoice_paid_status_id' => '1',
             'apirone_mccp_invoice_partpaid_status_id' => '1',
             'apirone_mccp_invoice_overpaid_status_id' => '1',
             'apirone_mccp_invoice_completed_status_id' => '5',
             'apirone_mccp_invoice_expired_status_id' => '16',
-            'apirone_mccp_timeout' => '1800',
-            'apirone_mccp_factor' => '1',
-            'apirone_mccp_processing_fee' => 'percentage',
-            'apirone_mccp_status' => '0',
-            'apirone_mccp_geo_zone_id' => '0',
-            'apirone_mccp_sort_order' => '0',
         );
 
         $account = Apirone::accountCreate();
