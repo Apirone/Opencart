@@ -9,6 +9,7 @@ use Apirone\API\Exceptions\MethodNotAllowedException;
 use ApironeApi\Apirone;
 
 use Apirone\SDK\Invoice;
+use Apirone\SDK\Service\InvoiceDb;
 use Apirone\SDK\Model\Settings;
 
 require_once(DIR_SYSTEM . 'library/apirone_api/Apirone.php');
@@ -310,33 +311,23 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         $data = array(
             'apirone_mccp_version' => PLUGIN_VERSION,
             'apirone_mccp_secret' => md5(time() . 'token=' . $this->session->data['token']),
-            'apirone_mccp_merchantname' => '',
             'apirone_mccp_testcustomer' => '',
-            'apirone_mccp_timeout' => '1800',
             'apirone_mccp_processing_fee' => 'percentage',
-            'apirone_mccp_factor' => '1',
-            'apirone_mccp_debug' => '0',
             'apirone_mccp_geo_zone_id' => '0',
             'apirone_mccp_status' => '0',
             'apirone_mccp_sort_order' => '0',
-            'apirone_mccp_invoice_created_status_id' => '1',
-            'apirone_mccp_invoice_paid_status_id' => '1',
-            'apirone_mccp_invoice_partpaid_status_id' => '1',
-            'apirone_mccp_invoice_overpaid_status_id' => '1',
-            'apirone_mccp_invoice_completed_status_id' => '5',
-            'apirone_mccp_invoice_expired_status_id' => '16',
         );
 
-        $account = Apirone::accountCreate();
+        $account = Settings::init()->createAccount();
 
         if($account) {
-            $data['apirone_mccp_account']  = serialize($account);
+            $data['apirone_mccp_account']  = $account->toJsonString();
         }
 
         $this->model_setting_setting->editSetting('apirone_mccp', $data);
 
-        $query = ApironeApi\Db::createInvoicesTableQuery(DB_PREFIX);
-        $this->model_extension_payment_apirone_mccp->install_invoices_table($query);
+        InvoiceDb::install(DB_PREFIX);
+        // TODO: it's really installs table to DB? or need to get a query and execute it?
     }
 
     public function uninstall()
