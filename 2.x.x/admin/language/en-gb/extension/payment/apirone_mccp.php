@@ -30,6 +30,7 @@ $_['text_account_not_exist'] = "Not exist";
 $_['tab_settings'] = 'Settings';
 $_['tab_currencies'] = 'Currencies';
 $_['tab_info'] = 'Tips & Info';
+$_['tab_log'] = 'Logs';
 
 // Entry
 $_['currency_activate_tooltip'] = 'Enter valid address to activate <b>%s</b> currency';
