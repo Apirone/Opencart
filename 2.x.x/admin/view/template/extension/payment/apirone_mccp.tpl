@@ -36,6 +36,7 @@
                     <li class="active"><a href="#tab-settings" data-toggle="tab"><i class="fa fa-cog"></i> <?php echo $tab_settings; ?></a></li>
                     <li><a href="#tab-currencies" data-toggle="tab"><i class="fa fa-bitcoin"></i> <?php echo $tab_currencies; ?></a></li>
                     <li><a href="#tab-info" data-toggle="tab"><i class="fa fa-info-circle"></i> <?php echo $tab_info; ?></a></li>
+                    <li><a href="#tab-log" data-toggle="tab"><i class="fa fa-info-circle"></i> <?php echo $tab_log; ?></a></li>
                 </ul>
                 <div class="tab-content">
                     <div class="tab-pane active" id="tab-settings">
@@ -183,6 +184,11 @@
                             <hr>
                             <p class="mb-0"><strong><?php echo $text_apirone_support; ?>:</strong> <a href="mailto:support@apirone.com">support@apirone.com</a></p>
                         </div>
+                    </div>
+                    <div class="tab-pane" id="tab-log">
+                        <textarea wrap="off" rows="15" readonly="" class="form-control">
+                            <?php echo $text_apirone_log; ?>
+                        </textarea>
                     </div>
                 </div>
             </form>

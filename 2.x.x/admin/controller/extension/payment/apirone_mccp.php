@@ -16,6 +16,7 @@ require_once(DIR_SYSTEM . 'library/apirone_api/Apirone.php');
 require_once(DIR_SYSTEM . 'library/apirone_vendor/autoload.php');
 
 define('PLUGIN_VERSION', '2.0.0');
+define('PLUGIN_LOG_FILE_NAME', 'apirone.log');
 
 class ControllerExtensionPaymentApironeMccp extends Controller
 {
@@ -29,25 +30,41 @@ class ControllerExtensionPaymentApironeMccp extends Controller
     }
 
     /**
-     * Initializes logging if debug is turned on
+     * Initializes logging
      * @since 2.0.0
      * @author Valery Yu <vvy1976@gmail.com>
+     * @internal
      */
     private function initLogging() {
-        if (!$this->config->get('apirone_mccp_debug')) {
-            return;
-        }
-        $openCartLogger = new \Log('apirone.log');
-
-        $logHandler = function($message) use ($openCartLogger) {
-            $openCartLogger->write($message);
-        };
         try {
+            $openCartLogger = new \Log(PLUGIN_LOG_FILE_NAME);
+
+            $logHandler = function($message) use ($openCartLogger) {
+                $openCartLogger->write($message);
+            };
             Invoice::logger($logHandler);
         }
         catch (Exception $e) {
             $this->log->write($e->getMessage());
         }
+    }
+
+    /**
+     * Reads plugin log for display in log aria
+     * @since 2.0.0
+     * @author Valery Yu <vvy1976@gmail.com>
+     * @internal
+     */
+    private function setDataLogField(&$data) {
+        $log_full_path = DIR_LOGS . PLUGIN_LOG_FILE_NAME;
+        try {
+            $log_content = \file_get_contents($log_full_path);
+        } catch (\Throwable $th) {
+            $log_content = $th->getMessage();
+        }
+        $data['text_apirone_log'] = $log_content === false
+            ? 'Can not read ' . $log_full_path
+            : $log_content;
     }
 
     /**
@@ -209,6 +226,8 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         $data['column_left'] = $this->load->controller('common/column_left');
         $data['footer'] = $this->load->controller('common/footer');
 
+        $this->setDataLogField($data);
+
         $this->response->setOutput($this->load->view('extension/payment/apirone_mccp', $data));
     }
 
@@ -232,13 +251,13 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             } catch (\Throwable $ignore) {}
         }
 
-        $account_json = Settings::init()->createAccount();
-        if ($account_json) {
+        $account = Settings::init()->createAccount();
+        if ($account) {
             $current = $this->model_setting_setting->getSetting('apirone_mccp');
-            $current['apirone_mccp_account'] = $account_json->toJsonString();
+            $current['apirone_mccp_account'] = $account->toJsonString();
 
             $this->model_setting_setting->editSetting('apirone_mccp', $current);
-            return $account_json;
+            return $account;
         }
 
         return false;
