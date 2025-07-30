@@ -1,10 +1,21 @@
 <?php
 
+use Apirone\API\Exceptions\RuntimeException;
+use Apirone\API\Exceptions\ValidationFailedException;
+use Apirone\API\Exceptions\UnauthorizedException;
+use Apirone\API\Exceptions\ForbiddenException;
+use Apirone\API\Exceptions\NotFoundException;
+use Apirone\API\Exceptions\MethodNotAllowedException;
 use ApironeApi\Apirone;
+
+use Apirone\SDK\Invoice;
+use Apirone\SDK\Model\Settings;
 
 require_once(DIR_SYSTEM . 'library/apirone_api/Apirone.php');
 
-define('PLUGIN_VERSION', '1.2.6');
+require_once(DIR_SYSTEM . 'library/apirone_vendor/autoload.php');
+
+define('PLUGIN_VERSION', '2.0.0');
 
 class ControllerExtensionPaymentApironeMccp extends Controller
 {
@@ -13,16 +24,36 @@ class ControllerExtensionPaymentApironeMccp extends Controller
     public function __construct($registry)
     {
         parent::__construct($registry);
-        $logger = new \Log('apirone.log');
-        $debug = (bool) $this->config->get('apirone_mccp_debug');
+
+        $this->initLogging();
+    }
+
+    /**
+     * Initializes logging if debug is turned on
+     * @since 2.0.0
+     * @author Valery Yu <vvy1976@gmail.com>
+     */
+    private function initLogging() {
+        if (!$this->config->get('apirone_mccp_debug')) {
+            return;
+        }
+        $openCartLogger = new \Log('apirone.log');
+
+        $logHandler = function($message) use ($openCartLogger) {
+            $openCartLogger->write($message);
+        };
         try {
-            Apirone::setLogger($logger, $debug);
+            Invoice::logger($logHandler);
         }
         catch (Exception $e) {
             $this->log->write($e->getMessage());
         }
     }
 
+    /**
+     * Loads main payment settings admin page
+     * @api
+     */
     public function index()
     {
         $this->update();
@@ -32,10 +63,9 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         $account = $this->getAccount();
         $secret = $this->config->get('apirone_mccp_secret');
 
-        $apirone_currencies = Apirone::currencyList();
+        $apirone_currencies = $account->currencies;
 
-        $apirone_mccp_currencies = $this->config->get('apirone_mccp_currencies');
-        $saved_currencies = ($apirone_mccp_currencies) ? unserialize($apirone_mccp_currencies) : '';
+        $saved_currencies = $apirone_currencies;
 
         $saved_processing_fee = $this->config->get('apirone_mccp_processing_fee');
 
@@ -89,23 +119,20 @@ class ControllerExtensionPaymentApironeMccp extends Controller
 
         // Set values into template vars
         $this->setValue($data, 'apirone_mccp_version');
-        $this->setValue($data, 'apirone_mccp_timeout', true);
-        $this->setValue($data, 'apirone_mccp_invoice_created_status_id');
-        $this->setValue($data, 'apirone_mccp_invoice_paid_status_id');
-        $this->setValue($data, 'apirone_mccp_invoice_partpaid_status_id');
-        $this->setValue($data, 'apirone_mccp_invoice_overpaid_status_id');
-        $this->setValue($data, 'apirone_mccp_invoice_completed_status_id');
-        $this->setValue($data, 'apirone_mccp_invoice_expired_status_id');
+        // $this->setValue($data, 'apirone_mccp_timeout', true);
+        $data['apirone_mccp_timeout'] = $account->timeout;
         $this->setValue($data, 'apirone_mccp_status');
         $this->setValue($data, 'apirone_mccp_geo_zone_id');
-        $this->setValue($data, 'apirone_mccp_status');
         $this->setValue($data, 'apirone_mccp_sort_order');
-        $this->setValue($data, 'apirone_mccp_merchantname');
+        // $this->setValue($data, 'apirone_mccp_merchantname');
+        $data['apirone_mccp_merchantname'] = $account->merchant;
         $this->setValue($data, 'apirone_mccp_secret');
         $this->setValue($data, 'apirone_mccp_testcustomer');
         $this->setValue($data, 'apirone_mccp_processing_fee');
-        $this->setValue($data, 'apirone_mccp_factor', true);
-        $this->setValue($data, 'apirone_mccp_debug');
+        // $this->setValue($data, 'apirone_mccp_factor', true);
+        $data['apirone_mccp_factor'] = $account->factor;
+        // $this->setValue($data, 'apirone_mccp_debug');
+        $data['apirone_mccp_debug'] = $account->debug;
 
         if ($active_currencies == 0 || $data['apirone_mccp_timeout'] <= 0 || $data['apirone_mccp_factor'] <= 0 || count($currencies) == 0) {
             $errors_count++;
@@ -118,17 +145,9 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         if ($this->request->server['REQUEST_METHOD'] == 'POST') {
             if ($errors_count == 0) {
                 $_settings['apirone_mccp_version'] = PLUGIN_VERSION;
-                $_settings['apirone_mccp_account'] = serialize($account);
+                $_settings['apirone_mccp_account'] = $account->toJsonString();
                 $_settings['apirone_mccp_secret'] = $secret;
-                $_settings['apirone_mccp_currencies'] = serialize($currencies);
-
                 $_settings['apirone_mccp_timeout'] = $this->request->post['apirone_mccp_timeout'];
-                $_settings['apirone_mccp_invoice_created_status_id'] = $this->request->post['apirone_mccp_invoice_created_status_id'];
-                $_settings['apirone_mccp_invoice_paid_status_id'] = $this->request->post['apirone_mccp_invoice_paid_status_id'];
-                $_settings['apirone_mccp_invoice_partpaid_status_id'] = $this->request->post['apirone_mccp_invoice_partpaid_status_id'];
-                $_settings['apirone_mccp_invoice_overpaid_status_id'] = $this->request->post['apirone_mccp_invoice_overpaid_status_id'];
-                $_settings['apirone_mccp_invoice_completed_status_id'] = $this->request->post['apirone_mccp_invoice_completed_status_id'];
-                $_settings['apirone_mccp_invoice_expired_status_id'] = $this->request->post['apirone_mccp_invoice_expired_status_id'];
                 $_settings['apirone_mccp_geo_zone_id'] = $this->request->post['apirone_mccp_geo_zone_id'];
                 $_settings['apirone_mccp_status'] = $this->request->post['apirone_mccp_status'];
                 $_settings['apirone_mccp_sort_order'] = $this->request->post['apirone_mccp_sort_order'];
@@ -193,20 +212,33 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         $this->response->setOutput($this->load->view('extension/payment/apirone_mccp', $data));
     }
 
+    /**
+     * Gets existing or create new account settings
+     * @return Settings|false 
+     * @throws ReflectionException 
+     * @throws RuntimeException 
+     * @throws ValidationFailedException 
+     * @throws UnauthorizedException 
+     * @throws ForbiddenException 
+     * @throws NotFoundException 
+     * @throws MethodNotAllowedException 
+     */
     protected function getAccount() 
     {
-        $account = $this->config->get('apirone_mccp_account');
-        if($account) {
-            return unserialize($account);
+        $account_json = $this->config->get('apirone_mccp_account');
+        if($account_json) {
+            try {
+                return Settings::fromJson($account_json);
+            } catch (\Throwable $ignore) {}
         }
 
-        $account = Apirone::accountCreate();
-        if ($account) {
+        $account_json = Settings::init()->createAccount();
+        if ($account_json) {
             $current = $this->model_setting_setting->getSetting('apirone_mccp');
-            $current['apirone_mccp_account'] = serialize($account);
+            $current['apirone_mccp_account'] = $account_json->toJsonString();
 
             $this->model_setting_setting->editSetting('apirone_mccp', $current);
-            return $account;
+            return $account_json;
         }
 
         return false;
@@ -292,6 +324,9 @@ class ControllerExtensionPaymentApironeMccp extends Controller
     {
     }
 
+    /**
+     * Updates database structure, if version changed
+     */
     private function update()
     {
         $this->load->model('setting/setting');
@@ -332,10 +367,15 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         if ($version == '1.2.5') {
             $version = $this->upd_version('1.2.6');
         }
-
-        return;
+        if ($version == '1.2.6') {
+            $version = $this->upd_1_2_6__2_0_0();
+        }
     }
 
+    /**
+     * Updates version only in database
+     * @internal
+     */
     private function upd_version($version)
     {
         $current = $this->model_setting_setting->getSetting('apirone_mccp');
@@ -346,6 +386,46 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         return $version;
     }
 
+    /**
+     * Updates database version from 1 to 2
+     * @internal
+     */
+    private function upd_1_2_6__2_0_0()
+    {
+        $data = $this->model_setting_setting->getSetting('apirone_mccp');
+
+        $data['apirone_mccp_version'] = '2.0.0';
+
+        $account_serialized = $data['apirone_mccp_account'];
+        if ($account_serialized) {
+            $account_old = unserialize($account_serialized);
+
+            $data['apirone_mccp_account'] = Settings::
+                fromExistingAccount($account_old->account, $account_old->{'transfer-key'})
+                ->toJsonString();
+        }
+
+        unset($data['apirone_mccp_currencies']);
+        unset($data['apirone_mccp_invoice_created_status_id']);
+        unset($data['apirone_mccp_invoice_paid_status_id']);
+        unset($data['apirone_mccp_invoice_partpaid_status_id']);
+        unset($data['apirone_mccp_invoice_overpaid_status_id']);
+        unset($data['apirone_mccp_invoice_completed_status_id']);
+        unset($data['apirone_mccp_invoice_expired_status_id']);
+        unset($data['apirone_mccp_merchantname']);
+        unset($data['apirone_mccp_timeout']);
+        unset($data['apirone_mccp_factor']);
+        unset($data['apirone_mccp_debug']);
+
+        $this->model_setting_setting->editSetting('apirone_mccp', $data);
+
+        return $data['apirone_mccp_version'];
+    }
+
+    /**
+     * Updates database from very old version
+     * @internal
+     */
     private function upd_1_1_4__1_2_0()
     {
         $account = unserialize($this->config->get('apirone_mccp_account'));
@@ -363,6 +443,10 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         return $this->upd_version('1.2.0');
     }
 
+    /**
+     * Updates database from very very old version
+     * @internal
+     */
     private function upd_1_0_1__1_1_0()
     {
         $current = $this->model_setting_setting->getSetting('apirone_mccp');
