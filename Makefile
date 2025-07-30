@@ -12,6 +12,7 @@ v4: .v4
 
 	mkdir -p "$(PWD)/build/upload/system/library"
 	cp -r "$(PWD)/apirone_api" "$(PWD)/build/upload/system/library" 
+	cp -r "$(PWD)/vendor/" "$(PWD)/build/upload/system/library/apirone_vendor/"
 
 	$(eval VER := $(subst .v,,$@))
 	$(eval ARCPATH := "$(PWD)/apirone-crypto-payments.oc$(VER).$(TAG).ocmod.zip")
