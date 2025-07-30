@@ -35,7 +35,6 @@
                 <ul class="nav nav-tabs">
                     <li class="active"><a href="#tab-settings" data-toggle="tab"><i class="fa fa-cog"></i> <?php echo $tab_settings; ?></a></li>
                     <li><a href="#tab-currencies" data-toggle="tab"><i class="fa fa-bitcoin"></i> <?php echo $tab_currencies; ?></a></li>
-                    <li><a href="#tab-statuses" data-toggle="tab"><i class="fa fa-check"></i> <?php echo $tab_statuses; ?></a></li>
                     <li><a href="#tab-info" data-toggle="tab"><i class="fa fa-info-circle"></i> <?php echo $tab_info; ?></a></li>
                 </ul>
                 <div class="tab-content">
@@ -159,92 +158,6 @@
                                 </div>
                             </div>
                         <?php endforeach; ?>
-                    </div>
-                    <div class="tab-pane" id="tab-statuses">
-                        <div class="form-group">
-                            <label class="col-sm-2 control-label" for="input-invoice-created"><?php echo $entry_invoice_created; ?></label>
-                            <div class="col-sm-10">
-                                <select name="apirone_mccp_invoice_created_status_id" id="input-invoice-created" class="form-control">
-                                    <?php foreach ($order_statuses as $order_status) : ?>
-                                    <?php if ($order_status['order_status_id'] == $apirone_mccp_invoice_created_status_id) :?>
-                                    <option value="<?php echo $order_status['order_status_id']; ?>" selected="selected"><?php echo $order_status['name']; ?></option>
-                                    <?php else : ?>
-                                    <option value="<?php echo $order_status['order_status_id']; ?>"><?php echo $order_status['name']; ?></option>
-                                    <?php endif; ?>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-sm-2 control-label" for="input-invoice-paid"><?php echo $entry_invoice_paid; ?></label>
-                            <div class="col-sm-10">
-                                <select name="apirone_mccp_invoice_paid_status_id" id="input-invoice-paid" class="form-control">
-                                    <?php foreach ($order_statuses as $order_status) : ?>
-                                    <?php if ($order_status['order_status_id'] == $apirone_mccp_invoice_paid_status_id) :?>
-                                    <option value="<?php echo $order_status['order_status_id']; ?>" selected="selected"><?php echo $order_status['name']; ?></option>
-                                    <?php else : ?>
-                                    <option value="<?php echo $order_status['order_status_id']; ?>"><?php echo $order_status['name']; ?></option>
-                                    <?php endif; ?>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-sm-2 control-label" for="input-invoice-partpaid"><?php echo $entry_invoice_partpaid; ?></label>
-                            <div class="col-sm-10">
-                                <select name="apirone_mccp_invoice_partpaid_status_id" id="input-invoice-partpaid" class="form-control">
-                                    <?php foreach ($order_statuses as $order_status) : ?>
-                                    <?php if ($order_status['order_status_id'] == $apirone_mccp_invoice_partpaid_status_id) :?>
-                                    <option value="<?php echo $order_status['order_status_id']; ?>" selected="selected"><?php echo $order_status['name']; ?></option>
-                                    <?php else : ?>
-                                    <option value="<?php echo $order_status['order_status_id']; ?>"><?php echo $order_status['name']; ?></option>
-                                    <?php endif; ?>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-sm-2 control-label" for="input-invoice-overpaid"><?php echo $entry_invoice_overpaid; ?></label>
-                            <div class="col-sm-10">
-                                <select name="apirone_mccp_invoice_overpaid_status_id" id="input-invoice-overpaid" class="form-control">
-                                    <?php foreach ($order_statuses as $order_status) : ?>
-                                    <?php if ($order_status['order_status_id'] == $apirone_mccp_invoice_overpaid_status_id) :?>
-                                    <option value="<?php echo $order_status['order_status_id']; ?>" selected="selected"><?php echo $order_status['name']; ?></option>
-                                    <?php else : ?>
-                                    <option value="<?php echo $order_status['order_status_id']; ?>"><?php echo $order_status['name']; ?></option>
-                                    <?php endif; ?>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-sm-2 control-label" for="input-invoice-completed"><?php echo $entry_invoice_completed; ?></label>
-                            <div class="col-sm-10">
-                                <select name="apirone_mccp_invoice_completed_status_id" id="input-invoice-completed" class="form-control">
-                                    <?php foreach ($order_statuses as $order_status) : ?>
-                                    <?php if ($order_status['order_status_id'] == $apirone_mccp_invoice_completed_status_id) :?>
-                                    <option value="<?php echo $order_status['order_status_id']; ?>" selected="selected"><?php echo $order_status['name']; ?></option>
-                                    <?php else : ?>
-                                    <option value="<?php echo $order_status['order_status_id']; ?>"><?php echo $order_status['name']; ?></option>
-                                    <?php endif; ?>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-sm-2 control-label" for="input-invoice-expired"><?php echo $entry_invoice_expired; ?></label>
-                            <div class="col-sm-10">
-                                <select name="apirone_mccp_invoice_expired_status_id" id="input-invoice-expired" class="form-control">
-                                    <?php foreach ($order_statuses as $order_status) : ?>
-                                    <?php if ($order_status['order_status_id'] == $apirone_mccp_invoice_expired_status_id) :?>
-                                    <option value="<?php echo $order_status['order_status_id']; ?>" selected="selected"><?php echo $order_status['name']; ?></option>
-                                    <?php else : ?>
-                                    <option value="<?php echo $order_status['order_status_id']; ?>"><?php echo $order_status['name']; ?></option>
-                                    <?php endif; ?>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                        </div>
                     </div>
                     <div class="tab-pane" id="tab-info">
                         <div style="padding: 1rem 0; margin-bottom: 1rem">

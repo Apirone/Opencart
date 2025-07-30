@@ -29,7 +29,6 @@ $_['text_account_not_exist'] = "Not exist";
 // Tabs
 $_['tab_settings'] = 'Settings';
 $_['tab_currencies'] = 'Currencies';
-$_['tab_statuses'] = 'Statuses';
 $_['tab_info'] = 'Tips & Info';
 
 // Entry
