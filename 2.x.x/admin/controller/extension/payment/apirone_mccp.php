@@ -9,7 +9,7 @@ use Apirone\API\Exceptions\MethodNotAllowedException;
 use ApironeApi\Apirone;
 
 use Apirone\SDK\Invoice;
-use Apirone\SDK\Service\InvoiceDb;
+use Apirone\SDK\Service\InvoiceQuery;
 use Apirone\SDK\Model\Settings;
 
 require_once(DIR_SYSTEM . 'library/apirone_api/Apirone.php');
@@ -74,7 +74,9 @@ class ControllerExtensionPaymentApironeMccp extends Controller
      */
     public function index()
     {
-        $this->update();
+        if ($this->update() === false) {
+            return;
+        }
         $this->load->language('extension/payment/apirone_mccp');
         $this->load->model('extension/payment/apirone_mccp');
 
@@ -301,10 +303,20 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         }
     }
 
-    // Install / Uninstall plugin
+    /**
+     * Install plugin:
+     * create account and settings,
+     * store settings to DB
+     * @throws RuntimeException 
+     * @throws ValidationFailedException 
+     * @throws UnauthorizedException 
+     * @throws ForbiddenException 
+     * @throws NotFoundException 
+     * @throws MethodNotAllowedException 
+     * @throws ReflectionException 
+     */
     public function install()
     {
-
         $this->load->model('extension/payment/apirone_mccp');
         $this->load->model('setting/setting');
 
@@ -319,28 +331,49 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         );
 
         $account = Settings::init()->createAccount();
-
-        if($account) {
-            $data['apirone_mccp_account']  = $account->toJsonString();
+        if(!$account) {
+            return false;
         }
+        $data['apirone_mccp_account']  = $account->toJsonString();
 
         $this->model_setting_setting->editSetting('apirone_mccp', $data);
 
-        InvoiceDb::install(DB_PREFIX);
-        // TODO: it's really installs table to DB? or need to get a query and execute it?
-    }
-
-    public function uninstall()
-    {
+        $this->model_extension_payment_apirone_mccp->install_invoices_table(
+            InvoiceQuery::createInvoicesTable(DB_PREFIX));
     }
 
     /**
-     * Updates database structure, if version changed
+     * Uninstall plugin
+     * @api
+     */
+    public function uninstall()
+    {
+        // do nothing
+        // OpenCart automatically removes plugin settings
+        // all invoices data and logs remains in DB for history
+    }
+
+    /**
+     * Updates database structure, if version changed.
+     * Clears all settings if no account data stored.
+     * @internal
      */
     private function update()
     {
         $this->load->model('setting/setting');
-        $version = $this->model_setting_setting->getSettingValue('apirone_mccp_version');
+        $_settings = $this->model_setting_setting->getSetting('apirone_mccp');
+        if (!(
+            isset($_settings)
+            && is_array($_settings)
+            && count($_settings)
+        )) {
+            return false;
+        }
+        if (!$_settings['apirone_mccp_account']) {
+            $this->model_setting_setting->editSetting('apirone_mccp', []);
+            return false;
+        }
+        $version = $_settings['apirone_mccp_version'];
         if ($version == '') {
             $version = $this->upd_1_0_1__1_1_0();
         }
