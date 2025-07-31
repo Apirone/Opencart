@@ -74,6 +74,8 @@ class ControllerExtensionPaymentApironeMccp extends Controller
      */
     public function index()
     {
+		$this->response->setOutput('bbbbbbbbbbbb');
+		return;
         if ($this->update() === false) {
             return;
         }
@@ -268,6 +270,10 @@ class ControllerExtensionPaymentApironeMccp extends Controller
 
     protected function validate()
     {
+        if (!$this->user->hasPermission('modify', 'extension/payment/apirone_mccp')) {
+            $this->error['warning'] = $this->language->get('error_permission');
+        }
+        return !$this->error;
     }
 
     protected function getBreadcrumbsAndActions(&$data)
@@ -293,11 +299,10 @@ class ControllerExtensionPaymentApironeMccp extends Controller
 
     protected function setValue(&$data, $value, $required = false)
     {
-        if (isset($this->request->post[$value])) {
-            $data[$value] = $this->request->post[$value];
-        } else {
-            $data[$value] = $this->config->get($value);
-        }
+        $data[$value] = isset($this->request->post[$value])
+            ? $this->request->post[$value]
+            : $this->config->get($value);
+
         if ($required && empty($data[$value])) {
             $this->error[$value] = $this->language->get(str_replace('payment', 'error', $value));
         }
@@ -325,6 +330,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             'apirone_mccp_secret' => md5(time() . 'token=' . $this->session->data['token']),
             'apirone_mccp_testcustomer' => '',
             'apirone_mccp_processing_fee' => 'percentage',
+
             'apirone_mccp_geo_zone_id' => '0',
             'apirone_mccp_status' => '0',
             'apirone_mccp_sort_order' => '0',
