@@ -452,7 +452,8 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             $data['apirone_mccp_account'] = Settings::fromExistingAccount(
                 $account_old->account,
                 $account_old->{'transfer-key'}
-            )->toJsonString();
+            )
+            ->toJsonString();
         }
 
         unset($data['apirone_mccp_currencies']);
