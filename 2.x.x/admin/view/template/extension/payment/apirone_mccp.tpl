@@ -26,6 +26,7 @@
             <button type="button" class="close" data-dismiss="alert">&times;</button>
         </div>
         <?php endif; ?>
+
         <div class="panel panel-default">
             <div class="panel-heading">
                 <h3 class="panel-title"><i class="fa fa-pencil"></i> <?php echo $text_edit; ?></h3>
@@ -33,12 +34,15 @@
             <div class="panel-body">
                 <form action="<?php echo $action; ?>" method="post" id="form-apirone" class="form-horizontal">
                 <ul class="nav nav-tabs">
+                    <?php if (isset($settings_loaded) && $settings_loaded) : ?>
                     <li class="active"><a href="#tab-settings" data-toggle="tab"><i class="fa fa-cog"></i> <?php echo $tab_settings; ?></a></li>
                     <li><a href="#tab-currencies" data-toggle="tab"><i class="fa fa-bitcoin"></i> <?php echo $tab_currencies; ?></a></li>
+                    <?php endif; ?>
                     <li><a href="#tab-info" data-toggle="tab"><i class="fa fa-info-circle"></i> <?php echo $tab_info; ?></a></li>
                     <li><a href="#tab-log" data-toggle="tab"><i class="fa fa-info-circle"></i> <?php echo $tab_log; ?></a></li>
                 </ul>
                 <div class="tab-content">
+                    <?php if (isset($settings_loaded) && $settings_loaded) : ?>
                     <div class="tab-pane active" id="tab-settings">
                         <div class="form-group">
                             <label class="col-sm-2 control-label" for="input-sort-order"><?php echo $entry_merchantname; ?></label>
@@ -141,25 +145,38 @@
                         </div>
                     </div>
                     <div class="tab-pane" id="tab-currencies">
-                        <?php foreach ($currencies as $currency) : ?>
+                        <?php foreach ($networks as $network => $network_dto) : ?>
                             <div class="form-group">
-                                <label class="col-sm-2 control-label" for="input-merchant">
-                                    <span data-toggle="tooltip" data-original-title="<?php echo $currency->currency_tooltip; ?>" syle="padding:10px 0;">
-                                        <img src="<?php echo $currency->icon; ?>" width="24"<?php echo $currency->abbr == 'tbtc' ? ' style="filter: grayscale(1)"' : '';  ?>>&nbsp;<?php echo $currency->name; ?>
+                                <label class="col-sm-2 control-label" for="address_<?php echo $network; ?>">
+                                    <span data-toggle="tooltip" data-original-title="<?php echo $network_dto->tooltip; ?>" syle="padding:10px 0;">
+                                        <img src="<?php echo $network_dto->icon; ?>" width="24"<?php echo $network_dto->testnet ? ' style="filter: grayscale(1)"' : '';  ?>>&nbsp;<?php echo $network_dto->name; ?>
                                     </span>
                                 </label>
                                 <div class="col-sm-10">
-                                    <input type="text" name="address[<?php echo $currency->abbr; ?>]" value="<?php echo $currency->address; ?>" id="address_<?php echo $currency->abbr; ?>" class="form-control" />
-                                    <?php if (property_exists($currency, 'error') && $currency->error) : ?>
+                                    <input type="text" name="address[<?php echo $network; ?>]" value="<?php echo $network_dto->address; ?>" id="address_<?php echo $network; ?>" class="form-control" />
+                                    <?php if (property_exists($network_dto, 'error') && $network_dto->error) : ?>
                                     <div class=" text-danger"><?php echo $currency_address_incorrect; ?></div>
                                     <?php endif ?>
-                                    <?php if ($currency->testnet) : ?>
-                                    <label class="control-label" style="color: inherit !important;"><span data-toggle="tooltip" data-original-title="<?php echo $text_test_currency_tooltip; ?>"><?php echo $text_test_currency; ?></span></label>
+                                    <?php if ($network_dto->testnet) : ?>
+                                    <label class="control-label" style="color: inherit !important;"><span data-toggle="tooltip" data-original-title="<?php echo $network_dto->test_tooltip; ?>"><?php echo $text_test_currency; ?></span></label>
                                     <?php endif; ?>
                                 </div>
+                                <?php if (property_exists($network_dto, 'tokens')) : ?>
+                                <?php foreach ($network_dto->tokens as $abbr => $token_dto) : ?>
+                                <div class="col-sm-10">
+                                    <input type="checkbox" name="visible[<?php echo $abbr; ?>]" checked="<?php echo $token_dto->state; ?>" value="<?php echo $token_dto->state; ?>" id="state_<?php echo $token_dto->icon; ?>" class="form-control" />
+                                    <label class="col-sm-2 control-label" for="state_<?php echo $token_dto->icon; ?>">
+                                        <span data-toggle="tooltip" data-original-title="<?php echo $token_dto->tooltip; ?>" syle="padding:10px 0;">
+                                            <img src="<?php echo $token_dto->icon; ?>" width="24">&nbsp;<?php echo $token_dto->name; ?>
+                                        </span>
+                                    </label>
+                                </div>
+                                <?php endforeach; ?>
+                                <?php endif ?>
                             </div>
                         <?php endforeach; ?>
                     </div>
+                    <?php endif; ?>
                     <div class="tab-pane" id="tab-info">
                         <div style="padding: 1rem 0; margin-bottom: 1rem">
                             <h4><?php echo $heading_testnet_hint; ?></h4>

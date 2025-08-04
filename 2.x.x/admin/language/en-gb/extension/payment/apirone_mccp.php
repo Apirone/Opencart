@@ -35,9 +35,12 @@ $_['tab_log'] = 'Logs';
 // Entry
 $_['currency_activate_tooltip'] = 'Enter valid address to activate <b>%s</b> currency';
 $_['currency_deactivate_tooltip'] = 'Remove address to deactivate <b>%s</b> currency';
+$_['currency_deactivate_tooltip'] = 'Remove address to deactivate <b>%s</b> currency';
 $_['currency_address_incorrect'] = 'Incorrect address. Check address and try again.';
+$_['token_tooltip'] = 'Show/hide <b>%s</b> from currency selector';
 
 $_['entry_currency'] = 'Currency';
+$_['entry_network_name'] = '%s Blockchain';
 $_['entry_invoice_created'] = 'Invoice Created';
 $_['entry_invoice_paid'] = 'Invoice Paid';
 $_['entry_invoice_partpaid'] = 'Invoice Partpaid';
@@ -61,8 +64,11 @@ $_['entry_testcustomer_placeholder'] = 'example.customer@example.com';
 
 // Warning
 // Error
+$_['error_update'] = 'Can\'t update plugin DB.';
+$_['error_service_not_available'] = 'Can\'t get plugin settings. Service unavailable or DB is corrupted. Please, try later.';
 $_['error_warning'] = 'Warning: Please check the form carefully for errors!';
-$_['error_service_not_available'] = 'Can\'t get list of currencies. Service unavailable. Please, try later.';
+$_['error_currency_save'] = '<b>%s</b> has error: %s';
+$_['error_cant_get_currencies'] = 'Can\'t get list of currencies. Service unavailable. Please, try later.';
 $_['error_empty_currencies'] = 'At least one of the addresses is required.';
 $_['error_permission'] = 'Warning: You do not have permission to modify payment Apirone!';
 $_['error_apirone_mccp_timeout'] = 'The required field. Please, specify value in seconds.';
