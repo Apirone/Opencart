@@ -90,7 +90,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             return;
         }
         $account = $_settings->account;
-        $saved_processing_fee = $_settings->getMeta('processing-fee');
+        $saved_processing_fee = $_settings->meta('processing-fee');
         $currenciesMapByNetworks = $this->getCurrenciesMapByNetworks($_settings);
 
         $errors_count = 0;
@@ -105,7 +105,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         if ($this->request->server['REQUEST_METHOD'] == 'POST') {
             $processing_fee = $this->request->post['apirone_mccp_processing_fee'];
             if ($processing_fee != $saved_processing_fee) {
-                $_settings->addMeta('processing-fee', $processing_fee);
+                $_settings->meta('processing-fee', $processing_fee);
                 $currencies_update_need = true;
             }
             foreach ($currenciesMapByNetworks as $network => $network_currencies) {
@@ -308,7 +308,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
      */
     protected function getNetworkTokenVisibility(&$_settings, $abbr)
     {
-        return !!$_settings->getMeta($abbr);
+        return !!$_settings->meta($abbr);
     }
 
     /**
@@ -321,10 +321,10 @@ class ControllerExtensionPaymentApironeMccp extends Controller
     protected function setNetworkTokenVisibility(&$_settings, $abbr, $value)
     {
         if ($value) {
-            $_settings->addMeta($abbr, 'on');
+            $_settings->meta($abbr, 'on');
         }
         else {
-            $_settings->deleteMeta($abbr);
+            $_settings->meta($abbr, null);
         }
     }
 
@@ -434,7 +434,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         $data[$key] = $value = $this->request->post[$key] ?? (
             $from_config
                 ? $this->config->get($key)
-                : $_settings->getMeta($key_suffix)
+                : $_settings->meta($key_suffix)
         );
         if ($required && empty($value)) {
             $this->error[$key] = $this->language->get('error_' . $key);
@@ -460,15 +460,15 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             return;
         }
         $_settings
-            ->addMeta('version', PLUGIN_VERSION)
-            ->addMeta('secret', md5(time() . 'token=' . $this->session->data['token']))
-            ->addMeta('merchant', '')
-            ->addMeta('testcustomer', '')
-            ->addMeta('timeout', 1800)
-            ->addMeta('processing-fee', 'percentage')
-            ->addMeta('factor', 1)
-            ->addMeta('logo', true)
-            ->addMeta('debug', false);
+            ->meta('version', PLUGIN_VERSION)
+            ->meta('secret', md5(time() . 'token=' . $this->session->data['token']))
+            ->meta('merchant', '')
+            ->meta('testcustomer', '')
+            ->meta('timeout', 1800)
+            ->meta('processing-fee', 'percentage')
+            ->meta('factor', 1)
+            ->meta('logo', true)
+            ->meta('debug', false);
 
         $this->setDefaultNetworksTokensVisibility($_settings);
 
@@ -529,7 +529,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         }
         else {
             $_settings = Settings::fromJson($_settings_json);
-            $version = $_settings->getMeta('version');
+            $version = $_settings->meta('version');
             if (!$version) {
                 // no version in settings meta, nothing to update
                 trigger_error('No any plugin version in settings, set to current', E_USER_WARNING);
@@ -603,7 +603,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         }
         else {
             $_settings = Settings::fromJson($plugin_data['apirone_mccp_settings']);
-            $_settings->addMeta('version', $version);
+            $_settings->meta('version', $version);
             $plugin_data['apirone_mccp_settings'] = $_settings->toJsonString();
         }
 
@@ -634,15 +634,15 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             : Settings::init()->createAccount();
 
         $_settings
-            ->addMeta('version', $version)
-            ->addMeta('secret', $plugin_data['apirone_mccp_secret'])
-            ->addMeta('merchant', $plugin_data['apirone_mccp_merchantname'])
-            ->addMeta('testcustomer', $plugin_data['apirone_mccp_testcustomer'])
-            ->addMeta('timeout', intval($plugin_data['apirone_mccp_timeout']))
-            ->addMeta('processing-fee', $plugin_data['apirone_mccp_processing_fee'])
-            ->addMeta('factor', intval($plugin_data['apirone_mccp_factor']))
-            ->addMeta('logo', true)
-            ->addMeta('debug', !!$plugin_data['apirone_mccp_debug']);
+            ->meta('version', $version)
+            ->meta('secret', $plugin_data['apirone_mccp_secret'])
+            ->meta('merchant', $plugin_data['apirone_mccp_merchantname'])
+            ->meta('testcustomer', $plugin_data['apirone_mccp_testcustomer'])
+            ->meta('timeout', intval($plugin_data['apirone_mccp_timeout']))
+            ->meta('processing-fee', $plugin_data['apirone_mccp_processing_fee'])
+            ->meta('factor', intval($plugin_data['apirone_mccp_factor']))
+            ->meta('logo', true)
+            ->meta('debug', !!$plugin_data['apirone_mccp_debug']);
 
         $this->setDefaultNetworksTokensVisibility($_settings);
 
