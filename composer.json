@@ -2,7 +2,7 @@
     "name": "apirone/opencart",
     "description": "Opencart payment gateway",
     "require": {
-        "apirone/apirone-sdk-php": "^1.2"
+        "apirone/apirone-sdk-php": "^2"
     },
     "license": "MIT",
     "authors": [

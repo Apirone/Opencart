@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e0431e98759ae117387806657d3a7faa",
+    "content-hash": "e2383f4cd35527b6d95fd154a8cd06a4",
     "packages": [
         {
             "name": "apirone/apirone-api-php",
@@ -62,16 +62,16 @@
         },
         {
             "name": "apirone/apirone-sdk-php",
-            "version": "1.2.6",
+            "version": "2.0-rc.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Apirone/apirone-sdk-php.git",
-                "reference": "a12bdf761cbfcd7c453a748a2abfce9564fe8aef"
+                "reference": "663cb90cea2fe706788aece23707109208f416be"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Apirone/apirone-sdk-php/zipball/a12bdf761cbfcd7c453a748a2abfce9564fe8aef",
-                "reference": "a12bdf761cbfcd7c453a748a2abfce9564fe8aef",
+                "url": "https://api.github.com/repos/Apirone/apirone-sdk-php/zipball/663cb90cea2fe706788aece23707109208f416be",
+                "reference": "663cb90cea2fe706788aece23707109208f416be",
                 "shasum": ""
             },
             "require": {
@@ -110,9 +110,9 @@
             ],
             "support": {
                 "issues": "https://github.com/Apirone/apirone-sdk-php/issues",
-                "source": "https://github.com/Apirone/apirone-sdk-php/tree/1.2.6"
+                "source": "https://github.com/Apirone/apirone-sdk-php/tree/2.0-rc.1"
             },
-            "time": "2025-07-01T10:01:17+00:00"
+            "time": "2025-08-26T12:31:42+00:00"
         },
         {
             "name": "apirone/php-qr-code",
@@ -158,10 +158,10 @@
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "RC",
-    "stability-flags": [],
+    "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": [],
-    "platform-dev": [],
+    "platform": {},
+    "platform-dev": {},
     "plugin-api-version": "2.6.0"
 }
