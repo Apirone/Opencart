@@ -48,6 +48,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             $logHandler = function($message) use ($openCartLogger) {
                 $openCartLogger->write($message);
             };
+            // TODO: как заставить логгер реагировать на настройку debug?
             Invoice::logger($logHandler);
         }
         catch (Exception $e) {
@@ -70,7 +71,8 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         try {
             $_settings = $this->getSettings();
             $data['settings_loaded'] = true;
-        } catch (\Throwable $ignore) {
+        }
+        catch (\Throwable $ignore) {
             $this->error['warning'] = $data['error'] = $this->language->get('error_service_not_available');
             $this->setCommonPageData($data);
             return;
@@ -177,20 +179,19 @@ class ControllerExtensionPaymentApironeMccp extends Controller
                 }
                 // Payment timeout
                 $timeout = $data['apirone_mccp_timeout'];
-                if($timeout === 0 || $timeout < 0) {
+                if ($timeout === 0 || $timeout < 0) {
                     $this->error['apirone_mccp_timeout'] = $this->language->get('error_apirone_mccp_timeout_positive');
                 }
-                else if(empty($timeout)) {
+                else if (empty($timeout)) {
                     $this->error['apirone_mccp_timeout'] = $this->language->get('error_apirone_mccp_timeout');
                 }
                 // Invalid payment adjustment factor
                 $factor = $data['apirone_mccp_factor'];
-                if($factor <= 0 || empty($factor)) {
+                if ($factor <= 0 || empty($factor)) {
                     $this->error['apirone_mccp_factor'] = $this->language->get('error_apirone_mccp_factor');
                 }
             }
             else {
-                $this->pa($this->request->post['apirone_mccp_merchant']);
                 // Save settings if post & no errors
                 $plugin_data['apirone_mccp_settings'] = $_settings
                     ->merchant($this->trimString($this->request->post['apirone_mccp_merchant']))

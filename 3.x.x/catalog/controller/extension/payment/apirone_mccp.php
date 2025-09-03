@@ -12,6 +12,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
     public function __construct($registry)
     {
         parent::__construct($registry);
+        $this->pa('construct');
         $logger = new \Log('apirone.log');
         $debug = (bool) $this->config->get('payment_apirone_mccp_debug');
         try {
@@ -175,5 +176,20 @@ class ControllerExtensionPaymentApironeMccp extends Controller
 
         $this->response->setOutput($this->load->view('extension/payment/apirone_mccp_invoice', $data));
         return;
+    }
+
+    private function pa($mixed, $title = false)
+    {
+        if ($title) {
+            echo $title . ':';
+        }
+        echo '<pre>';
+        if (gettype($mixed) == 'boolean') {
+            print_r($mixed ? 'true' : 'false');
+        }
+        else {
+            print_r(!is_null($mixed) ? $mixed : 'NULL');
+        }
+        echo '</pre>';
     }
 }
