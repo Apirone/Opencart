@@ -84,7 +84,11 @@ class ControllerExtensionPaymentApironeMccp extends Controller
 
             $order = $this->model_checkout_order->getOrder($this->session->data['order_id']);
 
-            $data['coins'] = $this->getCoins($order['total'] * $order['currency_value'], $order['currency_code']);
+            $data['coins'] = $this->getCoins(
+                $order['total'] * $order['currency_value'],
+                $order['currency_code'],
+                $this->showTestnet()
+            );
             $data['order_id'] = $order['order_id'];
             $data['order_key'] = md5($this->settings->secret . $order['total']);
             $data['url_redirect'] = $this->url->link('extension/payment/apirone_mccp/confirm');
@@ -139,19 +143,19 @@ class ControllerExtensionPaymentApironeMccp extends Controller
     }
 
     /**
-     * @param float $amount 
-     * @param string $fiat 
+     * @param float $amount total order amount
+     * @param string $fiat fiat currency of amount specified
+     * @param bool $show_testnet add test networks to result array
      * @return array array of coins to display in currency selector
      * @internal
      */
-    protected function getCoins($amount, $fiat)
+    protected function getCoins($amount, $fiat, $show_testnet)
     {
         $account = $this->settings->account;
         $factor = $this->settings->factor;
         $show_in_major = $this->settings->show_in_major;
         $show_with_fee = $this->settings->show_with_fee;
         $show_in_fiat = $this->settings->show_in_fiat;
-        $show_testnet = $this->showTestnet();
 
         $coins_aliases = [];
         $currencies = [];
@@ -166,6 +170,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             return;
         }
         // $estimations = Utils::estimate($account, $amount * $factor, $fiat, $currencies);
+        // TODO: remove mocked data below when Utils::estimate() become work properly
         $estimations = json_decode('[
             {
                 "currency": "tbtc",
