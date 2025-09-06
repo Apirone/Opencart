@@ -14,9 +14,9 @@
                 <?php echo $pay_message; ?>
                 <select name="currency" id="mccp-currency" class="form-control" required>
                 <?php foreach($coins as $coin) : ?>
-                <?php $disabled = !$coin->amount || !$coin->payable ? ' disabled' : ''; ?>
+                <?php $disabled = !$coin->amount; ?>
                 <option value="<?php echo $coin->abbr . $disabled;?>">
-                    <?php echo $coin->name; ?>: <?php echo $coin->amount ? $coin->amount : $cant_convert; ?>
+                    <?php echo $coin->alias; ?>: <?php echo $coin->amount ? $coin->amount : $cant_convert; ?>
                 </option>
                 <?php endforeach; ?>
                 </select>
@@ -34,9 +34,13 @@
 <script type="text/javascript">
     function mccpConfirm(event) {
         event.preventDefault();
+
         currency = $('#mccp-currency');
-        if (currency !== 'undefined' && currency.val() !== '' && currency.val() !== null) {
-            location = '<?php echo $url_redirect; ?>&currency='+$('#mccp-currency').val()+'&key=<?php echo $order_key; ?>&order=<?php echo $order_id; ?>';
-        }
+        if (currency === 'undefined') return;
+
+        currencyVal = currency.val();
+        if (currencyVal === '' || currencyVal === null) return;
+
+        location = '<?php echo $url_redirect; ?>&currency=' + currencyVal + '&key=<?php echo $order_key; ?>&order=<?php echo $order_id; ?>';
     }
 </script>

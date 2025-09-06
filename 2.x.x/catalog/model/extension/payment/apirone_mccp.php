@@ -1,6 +1,9 @@
 <?php
 
+use Apirone\SDK\Model\Settings;
+
 require_once(DIR_SYSTEM . 'library/apirone_api/Db.php');
+require_once(DIR_SYSTEM . 'library/apirone/vendor/autoload.php');
 
 class ModelExtensionPaymentApironeMccp extends Model 
 {
@@ -10,9 +13,7 @@ class ModelExtensionPaymentApironeMccp extends Model
         $status = false;
         $method_data = array();
 
-        $activeCurrencies = $this->getActiveCurrencies();
-        
-        if ($activeCurrencies) {
+        if ($coins = $this->getCoins()) {
             $geozone = $this->db->query("SELECT * FROM " . DB_PREFIX . "zone_to_geo_zone WHERE geo_zone_id = '" 
                 . (int) $this->config->get('apirone_mccp_geo_zone_id') 
                 . "' AND country_id = '" . (int) $address['country_id'] . "' AND (zone_id = '" . (int) $address['zone_id'] . "' OR zone_id = '0')");
@@ -21,11 +22,10 @@ class ModelExtensionPaymentApironeMccp extends Model
                 $status = true;
             }
         }
-
         if ($status) {
             $currencies = '';
-            foreach ($activeCurrencies as $item) {
-                $currencies .= $item->name . ', ';
+            foreach ($coins as $coin) {
+                $currencies .= $coin->alias . ', ';
             }
             $currencies = substr($currencies, 0, -2);
 
@@ -36,8 +36,30 @@ class ModelExtensionPaymentApironeMccp extends Model
                 'sort_order' => $this->config->get('apirone_mccp_sort_order')
             );  
         }
-
         return $method_data;
+    }
+
+    /**
+     * Gets coins enabled from plugin settings
+     * @internal
+     */
+    protected function getCoins()
+    {
+        $_settings_json = $this->config->get('apirone_mccp_settings');
+        if (!$_settings_json) {
+            return;
+        }
+        try {
+            $_settings = Settings::fromJson($_settings_json);
+        }
+        catch (\Throwable $e) {
+            $this->log->write($e->getMessage());
+            return;
+        }
+        if (!$_settings) {
+            return;
+        }
+        return $_settings->coins;
     }
 
     public function getInvoiceByOrderId($order_id)
@@ -123,24 +145,6 @@ class ModelExtensionPaymentApironeMccp extends Model
         }
 
         return $activeCurrencies;
-    }
-
-    public function showTestnet() 
-    {
-        $testcustomer = $this->config->get('apirone_mccp_testcustomer');
-
-        if ($testcustomer == '*') {
-            return true;
-        }
-
-        $this->load->model('account/customer');
-
-        if (!$this->customer->isLogged()) {
-            return false;
-        }
-        $email = $this->customer->getEmail();
-
-        return ($testcustomer == $email) ? true : false;
     }
 
     private function updateOrderStatus($invoice)

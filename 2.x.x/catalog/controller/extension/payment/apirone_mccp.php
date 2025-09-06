@@ -8,6 +8,8 @@ use Apirone\API\Exceptions\NotFoundException;
 use Apirone\API\Exceptions\MethodNotAllowedException;
 use Apirone\API\Exceptions\InternalServerErrorException;
 use Apirone\API\Exceptions\JsonException;
+use Apirone\API\Log\LogLevel;
+
 use ApironeApi\Apirone;
 use ApironeApi\Payment;
 
@@ -18,36 +20,49 @@ use Apirone\SDK\Service\Utils;
 require_once(DIR_SYSTEM . 'library/apirone_api/Apirone.php');
 require_once(DIR_SYSTEM . 'library/apirone_api/Payment.php');
 
-require_once(DIR_SYSTEM . 'library/apirone_vendor/autoload.php');
+require_once(DIR_SYSTEM . 'library/apirone/vendor/autoload.php');
 
 define('PLUGIN_LOG_FILE_NAME', 'apirone.log');
 
 class ControllerExtensionPaymentApironeMccp extends Controller
 {
+    private Settings $settings;
+
     public function __construct($registry)
     {
         parent::__construct($registry);
-        $this->pa('construct');
-
         $this->initLogging();
     }
 
-    // TODO: куда лучше засунуть эту функцию, чтобы не повторяться, она также есть в admin/controller/extension/payment/apirone_mccp.php
+    /**
+     * @return write to log extended info except errors
+     * @since 2.0.0
+     * @author Valery Yu <vvy1976@gmail.com>
+     * @see also in admin/controller/extension/payment/apirone_mccp.php
+     * @internal
+     */
+    protected function isDebug()
+    {
+        return !$this->settings ? false : !!$this->settings->debug;
+    }
+
     /**
      * Initializes logging
      * @since 2.0.0
      * @author Valery Yu <vvy1976@gmail.com>
+     * @see also in admin/controller/extension/payment/apirone_mccp.php
      * @internal
      */
-    private function initLogging()
+    protected function initLogging()
     {
         try {
             $openCartLogger = new \Log(PLUGIN_LOG_FILE_NAME);
 
-            $logHandler = function($message) use ($openCartLogger) {
-                $openCartLogger->write($message);
+            $logHandler = function($log_level, $message, $context) use ($openCartLogger) {
+                if ($log_level == LogLevel::ERROR || $this->isDebug()) {
+                    $openCartLogger->write($message.' '.print_r($context));
+                }
             };
-            // TODO: как заставить логгер реагировать на настройку debug?
             Invoice::logger($logHandler);
         }
         catch (Exception $e) {
@@ -57,35 +72,33 @@ class ControllerExtensionPaymentApironeMccp extends Controller
 
     public function index()
     {
-        $this->pa('index start');
-        $data = [];
-        // TODO: почему тут сначала не требуется вызов load->language('extension/payment/apirone_mccp') ?
         $data['button_confirm'] = $this->language->get('button_confirm');
         $this->load->model('checkout/order');
         $this->load->language('extension/payment/apirone_mccp');
         $this->load->model('extension/payment/apirone_mccp');
         try {
-            $_settings = $this->getSettings();
+            $this->getSettings();
 
             $data = array_merge($data, $this->load->language('apirone_mccp'));
             $data['error_message'] = false;
 
             $order = $this->model_checkout_order->getOrder($this->session->data['order_id']);
 
-            $data['coins'] = $this->getCoins($_settings, $order['total'] * $order['currency_value'], $order['currency_code']);
+            $data['coins'] = $this->getCoins($order['total'] * $order['currency_value'], $order['currency_code']);
             $data['order_id'] = $order['order_id'];
-            $data['order_key'] = md5($_settings->secret, $order['total']);
+            $data['order_key'] = md5($this->settings->secret . $order['total']);
             $data['url_redirect'] = $this->url->link('extension/payment/apirone_mccp/confirm');
         }
-        catch (\Throwable $ignore) {
+        catch (\Throwable $e) {
+            $this->log->write($e->getMessage());
+
             $data['coins'] = null;
         }
         return $this->load->view('extension/payment/apirone_mccp', $data);
     }
 
     /**
-     * Gets existing or creates new plugin settings
-     * @return Settings
+     * Gets existing plugin settings
      * @throws ReflectionException
      * @throws RuntimeException
      * @throws ValidationFailedException
@@ -97,22 +110,22 @@ class ControllerExtensionPaymentApironeMccp extends Controller
      */
     protected function getSettings()
     {
-        // TODO: why it does not works?
-        // $_settings_json = $this->config->get('apirone_mccp_settings');
-
-        $_settings_json = $this->model_setting_setting->getSetting('apirone_mccp')['apirone_mccp_settings'];
-
-        return $_settings_json ? Settings::fromJson($_settings_json) : false;
+        $_settings_json = $this->config->get('apirone_mccp_settings');
+        if (!$_settings_json) {
+            throw new RuntimeException('No settings loaded. Try reinstall plugin');
+        }
+        $this->settings = Settings::fromJson($_settings_json);
     }
 
     /**
-     * @param string $testCustomer e-mail of test customer or "*" for any customer
      * @return bool show test networks
      * @internal
      */
-    private function showTestnet($testCustomer) 
+    protected function showTestnet() 
     {
-        if ($testCustomer == '*') {
+        $testcustomer = $this->settings->testcustomer;
+
+        if ($testcustomer == '*') {
             return true;
         }
         $this->load->model('account/customer');
@@ -122,41 +135,73 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         }
         $email = $this->customer->getEmail();
 
-        return ($testCustomer == $email) ? true : false;
+        return ($testcustomer == $email) ? true : false;
     }
 
     /**
-     * 
-     * @param Settings &$_settings 
      * @param float $amount 
      * @param string $fiat 
      * @return array array of coins to display in currency selector
-     * @throws RuntimeException 
-     * @throws ValidationFailedException 
-     * @throws UnauthorizedException 
-     * @throws ForbiddenException 
-     * @throws NotFoundException 
-     * @throws MethodNotAllowedException 
-     * @throws InternalServerErrorException 
-     * @throws JsonException 
      * @internal
      */
-    private function getCoins(&$_settings, $amount, $fiat)
+    protected function getCoins($amount, $fiat)
     {
-        $account = $_settings->account;
-        $factor = $_settings->factor;
-        $show_testnet = $this->showTestnet($_settings->testCustomer);
+        $account = $this->settings->account;
+        $factor = $this->settings->factor;
+        $show_in_major = $this->settings->show_in_major;
+        $show_with_fee = $this->settings->show_with_fee;
+        $show_in_fiat = $this->settings->show_in_fiat;
+        $show_testnet = $this->showTestnet();
 
+        $coins_aliases = [];
         $currencies = [];
-        foreach ($_settings->coins as $coin) {
+        foreach ($this->settings->coins as $coin) {
             if ($show_testnet || !$coin->test) {
-                $currencies[] = $coin->abbr;
+                $abbr = $coin->abbr;
+                $currencies[] = $abbr;
+                $coins_aliases[$abbr] = $coin->alias;
             }
         }
         if (!count($currencies)) {
             return;
         }
-        return Utils::estimate($account, $amount, $fiat * $factor, $currencies);
+        // $estimations = Utils::estimate($account, $amount * $factor, $fiat, $currencies);
+        $estimations = json_decode('[
+            {
+                "currency": "tbtc",
+                "fiat": "usd",
+                "amount": "100",
+                "min": "89163",
+                "cur": "0.00089163",
+                "with-fee-amount": "121.53",
+                "with-fee-min": "108364",
+                "with-fee-cur": "0.00108364"
+            }
+        ]');
+
+        $coins = [];
+        foreach ($estimations as $estimation) {
+            $result_amount = $show_with_fee
+                ? ($show_in_fiat
+                    ? $estimation->{'with-fee-amount'}
+                    : ($show_in_major
+                        ? $estimation->{'with-fee-cur'}
+                        : $estimation->{'with-fee-min'})
+                )
+                : ($show_in_fiat
+                    ? $estimation->amount
+                    : ($show_in_major
+                        ? $estimation->cur
+                        : $estimation->min)
+                );
+            if (!$result_amount) {
+                continue;
+            }
+            $coins[] = $coin = new stdClass();
+            $coin->alias = $show_in_fiat ? $fiat : $coins_aliases[$estimation->currency];
+            $coin->amount = $result_amount;
+        }
+        return $coins;
     }
 
     public function confirm()
@@ -169,13 +214,11 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         $order_key = (isset($this->request->get['key'])) ? (string) $this->request->get['key'] : '';
         $order_id = (isset($this->request->get['order'])) ? (int) $this->request->get['order'] : 0;
 
-        $secret = $this->config->get('apirone_mccp_secret');
         $order = $this->model_checkout_order->getOrder($order_id);
         // Exit if $order_key is !valid
-        if (!Payment::checkInvoiceSecret($order_key, $secret, $order['total'])) {
+        if (md5($this->settings->secret . $order['total']) != $order_key) {
             return;
         }
-
         $currencyInfo = Apirone::getCurrency($currency);
 
         // Is order invoice already exists
@@ -199,7 +242,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         $amount = (int) Payment::cur2min($totalCrypto, $currencyInfo->{'units-factor'});
 
         $lifetime = (int) $this->config->get('apirone_mccp_timeout');
-        $invoiceSecret = Payment::makeInvoiceSecret($secret, $order_id);
+        $invoiceSecret = md5($this->settings->secret . $order_id);
         $callback = $this->url->link('extension/payment/apirone_mccp/callback&id=' . $invoiceSecret);
 
         $created = Apirone::invoiceCreate(
@@ -246,7 +289,6 @@ class ControllerExtensionPaymentApironeMccp extends Controller
 
 
         $callback_secret = (isset($this->request->get['id'])) ? (string) $this->request->get['id'] : '';
-        $secret = $this->config->get('apirone_mccp_secret');
 
         $invoice = $this->model_extension_payment_apirone_mccp->getInvoiceById($params->invoice);
         
@@ -259,7 +301,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             return;
         }
 
-        if (!Payment::checkInvoiceSecret($callback_secret, $secret, $invoice->order_id)) {
+        if (md5($this->settings->secret . $invoice->order_id) != $callback_secret) {
             http_response_code(403);
             $message = "Secret not valid: " . $callback_secret;
             $this->response->setOutput("Secret not valid: " . $callback_secret);
@@ -308,19 +350,19 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         $this->response->setOutput($this->load->view('extension/payment/apirone_mccp_invoice', $data));
         return;
     }
+}
 
-    private function pa($mixed, $title = false)
-    {
-        if ($title) {
-            echo $title . ':';
-        }
-        echo '<pre>';
-        if (gettype($mixed) == 'boolean') {
-            print_r($mixed ? 'true' : 'false');
-        }
-        else {
-            print_r(!is_null($mixed) ? $mixed : 'NULL');
-        }
-        echo '</pre>';
+function pa($mixed, $title = false)
+{
+    if ($title) {
+        echo $title . ':';
     }
+    echo '<pre>';
+    if (gettype($mixed) == 'boolean') {
+        print_r($mixed ? 'true' : 'false');
+    }
+    else {
+        print_r(!is_null($mixed) ? $mixed : 'NULL');
+    }
+    echo '</pre>';
 }

@@ -53,7 +53,7 @@
                         <div class="form-group">
                             <label class="col-sm-2 control-label" for="input-testcustomer"><?php echo $entry_testcustomer; ?></label>
                             <div class="col-sm-10">
-                                <input type="email" name="apirone_mccp_testcustomer" value="<?php echo $apirone_mccp_testCustomer; ?>" placeholder="<?php echo $entry_testcustomer_placeholder; ?>" id="input-testcustomer" class="form-control" />
+                                <input type="text" name="apirone_mccp_testcustomer" value="<?php echo $apirone_mccp_testcustomer; ?>" placeholder="<?php echo $entry_testcustomer_placeholder; ?>" id="input-testcustomer" class="form-control" />
                                 <span class="contorl-label" style="margin-top: 4px; display: inline-block;"><?php echo $text_test_currency_customer; ?></span>
                             </div>
                         </div>
@@ -71,10 +71,10 @@
                             <label class="col-sm-2 control-label" for="input-processing-fee"><?php echo $entry_processing_fee; ?></label>
                             <div class="col-sm-10">
                                 <select name="apirone_mccp_processing_fee" id="input-processing-fee" class="form-control">
-                                    <option value="fixed"<?php echo $apirone_mccp_processingFee == 'fixed' ? ' selected' : ''; ?>>
+                                    <option value="fixed"<?php echo $apirone_mccp_processing_fee == 'fixed' ? ' selected' : ''; ?>>
                                         <?php echo $text_processing_fee_fixed; ?>
                                     </option>
-                                    <option value="percentage"<?php echo $apirone_mccp_processingFee == 'percentage' ? ' selected' : ''; ?>>
+                                    <option value="percentage"<?php echo $apirone_mccp_processing_fee == 'percentage' ? ' selected' : ''; ?>>
                                         <?php echo $text_processing_fee_percentage; ?>
                                     </option>
                                 </select>
@@ -90,6 +90,54 @@
                                 <?php if (isset($errors['apirone_mccp_factor'])) : ?>
                                 <div class=" text-danger"><?php echo $errors['apirone_mccp_factor']; ?></div>
                                 <?php endif; ?>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label" for="input-show-in-major">
+                                <span data-toggle="tooltip" data-original-title="<?php echo $text_show_in_major_tooltip; ?>"><?php echo $entry_show_in_major; ?></span>
+                            </label>
+                            <div class="col-sm-10">
+                                <select name="apirone_mccp_show_in_major" id="input-show-in-major" class="form-control">
+                                    <?php if ($apirone_mccp_show_in_major) : ?>
+                                    <option value="1" selected="selected"><?php echo $text_enabled; ?></option>
+                                    <option value="0"><?php echo $text_disabled; ?></option>
+                                    <?php else : ?>
+                                    <option value="1"><?php echo $text_enabled; ?></option>
+                                    <option value="0" selected="selected"><?php echo $text_disabled; ?></option>
+                                    <?php endif; ?>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label" for="input-show-with-fee">
+                                <span data-toggle="tooltip" data-original-title="<?php echo $text_show_with_fee_tooltip; ?>"><?php echo $entry_show_with_fee; ?></span>
+                            </label>
+                            <div class="col-sm-10">
+                                <select name="apirone_mccp_show_with_fee" id="input-show-with-fee" class="form-control">
+                                    <?php if ($apirone_mccp_show_with_fee) : ?>
+                                    <option value="1" selected="selected"><?php echo $text_enabled; ?></option>
+                                    <option value="0"><?php echo $text_disabled; ?></option>
+                                    <?php else : ?>
+                                    <option value="1"><?php echo $text_enabled; ?></option>
+                                    <option value="0" selected="selected"><?php echo $text_disabled; ?></option>
+                                    <?php endif; ?>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label" for="input-show-in-fiat">
+                                <span data-toggle="tooltip" data-original-title="<?php echo $text_show_in_fiat_tooltip; ?>"><?php echo $entry_show_in_fiat; ?></span>
+                            </label>
+                            <div class="col-sm-10">
+                                <select name="apirone_mccp_show_in_fiat" id="input-show-in-fiat" class="form-control">
+                                    <?php if ($apirone_mccp_show_in_fiat) : ?>
+                                    <option value="1" selected="selected"><?php echo $text_enabled; ?></option>
+                                    <option value="0"><?php echo $text_disabled; ?></option>
+                                    <?php else : ?>
+                                    <option value="1"><?php echo $text_enabled; ?></option>
+                                    <option value="0" selected="selected"><?php echo $text_disabled; ?></option>
+                                    <?php endif; ?>
+                                </select>
                             </div>
                         </div>
                         <div class="form-group">
