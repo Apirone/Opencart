@@ -21,9 +21,6 @@ require_once(DIR_SYSTEM . 'library/apirone/vendor/autoload.php');
 
 define('PLUGIN_VERSION', '2.0.0');
 define('PLUGIN_LOG_FILE_NAME', 'apirone.log');
-// define('PLUGIN_MCCP_ICONS_PATH', '/opencart2/system/library/apirone/vendor/apirone/apirone-sdk-php/src/assets/img/currencies/');
-define('PLUGIN_MCCP_ICONS_PATH', '../image/payment/apirone/currencies/');
-define('PLUGIN_MCCP_ICONS_EXTENSION', '.svg');
 
 class ControllerExtensionPaymentApironeMccp extends Controller
 {
@@ -294,7 +291,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             }
         }
 
-        $this->response->setOutput($this->load->view('extension/payment/apirone_mccp', $this->data));
+        $this->response->setOutput($this->load->view('extension/payment/apirone/apirone_mccp', $this->data));
     }
 
     /**
@@ -358,7 +355,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
 
             $networks_dto[$network_abbr] = $network_dto = new stdClass();
 
-            $network_dto->icon = $network_icon = PLUGIN_MCCP_ICONS_PATH.$network_abbr.PLUGIN_MCCP_ICONS_EXTENSION;
+            $network_dto->icon = $network_abbr;
             $network_dto->name = $has_tokens ? sprintf($this->language->get('entry_network_name'), $name) : $name;
             $network_dto->address = $address;
             $network_dto->tooltip = sprintf($this->language->get(!$address ? 'currency_activate_tooltip' : 'currency_deactivate_tooltip'), $name);
@@ -376,7 +373,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             $tokens_dto[$network_abbr] = $token_dto = new stdClass();
 
             $token_dto->checkbox_id = 'state_'.$network_abbr;
-            $token_dto->icon = $network_icon;
+            $token_dto->icon = $network_abbr;
             $token_dto->name = $alias = strtoupper($name);
             $token_dto->state = $this->getNetworkTokenVisibility($network_abbr);
             $token_dto->tooltip = sprintf($this->language->get('token_tooltip'), $alias);
@@ -385,7 +382,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
                 $tokens_dto[$abbr] = $token_dto = new stdClass();
 
                 $token_dto->checkbox_id = 'state_'.$network_abbr.'_'.$token->token;
-                $token_dto->icon = PLUGIN_MCCP_ICONS_PATH.$token->token.PLUGIN_MCCP_ICONS_EXTENSION;
+                $token_dto->icon = $token->token;
                 $token_dto->name = $alias = strtoupper($token->alias);
                 $token_dto->state = $this->getNetworkTokenVisibility($abbr);
                 $token_dto->tooltip = sprintf($this->language->get('token_tooltip'), $alias);

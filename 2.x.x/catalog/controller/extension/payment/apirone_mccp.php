@@ -15,6 +15,7 @@ use ApironeApi\Payment;
 
 use Apirone\SDK\Invoice;
 use Apirone\SDK\Model\Settings;
+use Apirone\SDK\Service\InvoiceDb;
 use Apirone\SDK\Service\Utils;
 
 require_once(DIR_SYSTEM . 'library/apirone_api/Apirone.php');
@@ -98,7 +99,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
 
             $data['coins'] = null;
         }
-        return $this->load->view('extension/payment/apirone_mccp', $data);
+        return $this->load->view('extension/payment/apirone/apirone_mccp', $data);
     }
 
     /**
@@ -151,41 +152,57 @@ class ControllerExtensionPaymentApironeMccp extends Controller
      */
     protected function getCoins($amount, $fiat, $show_testnet)
     {
+        if (!$this->settings) {
+            return;
+        }
         $account = $this->settings->account;
         $factor = $this->settings->factor;
+        $currencies = $this->settings->currencies;
         $show_in_major = $this->settings->show_in_major;
         $show_with_fee = $this->settings->show_with_fee;
         $show_in_fiat = $this->settings->show_in_fiat;
 
         $coins_aliases = [];
-        $currencies = [];
+        $currencies_to_estimate = [];
         foreach ($this->settings->coins as $coin) {
             if ($show_testnet || !$coin->test) {
                 $abbr = $coin->abbr;
-                $currencies[] = $abbr;
+                $currencies_to_estimate[] = $abbr;
                 $coins_aliases[$abbr] = $coin->alias;
             }
         }
-        if (!count($currencies)) {
+        if (!count($currencies_to_estimate)) {
             return;
         }
-        // $estimations = Utils::estimate($account, $amount * $factor, $fiat, $currencies);
-        // TODO: remove mocked data below when Utils::estimate() become work properly
-        $estimations = json_decode('[
-            {
-                "currency": "tbtc",
-                "fiat": "usd",
-                "amount": "100",
-                "min": "89163",
-                "cur": "0.00089163",
-                "with-fee-amount": "121.53",
-                "with-fee-min": "108364",
-                "with-fee-cur": "0.00108364"
-            }
-        ]');
+        $estimations = Utils::estimate($account, $amount * $factor, $fiat, $currencies_to_estimate);
+        // TODO: remove mocked data below after test
+        // $estimations = json_decode('[
+        //     {
+        //         "currency": "tbtc",
+        //         "fiat": "usd",
+        //         "amount": "100",
+        //         "min": "89163",
+        //         "cur": "0.00089163",
+        //         "with-fee-amount": "121.53",
+        //         "with-fee-min": "108364",
+        //         "with-fee-cur": "0.00108364"
+        //     },
+        //     {
+        //         "currency": "usdt@trx",
+        //         "fiat": "usd",
+        //         "amount": "100",
+        //         "min": "89163",
+        //         "cur": "0.00089163",
+        //         "with-fee-amount": "121.53",
+        //         "with-fee-min": "108364",
+        //         "with-fee-cur": "0.00108364"
+        //     }
+        // ]');
 
         $coins = [];
         foreach ($estimations as $estimation) {
+            $abbr = $estimation->currency;
+
             $result_amount = $show_with_fee
                 ? ($show_in_fiat
                     ? $estimation->{'with-fee-amount'}
@@ -203,10 +220,49 @@ class ControllerExtensionPaymentApironeMccp extends Controller
                 continue;
             }
             $coins[] = $coin = new stdClass();
-            $coin->alias = $show_in_fiat ? $fiat : $coins_aliases[$estimation->currency];
+            $coin->abbr = $currencies[$abbr]->abbr;
+            $coin->network = $currencies[$abbr]->network;
+            $coin->token = $currencies[$abbr]->token;
+            $coin->alias = $show_in_fiat ? $fiat : $currencies[$abbr]->alias;
             $coin->amount = $result_amount;
         }
         return $coins;
+    }
+
+    /**
+     * @param float $amount total order amount
+     * @param string $fiat fiat currency of amount specified
+     * @param string $currency coin currency abbreviation
+     * @return float coin amount
+     * @internal
+     */
+    protected function getCoinAmountMinor($amount, $fiat, $currency)
+    {
+        if (!$this->settings) {
+            return;
+        }
+        $account = $this->settings->account;
+        $factor = $this->settings->factor;
+        $show_with_fee = $this->settings->show_with_fee;
+
+        $estimations = Utils::estimate($account, $amount * $factor, $fiat, $currency);
+        // TODO: remove mocked data below after test
+        // $estimations = json_decode('[
+        //     {
+        //         "currency": "tbtc",
+        //         "fiat": "usd",
+        //         "amount": "100",
+        //         "min": "89163",
+        //         "cur": "0.00089163",
+        //         "with-fee-amount": "121.53",
+        //         "with-fee-min": "108364",
+        //         "with-fee-cur": "0.00108364"
+        //     }
+        // ]');
+        if (empty($estimations)) {
+            return;
+        }
+        return $estimations[0]->{$show_with_fee ? 'with-fee-min' : 'min'};
     }
 
     public function confirm()
@@ -220,50 +276,74 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         $order_id = (isset($this->request->get['order'])) ? (int) $this->request->get['order'] : 0;
 
         $order = $this->model_checkout_order->getOrder($order_id);
+        try {
+            $this->getSettings();
+        }
+        catch (\Throwable $e) {
+            $this->log->write($e->getMessage());
+        }
         // Exit if $order_key is !valid
         if (md5($this->settings->secret . $order['total']) != $order_key) {
             return;
         }
-        $currencyInfo = Apirone::getCurrency($currency);
+        // $currencyInfo = Apirone::getCurrency($currency);
+        // TODO: what for this currencyInfo?
+        // $currencyInfo = $this->settings->currencies[$currency];
 
         // Is order invoice already exists
-        $orderInvoice = $this->model_extension_payment_apirone_mccp->getInvoiceByOrderId($order_id);
-        if ($orderInvoice) {
-            // Update invoice when page loaded or reloaded & status != 0 (expired || completed)
-            if (Payment::invoiceStatus($orderInvoice) != 0) {
-                $invoice_data = Apirone::invoiceInfoPublic($orderInvoice->invoice);
-                if ($invoice_data) {
-                    $invoiceUpdated = $this->model_extension_payment_apirone_mccp->updateInvoice($orderInvoice->order_id, $invoice_data);
-                    $orderInvoice = ($invoiceUpdated) ? $invoiceUpdated : $orderInvoice;
-                }
-            }
+        // $orderInvoice = $this->model_extension_payment_apirone_mccp->getInvoiceByOrderId($order_id);
+        // if ($orderInvoice) {
+        //     // Update invoice when page loaded or reloaded & status != 0 (expired || completed)
+        //     if (Payment::invoiceStatus($orderInvoice) != 0) {
+        //         $invoice_data = Apirone::invoiceInfoPublic($orderInvoice->invoice);
+        //         if ($invoice_data) {
+        //             $invoiceUpdated = $this->model_extension_payment_apirone_mccp->updateInvoice($orderInvoice->order_id, $invoice_data);
+        //             $orderInvoice = ($invoiceUpdated) ? $invoiceUpdated : $orderInvoice;
+        //         }
+        //     }
+        //     $this->showInvoice($orderInvoice, $currencyInfo);
+        //     return;
+        // }
+        Invoice::settings($this->settings);
+        Invoice::db($this->db->query, DB_PREFIX);
 
-            $this->showInvoice($orderInvoice, $currencyInfo);
+        $orderInvoices = Invoice::getByOrder($order_id);
+        if (count($orderInvoices)) {
+            $this->showInvoice($orderInvoices[0]);
             return;
         }
-        $factor = (float) $this->config->get('apirone_mccp_factor');
-
-        $totalCrypto = Payment::fiat2crypto($order['total'] * $order['currency_value'] * $factor, $order['currency_code'], $currency);
-        $amount = (int) Payment::cur2min($totalCrypto, $currencyInfo->{'units-factor'});
-
-        $lifetime = (int) $this->config->get('apirone_mccp_timeout');
-        $invoiceSecret = md5($this->settings->secret . $order_id);
-        $callback = $this->url->link('extension/payment/apirone_mccp/callback&id=' . $invoiceSecret);
-
-        $created = Apirone::invoiceCreate(
-            unserialize($this->config->get('apirone_mccp_account')),
-            Payment::makeInvoiceData($currency, $amount, $lifetime, $callback, $order['total'], $order['currency_code'])
+        // $factor = (float) $this->config->get('apirone_mccp_factor');
+        // $totalCrypto = Payment::fiat2crypto($order['total'] * $order['currency_value'] * $factor, $order['currency_code'], $currency);
+        // $amount = (int) Payment::cur2min($totalCrypto, $currencyInfo->{'units-factor'});
+        $amount = $this->getCoinAmountMinor(
+            $order['total'] * $order['currency_value'],
+            $order['currency_code'],
+            $currency
         );
+        // TODO: what for this callback?
+        // $invoiceSecret = md5($this->settings->secret . $order_id);
+        // $callback = $this->url->link('extension/payment/apirone_mccp/callback&id=' . $invoiceSecret);
+
+        // $created = Apirone::invoiceCreate(
+        //     unserialize($this->config->get('apirone_mccp_account')),
+        //     Payment::makeInvoiceData($currency, $amount, $lifetime, $callback, $order['total'], $order['currency_code'])
+        // );
+        $created = Invoice::init($currency, $amount)
+            ->order($order_id)
+            ->lifetime($this->settings->timeout)
+            ->userData(); // TODO: how to create user data?
 
         if($created) {
-            $invoice = $this->model_extension_payment_apirone_mccp->updateInvoice($order_id, $created);
-            $this->showInvoice($invoice, $currencyInfo, true);
+            // TODO: replace updateInvoice to Invoice:::???
+            $this->model_extension_payment_apirone_mccp->updateInvoice($order_id, $created);
+            $this->showInvoice($created, true);
 
             return;
         }
         $this->response->redirect($this->url->link('checkout/cart'));
     }
 
+    // TODO: what for this callback?
     public function callback()
     {
         $this->load->model('checkout/order');
@@ -323,37 +403,34 @@ class ControllerExtensionPaymentApironeMccp extends Controller
 
         LoggerWrapper::callbackDebug('', $params);
     }
-
-    public function status()
-    {
-        $this->load->model('extension/payment/apirone_mccp');
-        $id = $this->request->get['id'];
-
-        echo Payment::invoiceStatus($this->model_extension_payment_apirone_mccp->getInvoiceById($id));
-    }
     
-    protected function showInvoice($invoice, &$currency, $clear_cart = false)
+    protected function showInvoice($clear_cart = false)
     {
-        $merchant = $this->config->get('apirone_mccp_merchantname');
-
-        if ($merchant == '') {
-            $merchant = $this->config->get('config_name');
-        }
-
-        $data['style'] = '<style>' . Payment::getAssets('style.min.css') . '</style>';
-        $data['script'] = '<script type="text/javascript">' . Payment::getAssets('script.js') . '</script>';
-
-        $statusLink = $this->url->link('extension/payment/apirone_mccp/status', 'id=' . $invoice->invoice);
-
-        $data['invoice'] = Payment::invoice($invoice, $currency, $statusLink, $merchant, HTTPS_SERVER);
-        $data['title'] = '';
-
         if ($clear_cart) {
             $this->cart->clear();    
         }
-
-        $this->response->setOutput($this->load->view('extension/payment/apirone_mccp_invoice', $data));
+        // TODO: redirect to invoice Vue application
         return;
+    }
+    
+    protected function invoice()
+    {
+        // TODO: show invoice view with new Vue application
+
+        $this->response->setOutput($this->load->view('extension/payment/apirone/apirone_mccp_invoice', $data));
+        return;
+    }
+    
+    protected function wallets()
+    {
+        // TODO: API proxy endpoint to get currencies with OPTIONS method
+        return new stdClass();
+    }
+    
+    protected function invoices()
+    {
+        // TODO: API proxy endpoint to get invoice data with invoice ID in path
+        return new stdClass();
     }
 }
 

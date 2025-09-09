@@ -31,7 +31,7 @@
             <div class="panel-heading">
                 <h3 class="panel-title"><i class="fa fa-pencil"></i> <?php echo $text_edit; ?></h3>
             </div>
-            <div class="panel-body">
+            <div class="panel-body" style="font-size:14px;">
                 <form action="<?php echo $action; ?>" method="post" id="form-apirone" class="form-horizontal">
                 <ul class="nav nav-tabs">
                     <?php if (isset($settings_loaded) && $settings_loaded) : ?>
@@ -44,23 +44,21 @@
                     <?php if (isset($settings_loaded) && $settings_loaded) : ?>
                     <div class="tab-pane active" id="tab-settings">
                         <div class="form-group">
-                            <label class="col-sm-2 control-label" for="input-sort-order"><?php echo $entry_merchant; ?></label>
-                            <div class="col-sm-10">
+                            <label class="col-lg-4 control-label" for="input-merchant"><?php echo $entry_merchant; ?></label>
+                            <div class="col-lg-8">
                             <input type="text" name="apirone_mccp_merchant" value="<?php echo $apirone_mccp_merchant; ?>" placeholder="<?php echo $entry_merchant; ?>" id="input-merchant" class="form-control" />
                             </div>
                         </div>
-
                         <div class="form-group">
-                            <label class="col-sm-2 control-label" for="input-testcustomer"><?php echo $entry_testcustomer; ?></label>
-                            <div class="col-sm-10">
+                            <label class="col-lg-4 control-label" for="input-testcustomer"><?php echo $entry_testcustomer; ?></label>
+                            <div class="col-lg-8">
                                 <input type="text" name="apirone_mccp_testcustomer" value="<?php echo $apirone_mccp_testcustomer; ?>" placeholder="<?php echo $entry_testcustomer_placeholder; ?>" id="input-testcustomer" class="form-control" />
                                 <span class="contorl-label" style="margin-top: 4px; display: inline-block;"><?php echo $text_test_currency_customer; ?></span>
                             </div>
                         </div>
-
                         <div class="form-group required">
-                            <label class="col-sm-2 control-label" for="input-timeout"><?php echo $entry_timeout; ?></label>
-                            <div class="col-sm-10">
+                            <label class="col-lg-4 control-label" for="input-timeout"><?php echo $entry_timeout; ?></label>
+                            <div class="col-lg-8">
                                 <input type="number" name="apirone_mccp_timeout" value="<?php echo $apirone_mccp_timeout; ?>" placeholder="<?php echo $entry_timeout; ?>" id="input-timeout" class="form-control" />
                                 <?php if (isset($errors['apirone_mccp_timeout']) && $errors['apirone_mccp_timeout']) : ?>
                                 <div class=" text-danger"><?php echo $errors['apirone_mccp_timeout']; ?></div>
@@ -68,8 +66,8 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="col-sm-2 control-label" for="input-processing-fee"><?php echo $entry_processing_fee; ?></label>
-                            <div class="col-sm-10">
+                            <label class="col-lg-4 control-label" for="input-processing-fee"><?php echo $entry_processing_fee; ?></label>
+                            <div class="col-lg-8">
                                 <select name="apirone_mccp_processing_fee" id="input-processing-fee" class="form-control">
                                     <option value="fixed"<?php echo $apirone_mccp_processing_fee == 'fixed' ? ' selected' : ''; ?>>
                                         <?php echo $text_processing_fee_fixed; ?>
@@ -78,14 +76,13 @@
                                         <?php echo $text_processing_fee_percentage; ?>
                                     </option>
                                 </select>
-
                             </div>
                         </div>
                         <div class="form-group required">
-                            <label class="col-sm-2 control-label" for="input-factor">
+                            <label class="col-lg-4 control-label" for="input-factor">
                                 <span data-toggle="tooltip" data-original-title="<?php echo $text_factor_tooltip; ?>"><?php echo $entry_factor; ?></span>
                             </label>
-                            <div class="col-sm-10">
+                            <div class="col-lg-8">
                                 <input name="apirone_mccp_factor" type="number" min="0.01" step='0.01' value="<?php echo $apirone_mccp_factor; ?>" id="input-factor" class="form-control" />
                                 <?php if (isset($errors['apirone_mccp_factor'])) : ?>
                                 <div class=" text-danger"><?php echo $errors['apirone_mccp_factor']; ?></div>
@@ -93,10 +90,10 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="col-sm-2 control-label" for="input-show-in-major">
+                            <label class="col-lg-4 control-label" for="input-show-in-major">
                                 <span data-toggle="tooltip" data-original-title="<?php echo $text_show_in_major_tooltip; ?>"><?php echo $entry_show_in_major; ?></span>
                             </label>
-                            <div class="col-sm-10">
+                            <div class="col-lg-8">
                                 <select name="apirone_mccp_show_in_major" id="input-show-in-major" class="form-control">
                                     <?php if ($apirone_mccp_show_in_major) : ?>
                                     <option value="1" selected="selected"><?php echo $text_enabled; ?></option>
@@ -109,10 +106,10 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="col-sm-2 control-label" for="input-show-with-fee">
+                            <label class="col-lg-4 control-label" for="input-show-with-fee">
                                 <span data-toggle="tooltip" data-original-title="<?php echo $text_show_with_fee_tooltip; ?>"><?php echo $entry_show_with_fee; ?></span>
                             </label>
-                            <div class="col-sm-10">
+                            <div class="col-lg-8">
                                 <select name="apirone_mccp_show_with_fee" id="input-show-with-fee" class="form-control">
                                     <?php if ($apirone_mccp_show_with_fee) : ?>
                                     <option value="1" selected="selected"><?php echo $text_enabled; ?></option>
@@ -125,10 +122,10 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="col-sm-2 control-label" for="input-show-in-fiat">
+                            <label class="col-lg-4 control-label" for="input-show-in-fiat">
                                 <span data-toggle="tooltip" data-original-title="<?php echo $text_show_in_fiat_tooltip; ?>"><?php echo $entry_show_in_fiat; ?></span>
                             </label>
-                            <div class="col-sm-10">
+                            <div class="col-lg-8">
                                 <select name="apirone_mccp_show_in_fiat" id="input-show-in-fiat" class="form-control">
                                     <?php if ($apirone_mccp_show_in_fiat) : ?>
                                     <option value="1" selected="selected"><?php echo $text_enabled; ?></option>
@@ -141,10 +138,10 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="col-sm-2 control-label" for="input-logo">
+                            <label class="col-lg-4 control-label" for="input-logo">
                                 <span data-toggle="tooltip" data-original-title="<?php echo $text_logo_tooltip; ?>"><?php echo $entry_logo; ?></span>
                             </label>
-                            <div class="col-sm-10">
+                            <div class="col-lg-8">
                                 <select name="apirone_mccp_logo" id="input-logo" class="form-control">
                                     <?php if ($apirone_mccp_logo) : ?>
                                     <option value="1" selected="selected"><?php echo $text_enabled; ?></option>
@@ -157,8 +154,8 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="col-sm-2 control-label" for="input-debug"><?php echo $entry_debug; ?></label>
-                            <div class="col-sm-10">
+                            <label class="col-lg-4 control-label" for="input-debug"><?php echo $entry_debug; ?></label>
+                            <div class="col-lg-8">
                                 <select name="apirone_mccp_debug" id="input-debug" class="form-control">
                                     <?php if ($apirone_mccp_debug) : ?>
                                     <option value="1" selected="selected"><?php echo $text_enabled; ?></option>
@@ -170,10 +167,9 @@
                                 </select>
                             </div>
                         </div>
-
                         <div class="form-group">
-                            <label class="col-sm-2 control-label" for="input-geo-zone"><?php echo $entry_geo_zone; ?></label>
-                            <div class="col-sm-10">
+                            <label class="col-lg-4 control-label" for="input-geo-zone"><?php echo $entry_geo_zone; ?></label>
+                            <div class="col-lg-8">
                                 <select name="apirone_mccp_geo_zone_id" id="input-geo-zone" class="form-control">
                                     <option value="0"><?php echo $text_all_zones; ?></option>
                                     <?php foreach ($geo_zones as $geo_zone) :?>
@@ -187,8 +183,8 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="col-sm-2 control-label" for="input-status"><?php echo $entry_status; ?></label>
-                            <div class="col-sm-10">
+                            <label class="col-lg-4 control-label" for="input-status"><?php echo $entry_status; ?></label>
+                            <div class="col-lg-8">
                                 <select name="apirone_mccp_status" id="input-status" class="form-control">
                                     <?php if ($apirone_mccp_status) : ?>
                                     <option value="1" selected="selected"><?php echo $text_enabled; ?></option>
@@ -201,8 +197,8 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="col-sm-2 control-label" for="input-sort-order"><?php echo $entry_sort_order; ?></label>
-                            <div class="col-sm-10">
+                            <label class="col-lg-4 control-label" for="input-sort-order"><?php echo $entry_sort_order; ?></label>
+                            <div class="col-lg-8">
                                 <input type="text" name="apirone_mccp_sort_order" value="<?php echo $apirone_mccp_sort_order; ?>" placeholder="<?php echo $entry_sort_order; ?>" id="input-sort-order" class="form-control" />
                             </div>
                         </div>
@@ -210,13 +206,16 @@
                     <div class="tab-pane" id="tab-currencies">
                         <?php foreach ($networks as $network => $network_dto) : ?>
                             <div class="form-group">
-                                <label class="col-sm-2 control-label" for="address_<?php echo $network; ?>">
-                                    <span data-toggle="tooltip" data-original-title="<?php echo $network_dto->tooltip; ?>" syle="padding:10px 0;">
-                                        <img src="<?php echo $network_dto->icon; ?>" width="24"<?php echo $network_dto->testnet ? ' style="filter: grayscale(1)"' : '';  ?>>&nbsp;<?php echo $network_dto->name; ?>
-                                    </span>
+                                <label class="col-lg-4 control-label" for="address_<?php echo $network; ?>">
+                                    <span data-toggle="tooltip" data-original-title="<?php echo $network_dto->tooltip; ?>" syle="padding:10px 0;"><?php echo $network_dto->name; ?></span>
                                 </label>
-                                <div class="col-sm-10">
-                                    <input type="text" name="address[<?php echo $network; ?>]" value="<?php echo $network_dto->address; ?>" id="address_<?php echo $network; ?>" class="form-control" />
+                                <div class="col-lg-8">
+                                    <div class="input-group">
+                                        <span class="input-group-addon">
+                                            <img src="view/image/payment/apirone/currencies/<?php echo $network_dto->icon; ?>.svg" width="18">
+                                        </span>
+                                        <input type="text" name="address[<?php echo $network; ?>]" value="<?php echo $network_dto->address; ?>" id="address_<?php echo $network; ?>" class="form-control" style="height:38px;"/>
+                                    </div>
                                     <?php if (property_exists($network_dto, 'error') && $network_dto->error) : ?>
                                     <div class=" text-danger"><?php echo $currency_address_incorrect; ?></div>
                                     <?php endif ?>
@@ -225,12 +224,11 @@
                                     <?php endif; ?>
                                     <?php if (property_exists($network_dto, 'tokens')) : ?>
                                     <?php foreach ($network_dto->tokens as $abbr => $token_dto) : ?>
-                                    <div class="col-sm-10">
+                                    <div class="col-lg-8">
                                         <input class="checkbox-inline" style="margin-inline-end:4px;" type="checkbox" name="visible[<?php echo $abbr; ?>]" checked="<?php echo $token_dto->state; ?>" value="<?php echo $token_dto->state; ?>" id="<?php echo $token_dto->checkbox_id; ?>" class="form-control" />
                                         <label class="control-label" for="<?php echo $token_dto->checkbox_id; ?>">
-                                            <span data-toggle="tooltip" data-original-title="<?php echo $token_dto->tooltip; ?>" syle="padding:10px 0;">
-                                                <img src="<?php echo $token_dto->icon; ?>" width="24">&nbsp;<?php echo $token_dto->name; ?>
-                                            </span>
+                                            <img src="view/image/payment/apirone/currencies/<?php echo $token_dto->icon; ?>.svg" width="18">
+                                            <span data-toggle="tooltip" data-original-title="<?php echo $token_dto->tooltip; ?>" style="font-size:12px;padding-left:4px;"><?php echo $token_dto->name; ?></span>
                                         </label>
                                     </div>
                                     <?php endforeach; ?>

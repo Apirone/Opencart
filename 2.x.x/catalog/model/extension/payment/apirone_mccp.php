@@ -1,6 +1,7 @@
 <?php
 
 use Apirone\SDK\Model\Settings;
+use Apirone\SDK\Service\InvoiceQuery;
 
 require_once(DIR_SYSTEM . 'library/apirone_api/Db.php');
 require_once(DIR_SYSTEM . 'library/apirone/vendor/autoload.php');
@@ -64,7 +65,7 @@ class ModelExtensionPaymentApironeMccp extends Model
 
     public function getInvoiceByOrderId($order_id)
     {
-        $result = $this->db->query(ApironeApi\Db::getOrderInvoiceQuery($order_id, DB_PREFIX));
+        $result = $this->db->query(InvoiceQuery::selectOrder($order_id, DB_PREFIX));
         if ($result->num_rows) {
             $invoice = $result->rows[0];
             $invoice['details'] = json_decode($invoice['details']);
@@ -78,7 +79,7 @@ class ModelExtensionPaymentApironeMccp extends Model
 
     public function getInvoiceById($invoice_id)
     {
-        $result = $this->db->query(ApironeApi\Db::getInvoiceQuery($invoice_id, DB_PREFIX));
+        $result = $this->db->query(InvoiceQuery::selectInvoice($invoice_id, DB_PREFIX));
 
         if ($result->num_rows) {
             $invoice = $result->rows[0];
@@ -104,7 +105,7 @@ class ModelExtensionPaymentApironeMccp extends Model
             $params['status'] = $objInvoice->status;
             $params['details'] = $objInvoice;
 
-            $result = $this->db->query(ApironeApi\Db::updateInvoiceQuery($params, DB_PREFIX));
+            $result = $this->db->query(InvoiceQuery::updateInvoice($params, DB_PREFIX));
         }
         else {
             // Do insert
@@ -114,7 +115,7 @@ class ModelExtensionPaymentApironeMccp extends Model
             $params['status'] = $objInvoice->status;
             $params['details'] = $objInvoice;
 
-            $result = $this->db->query(ApironeApi\Db::insertInvoiceQuery($params, DB_PREFIX));
+            $result = $this->db->query(InvoiceQuery::createInvoice($params, DB_PREFIX));
         }
         if ($result) {
             $savedInvoice = $this->getInvoiceByOrderId($order_id);
@@ -125,26 +126,6 @@ class ModelExtensionPaymentApironeMccp extends Model
             return false;
         }
 
-    }
-
-    public function getActiveCurrencies()
-    {
-        if (!$this->config->get('apirone_mccp_account')) {
-            return [];
-        }
-        $currencies = unserialize($this->config->get('apirone_mccp_currencies'));
-        $showTestnet = $this->showTestnet();
-        $activeCurrencies = [];
-
-        foreach ($currencies as $item) {
-            if ($item->testnet == 1 && $showTestnet == false) {
-                continue;
-            }
-            if (!empty($item->address))
-                $activeCurrencies[] = $item;
-        }
-
-        return $activeCurrencies;
     }
 
     private function updateOrderStatus($invoice)
