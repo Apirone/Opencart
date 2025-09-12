@@ -59,7 +59,7 @@
                         <div class="form-group required">
                             <label class="col-lg-4 control-label" for="input-timeout"><?php echo $entry_timeout; ?></label>
                             <div class="col-lg-8">
-                                <input type="number" name="apirone_mccp_timeout" value="<?php echo $apirone_mccp_timeout; ?>" placeholder="<?php echo $entry_timeout; ?>" id="input-timeout" class="form-control" />
+                                <input type="number" min="0" name="apirone_mccp_timeout" value="<?php echo $apirone_mccp_timeout; ?>" placeholder="<?php echo $entry_timeout; ?>" id="input-timeout" class="form-control" />
                                 <?php if (isset($errors['apirone_mccp_timeout']) && $errors['apirone_mccp_timeout']) : ?>
                                 <div class=" text-danger"><?php echo $errors['apirone_mccp_timeout']; ?></div>
                                 <?php endif; ?>
@@ -199,7 +199,7 @@
                         <div class="form-group">
                             <label class="col-lg-4 control-label" for="input-sort-order"><?php echo $entry_sort_order; ?></label>
                             <div class="col-lg-8">
-                                <input type="text" name="apirone_mccp_sort_order" value="<?php echo $apirone_mccp_sort_order; ?>" placeholder="<?php echo $entry_sort_order; ?>" id="input-sort-order" class="form-control" />
+                                <input type="number" min="0" name="apirone_mccp_sort_order" value="<?php echo $apirone_mccp_sort_order; ?>" placeholder="<?php echo $entry_sort_order; ?>" id="input-sort-order" class="form-control" />
                             </div>
                         </div>
                     </div>

@@ -37,7 +37,6 @@
         </div>
     </div>
 </form>
-<?php endif; ?>
 
 <script type="text/javascript">
     window.mccp_currency = '<?php echo $coins[0]->abbr; ?>';
@@ -63,6 +62,6 @@
         if (!currencyVal) return;
 
         location = '<?php echo $url_redirect; ?>&currency=' + currencyVal + '&key=<?php echo $order_key; ?>&order=<?php echo $order_id; ?>';
-        //console.debug('mccpConfirm', '<?php echo $url_redirect; ?>&currency=' + currencyVal + '&key=<?php echo $order_key; ?>&order=<?php echo $order_id; ?>');
     }
 </script>
+<?php endif; ?>

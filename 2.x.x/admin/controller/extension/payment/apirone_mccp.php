@@ -217,8 +217,8 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             else {
                 // Save settings if post & no errors
                 $plugin_data['apirone_mccp_settings'] = $this->settings
-                    ->merchant($this->trimString($this->request->post['apirone_mccp_merchant']))
-                    ->testcustomer($this->trimString($this->request->post['apirone_mccp_testcustomer']))
+                    ->merchant(trim($this->request->post['apirone_mccp_merchant']))
+                    ->testcustomer(trim($this->request->post['apirone_mccp_testcustomer']))
                     ->timeout(intval($this->request->post['apirone_mccp_timeout']))
                     ->processing_fee($this->request->post['apirone_mccp_processing_fee'])
                     ->factor(floatval($this->request->post['apirone_mccp_factor']))
@@ -246,15 +246,6 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             $this->data['error'] = $this->language->get('error_cant_get_currencies');
         }
         $this->setCommonPageData();
-    }
-
-    /**
-     * @param string $str any source value, that can be not set
-     * @return string trimmed string value
-     */
-    protected function trimString($str)
-    {
-        return isset($str) ? trim(''.$str) : '';
     }
 
     /**
@@ -432,11 +423,11 @@ class ControllerExtensionPaymentApironeMccp extends Controller
     {
         $key = 'apirone_mccp_' . $key_suffix;
 
-        $this->data[$key] = $value = $this->request->post[$key] ?? (
+        $this->data[$key] = $value = trim($this->request->post[$key] ?? (
             $from_config
                 ? $this->config->get($key)
                 : $this->settings->{$key_suffix}
-        );
+        ));
         if ($required && empty($value)) {
             $this->error[$key] = $this->language->get('error_' . $key);
         }

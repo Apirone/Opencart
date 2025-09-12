@@ -8,6 +8,7 @@ use Apirone\API\Exceptions\NotFoundException;
 use Apirone\API\Exceptions\MethodNotAllowedException;
 use Apirone\API\Exceptions\InternalServerErrorException;
 use Apirone\API\Exceptions\JsonException;
+use Apirone\API\Http\Request;
 use Apirone\API\Log\LogLevel;
 
 use ApironeApi\Apirone;
@@ -44,7 +45,11 @@ class ControllerExtensionPaymentApironeMccp extends Controller
      */
     protected function isDebug()
     {
-        return !$this->settings ? false : !!$this->settings->debug;
+        try {
+            return !!$this->settings->debug;
+        } catch (\Throwable $ignore) {
+            return false;
+        }
     }
 
     /**
@@ -174,30 +179,30 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         if (!count($currencies_to_estimate)) {
             return;
         }
-        $estimations = Utils::estimate($account, $amount * $factor, $fiat, $currencies_to_estimate);
+        // $estimations = Utils::estimate($account, $amount * $factor, $fiat, $currencies_to_estimate);
         // TODO: remove mocked data below after test
-        // $estimations = json_decode('[
-        //     {
-        //         "currency": "tbtc",
-        //         "fiat": "usd",
-        //         "amount": "100",
-        //         "min": "89163",
-        //         "cur": "0.00089163",
-        //         "with-fee-amount": "121.53",
-        //         "with-fee-min": "108364",
-        //         "with-fee-cur": "0.00108364"
-        //     },
-        //     {
-        //         "currency": "usdt@trx",
-        //         "fiat": "usd",
-        //         "amount": "100",
-        //         "min": "89163",
-        //         "cur": "0.00089163",
-        //         "with-fee-amount": "121.53",
-        //         "with-fee-min": "108364",
-        //         "with-fee-cur": "0.00108364"
-        //     }
-        // ]');
+        $estimations = json_decode('[
+            {
+                "currency": "tbtc",
+                "fiat": "usd",
+                "amount": "100",
+                "min": "89163",
+                "cur": "0.00089163",
+                "with-fee-amount": "121.53",
+                "with-fee-min": "108364",
+                "with-fee-cur": "0.00108364"
+            },
+            {
+                "currency": "usdt@trx",
+                "fiat": "usd",
+                "amount": "100",
+                "min": "89163",
+                "cur": "0.00089163",
+                "with-fee-amount": "121.53",
+                "with-fee-min": "108364",
+                "with-fee-cur": "0.00108364"
+            }
+        ]');
 
         $coins = [];
         foreach ($estimations as $estimation) {
@@ -245,20 +250,20 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         $factor = $this->settings->factor;
         $show_with_fee = $this->settings->show_with_fee;
 
-        $estimations = Utils::estimate($account, $amount * $factor, $fiat, $currency);
+        // $estimations = Utils::estimate($account, $amount * $factor, $fiat, $currency);
         // TODO: remove mocked data below after test
-        // $estimations = json_decode('[
-        //     {
-        //         "currency": "tbtc",
-        //         "fiat": "usd",
-        //         "amount": "100",
-        //         "min": "89163",
-        //         "cur": "0.00089163",
-        //         "with-fee-amount": "121.53",
-        //         "with-fee-min": "108364",
-        //         "with-fee-cur": "0.00108364"
-        //     }
-        // ]');
+        $estimations = json_decode('[
+            {
+                "currency": "tbtc",
+                "fiat": "usd",
+                "amount": "100",
+                "min": "89163",
+                "cur": "0.00089163",
+                "with-fee-amount": "121.53",
+                "with-fee-min": "108364",
+                "with-fee-cur": "0.00108364"
+            }
+        ]');
         if (empty($estimations)) {
             return;
         }
@@ -389,7 +394,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         if (md5($this->settings->secret . $invoice->order_id) != $callback_secret) {
             http_response_code(403);
             $message = "Secret not valid: " . $callback_secret;
-            $this->response->setOutput("Secret not valid: " . $callback_secret);
+            $this->response->setOutput($message);
             LoggerWrapper::callbackError($message);
 
             return;
@@ -410,7 +415,6 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             $this->cart->clear();    
         }
         // TODO: redirect to invoice Vue application
-        return;
     }
     
     protected function invoice()
@@ -418,19 +422,85 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         // TODO: show invoice view with new Vue application
 
         $this->response->setOutput($this->load->view('extension/payment/apirone/apirone_mccp_invoice', $data));
-        return;
     }
     
-    protected function wallets()
+    /**
+     * API proxy endpoint to get currencies with OPTIONS method
+     * @api
+     */
+    public function wallets()
     {
-        // TODO: API proxy endpoint to get currencies with OPTIONS method
-        return new stdClass();
+        // https://examples.test/opencart2/index.php?route=extension/payment/apirone_mccp/wallets
+
+        if ($this->request->server['REQUEST_METHOD'] != 'OPTIONS') {
+            http_response_code(405);
+            return;
+        }
+        try {
+            $this->response->setOutput(json_encode(
+                Request::options('v2/wallets')));
+        }
+        catch (Exception $e) {
+            $this->response->setOutput($e->getCode().' '.$e->getMessage());
+        }
+    }
+
+    protected function getPathFromRequestUri()
+    {
+        $path_parts = explode('?', $this->request->server['REQUEST_URI'], 2);
+        if (!count($path_parts)) {
+            return;
+        }
+        $path_parts = explode('#', $path_parts[0], 2);
+        if (!count($path_parts)) {
+            return;
+        }
+        return $path_parts[0];
+    }
+
+    protected function getLastSegmentFromRequestUri()
+    {
+        // $path_segments = explode('/', $this->getPathFromRequestUri(), 10);
+        $path_segments = explode('/', $this->request->get['route'], 10);
+        $path_segments_count = count($path_segments);
+        if (!$path_segments_count) {
+            return;
+        }
+        $path_last_segment = $path_segments[$path_segments_count - 1];
+        if ($path_last_segment) {
+            return $path_last_segment;
+        }
+        if ($path_segments_count < 2) {
+            return;
+        }
+        return $path_segments[$path_segments_count - 2];
     }
     
-    protected function invoices()
+    /**
+     * API proxy endpoint to get invoice data with invoice ID in path
+     * @api
+     */
+    public function invoices()
     {
-        // TODO: API proxy endpoint to get invoice data with invoice ID in path
-        return new stdClass();
+        // https://examples.test/opencart2/index.php?route=extension/payment/apirone_mccp/invoices/{INVOICE_ID}
+
+        $request_server = $this->request->server;
+        if ($request_server['REQUEST_METHOD'] != 'GET' || !$request_server['HTTPS']) {
+            http_response_code(405);
+            return;
+        }
+        $last_path_segment = $this->getLastSegmentFromRequestUri();
+        if (!$last_path_segment) {
+            http_response_code(400);
+            return;
+        }
+        try {
+            $this->response->setOutput(json_encode(
+                Request::get(sprintf('v2/invoices/%s', $last_path_segment))));
+        }
+        catch (Exception $e) {
+            $this->response->setOutput($e->getCode().' '.$e->getMessage());
+        }
     }
 }
 
