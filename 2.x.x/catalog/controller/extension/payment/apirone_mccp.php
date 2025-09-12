@@ -66,7 +66,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
 
             $logHandler = function($log_level, $message, $context) use ($openCartLogger) {
                 if ($log_level == LogLevel::ERROR || $this->isDebug()) {
-                    $openCartLogger->write($message.' '.print_r($context));
+                    $openCartLogger->write($message.' '.print_r($context, true));
                 }
             };
             Invoice::logger($logHandler);
@@ -425,24 +425,36 @@ class ControllerExtensionPaymentApironeMccp extends Controller
     }
     
     /**
+     * API proxy
+     * @api
+     */
+    public function getFromAPI($method, $path_suffix)
+    {
+        $request_server = $this->request->server;
+        if (strtolower($request_server['REQUEST_METHOD']) != strtolower($method)
+            || !$request_server['HTTPS']
+        ) {
+            http_response_code(405);
+            return;
+        }
+        try {
+            $this->response->setOutput(
+                Request::execute($method, 'v2/'.$path_suffix)->body);
+        }
+        catch (Exception $e) {
+            http_response_code($e->getCode());
+            $this->response->setOutput($e->getMessage());
+        }
+    }
+    
+    /**
      * API proxy endpoint to get currencies with OPTIONS method
      * @api
      */
     public function wallets()
     {
-        // https://examples.test/opencart2/index.php?route=extension/payment/apirone_mccp/wallets
-
-        if ($this->request->server['REQUEST_METHOD'] != 'OPTIONS') {
-            http_response_code(405);
-            return;
-        }
-        try {
-            $this->response->setOutput(json_encode(
-                Request::options('v2/wallets')));
-        }
-        catch (Exception $e) {
-            $this->response->setOutput($e->getCode().' '.$e->getMessage());
-        }
+        // OPTIONS https://examples.test/opencart2/index.php?route=extension/payment/apirone_mccp/wallets
+        $this->getFromAPI('options', 'wallets');
     }
 
     protected function getPathFromRequestUri()
@@ -482,25 +494,14 @@ class ControllerExtensionPaymentApironeMccp extends Controller
      */
     public function invoices()
     {
-        // https://examples.test/opencart2/index.php?route=extension/payment/apirone_mccp/invoices/{INVOICE_ID}
+        // GET https://examples.test/opencart2/index.php?route=extension/payment/apirone_mccp/invoices/{INVOICE_ID}
 
-        $request_server = $this->request->server;
-        if ($request_server['REQUEST_METHOD'] != 'GET' || !$request_server['HTTPS']) {
-            http_response_code(405);
-            return;
-        }
         $last_path_segment = $this->getLastSegmentFromRequestUri();
         if (!$last_path_segment) {
             http_response_code(400);
             return;
         }
-        try {
-            $this->response->setOutput(json_encode(
-                Request::get(sprintf('v2/invoices/%s', $last_path_segment))));
-        }
-        catch (Exception $e) {
-            $this->response->setOutput($e->getCode().' '.$e->getMessage());
-        }
+        $this->getFromAPI('get', sprintf('invoices/%s', $last_path_segment));
     }
 }
 

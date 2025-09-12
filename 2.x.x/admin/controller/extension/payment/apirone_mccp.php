@@ -61,7 +61,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
 
             $logHandler = function($log_level, $message, $context) use ($openCartLogger) {
                 if ($log_level == LogLevel::ERROR || $this->isDebug()) {
-                    $openCartLogger->write($message.' '.print_r($context));
+                    $openCartLogger->write($message.' '.print_r($context, true));
                 }
             };
             Invoice::logger($logHandler);
