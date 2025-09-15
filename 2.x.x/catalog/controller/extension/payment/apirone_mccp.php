@@ -100,9 +100,8 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             $data['order_key'] = md5($this->settings->secret . $order['total']);
             $data['url_redirect'] = $this->url->link('extension/payment/apirone_mccp/confirm');
         }
-        catch (\Throwable $e) {
+        catch (Exception $e) {
             $this->log->write($e->getMessage());
-
             $data['coins'] = null;
         }
         return $this->load->view('extension/payment/apirone/apirone_mccp', $data);
@@ -271,30 +270,9 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         return $estimations[0]->{$show_with_fee ? 'with-fee-min' : 'min'};
     }
 
-    public function confirm()
+    protected function getDBHandler()
     {
-        $this->load->model('checkout/order');
-        $this->load->language('extension/payment/apirone_mccp');
-        $this->load->model('extension/payment/apirone_mccp');
-
-        $currency_crypto = (isset($this->request->get['currency'])) ? (string) $this->request->get['currency'] : '';
-        $order_key = (isset($this->request->get['key'])) ? (string) $this->request->get['key'] : '';
-        $order_id = (isset($this->request->get['order'])) ? (int) $this->request->get['order'] : 0;
-
-        $order = $this->model_checkout_order->getOrder($order_id);
-        try {
-            $this->getSettings();
-        }
-        catch (\Throwable $e) {
-            $this->log->write($e->getMessage());
-        }
-        // Exit if $order_key is !valid
-        if (md5($this->settings->secret . $order['total']) != $order_key) {
-            return;
-        }
-        Invoice::settings($this->settings);
-
-        $dbHandler = function($query) {
+        return function($query) {
             try {
                 $result = $this->db->query($query);
                 if ($result === true || $result === false) {
@@ -314,7 +292,32 @@ class ControllerExtensionPaymentApironeMccp extends Controller
                 return null;
             }
         };
-        Invoice::db($dbHandler, DB_PREFIX);
+    }
+
+    public function confirm()
+    {
+        $this->load->model('checkout/order');
+        $this->load->language('extension/payment/apirone_mccp');
+        $this->load->model('extension/payment/apirone_mccp');
+
+        $currency_crypto = (isset($this->request->get['currency'])) ? (string) $this->request->get['currency'] : '';
+        $order_key = (isset($this->request->get['key'])) ? (string) $this->request->get['key'] : '';
+        $order_id = (isset($this->request->get['order'])) ? (int) $this->request->get['order'] : 0;
+
+        $order = $this->model_checkout_order->getOrder($order_id);
+        try {
+            $this->getSettings();
+        }
+        catch (Exception $e) {
+            $this->log->write($e->getMessage());
+        }
+        // Exit if $order_key is !valid
+        if (md5($this->settings->secret . $order['total']) != $order_key) {
+            return;
+        }
+        Invoice::settings($this->settings);
+
+        Invoice::db($this->getDBHandler(), DB_PREFIX);
 
         // Is order invoice already exists
         $orderInvoices = Invoice::getByOrder($order_id);
@@ -331,6 +334,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         $currency_fiat = $order['currency_code'];
         $amount_fiat = $order['total'] * $order['currency_value'];
 
+        // TODO: replace with new Utils::estimate()
         $amount_crypto = $this->getCoinAmountMinor(
             $amount_fiat * $this->settings->factor,
             $currency_fiat,
@@ -349,6 +353,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
                 ->order($order_id)
                 ->userData($userData)
                 ->lifetime($this->settings->timeout)
+                // TODO: add estimation
                 ->linkback($this->url->link('extension/payment/apirone_mccp/linkback&id=' . md5($this->settings->secret . $order_id)))
                 ->create();
 
@@ -357,21 +362,20 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             $this->showInvoice($invoice->invoice);
         }
         catch (Exception $e) {
+            $this->log->write($e->getMessage());
             $this->response->redirect($this->url->link('checkout/cart'));
         }
     }
     
     protected function showInvoice($invoice)
     {
-        $this->response->redirect($this->url->link('extension/payment/apirone_mccp/invoice/' . $invoice));
+        $this->response->redirect($this->url->link('extension/payment/apirone_mccp/invoice&id=' . $invoice));
     }
 
     public function invoice()
     {
-        // $data['js_path'] = './script.min.js';
-        // $data['css_path'] = './styles.min.css';
-        $data['js_path'] = 'catalog/view/javascript/apirone/_script.min.js';
-        $data['css_path'] = 'catalog/view/theme/default/stylesheet/apirone/styles.min.css';
+        $data['js_path'] = 'catalog/view/javascript/apirone/script.min.js';
+        $data['css_path'] = 'catalog/view/theme/default/stylesheet/apirone/style.min.css';
         $this->response->setOutput($this->load->view('extension/payment/apirone/apirone_mccp_invoice', $data));
     }
 
@@ -440,7 +444,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
 
         LoggerWrapper::callbackDebug('', $params);
     }
-    
+
     /**
      * API proxy
      * @api
@@ -451,7 +455,10 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         if (strtolower($request_server['REQUEST_METHOD']) != strtolower($method)
             || !$request_server['HTTPS']
         ) {
+            $message = 'Method or protocol not allowed';
+            $this->log->write($message);
             http_response_code(405);
+            $this->response->setOutput($message);
             return;
         }
         try {
@@ -459,11 +466,13 @@ class ControllerExtensionPaymentApironeMccp extends Controller
                 Request::execute($method, 'v2/'.$path_suffix)->body);
         }
         catch (Exception $e) {
+            $message = $e->getMessage();
+            $this->log->write($message);
             http_response_code($e->getCode());
-            $this->response->setOutput($e->getMessage());
+            $this->response->setOutput($message);
         }
     }
-    
+
     /**
      * API proxy endpoint to get currencies with OPTIONS method
      * @api
@@ -474,22 +483,8 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         $this->getFromAPI('options', 'wallets');
     }
 
-    protected function getPathFromRequestUri()
-    {
-        $path_parts = explode('?', $this->request->server['REQUEST_URI'], 2);
-        if (!count($path_parts)) {
-            return;
-        }
-        $path_parts = explode('#', $path_parts[0], 2);
-        if (!count($path_parts)) {
-            return;
-        }
-        return $path_parts[0];
-    }
-
     protected function getLastSegmentFromRequestUri()
     {
-        // $path_segments = explode('/', $this->getPathFromRequestUri(), 10);
         $path_segments = explode('/', $this->request->get['route'], 10);
         $path_segments_count = count($path_segments);
         if (!$path_segments_count) {
@@ -513,12 +508,15 @@ class ControllerExtensionPaymentApironeMccp extends Controller
     {
         // GET https://examples.test/opencart2/index.php?route=extension/payment/apirone_mccp/invoices/{INVOICE_ID}
 
-        $last_path_segment = $this->getLastSegmentFromRequestUri();
-        if (!$last_path_segment) {
+        $invoice = $this->getLastSegmentFromRequestUri();
+        if (!$invoice) {
+            $message = 'Invoice id not specified';
+            $this->log->write($message);
             http_response_code(400);
+            $this->response->setOutput($message);
             return;
         }
-        $this->getFromAPI('get', sprintf('invoices/%s', $last_path_segment));
+        $this->getFromAPI('get', sprintf('invoices/%s', $invoice));
     }
 }
 
