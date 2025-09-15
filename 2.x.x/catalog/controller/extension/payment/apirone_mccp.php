@@ -16,6 +16,7 @@ use ApironeApi\Payment;
 
 use Apirone\SDK\Invoice;
 use Apirone\SDK\Model\Settings;
+use Apirone\SDK\Model\UserData;
 use Apirone\SDK\Service\InvoiceDb;
 use Apirone\SDK\Service\Utils;
 
@@ -237,8 +238,8 @@ class ControllerExtensionPaymentApironeMccp extends Controller
     /**
      * @param float $amount total order amount
      * @param string $fiat fiat currency of amount specified
-     * @param string $currency coin currency abbreviation
-     * @return float coin amount
+     * @param string $currency coin crypto currency abbreviation
+     * @return float coin amount in crypto currency
      * @internal
      */
     protected function getCoinAmountMinor($amount, $fiat, $currency)
@@ -276,7 +277,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         $this->load->language('extension/payment/apirone_mccp');
         $this->load->model('extension/payment/apirone_mccp');
 
-        $currency = (isset($this->request->get['currency'])) ? (string) $this->request->get['currency'] : '';
+        $currency_crypto = (isset($this->request->get['currency'])) ? (string) $this->request->get['currency'] : '';
         $order_key = (isset($this->request->get['key'])) ? (string) $this->request->get['key'] : '';
         $order_id = (isset($this->request->get['order'])) ? (int) $this->request->get['order'] : 0;
 
@@ -291,66 +292,97 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         if (md5($this->settings->secret . $order['total']) != $order_key) {
             return;
         }
-        // $currencyInfo = Apirone::getCurrency($currency);
-        // TODO: what for this currencyInfo?
-        // $currencyInfo = $this->settings->currencies[$currency];
+        Invoice::settings($this->settings);
+
+        $dbHandler = function($query) {
+            try {
+                $result = $this->db->query($query);
+                if ($result === true || $result === false) {
+                    return $result;
+                }
+                if (empty($result)) {
+                    return null;
+                }
+                $result = $result->rows;
+                if (empty($result)) {
+                    return null;
+                }
+                return $result;
+            }
+            catch (Exception $e) {
+                $this->log->write($e->getMessage());
+                return null;
+            }
+        };
+        Invoice::db($dbHandler, DB_PREFIX);
 
         // Is order invoice already exists
-        // $orderInvoice = $this->model_extension_payment_apirone_mccp->getInvoiceByOrderId($order_id);
-        // if ($orderInvoice) {
-        //     // Update invoice when page loaded or reloaded & status != 0 (expired || completed)
-        //     if (Payment::invoiceStatus($orderInvoice) != 0) {
-        //         $invoice_data = Apirone::invoiceInfoPublic($orderInvoice->invoice);
-        //         if ($invoice_data) {
-        //             $invoiceUpdated = $this->model_extension_payment_apirone_mccp->updateInvoice($orderInvoice->order_id, $invoice_data);
-        //             $orderInvoice = ($invoiceUpdated) ? $invoiceUpdated : $orderInvoice;
-        //         }
-        //     }
-        //     $this->showInvoice($orderInvoice, $currencyInfo);
-        //     return;
-        // }
-        Invoice::settings($this->settings);
-        Invoice::db($this->db->query, DB_PREFIX);
-
         $orderInvoices = Invoice::getByOrder($order_id);
         if (count($orderInvoices)) {
-            $this->showInvoice($orderInvoices[0]);
-            return;
+            $invoice = $orderInvoices[0];
+            // Update invoice when page loaded or reloaded & status != 0 (expired || completed)
+            $invoice->update();
+            if ($invoice->status !== 'expired' && $invoice->details->currency == $currency_crypto) {
+                $this->showInvoice($invoice->invoice);
+                return;
+            }
         }
-        // $factor = (float) $this->config->get('apirone_mccp_factor');
-        // $totalCrypto = Payment::fiat2crypto($order['total'] * $order['currency_value'] * $factor, $order['currency_code'], $currency);
-        // $amount = (int) Payment::cur2min($totalCrypto, $currencyInfo->{'units-factor'});
-        $amount = $this->getCoinAmountMinor(
-            $order['total'] * $order['currency_value'],
-            $order['currency_code'],
-            $currency
+        // Create new invoice
+        $currency_fiat = $order['currency_code'];
+        $amount_fiat = $order['total'] * $order['currency_value'];
+
+        $amount_crypto = $this->getCoinAmountMinor(
+            $amount_fiat * $this->settings->factor,
+            $currency_fiat,
+            $currency_crypto
         );
-        // TODO: what for this callback?
-        // $invoiceSecret = md5($this->settings->secret . $order_id);
-        // $callback = $this->url->link('extension/payment/apirone_mccp/callback&id=' . $invoiceSecret);
 
-        // $created = Apirone::invoiceCreate(
-        //     unserialize($this->config->get('apirone_mccp_account')),
-        //     Payment::makeInvoiceData($currency, $amount, $lifetime, $callback, $order['total'], $order['currency_code'])
-        // );
-        $created = Invoice::init($currency, $amount)
-            ->order($order_id)
-            ->lifetime($this->settings->timeout)
-            ->userData(); // TODO: how to create user data?
-
-        if($created) {
-            // TODO: replace updateInvoice to Invoice:::???
-            $this->model_extension_payment_apirone_mccp->updateInvoice($order_id, $created);
-            $this->showInvoice($created, true);
-
-            return;
+        $merchant = $this->settings->merchant;
+        if (!$merchant) {
+            $merchant = $this->config->get('config_name');
         }
-        $this->response->redirect($this->url->link('checkout/cart'));
+        $userData = UserData::init()
+            ->merchant($merchant)
+            ->price($amount_fiat . ' ' . strtoupper($currency_fiat));
+        try {
+            $invoice = Invoice::init($currency_crypto, $amount_crypto)
+                ->order($order_id)
+                ->userData($userData)
+                ->lifetime($this->settings->timeout)
+                ->linkback($this->url->link('extension/payment/apirone_mccp/linkback&id=' . md5($this->settings->secret . $order_id)))
+                ->create();
+
+            $this->cart->clear();    
+
+            $this->showInvoice($invoice->invoice);
+        }
+        catch (Exception $e) {
+            $this->response->redirect($this->url->link('checkout/cart'));
+        }
+    }
+    
+    protected function showInvoice($invoice)
+    {
+        $this->response->redirect($this->url->link('extension/payment/apirone_mccp/invoice/' . $invoice));
     }
 
-    // TODO: what for this callback?
-    public function callback()
+    public function invoice()
     {
+        // $data['js_path'] = './script.min.js';
+        // $data['css_path'] = './styles.min.css';
+        $data['js_path'] = 'catalog/view/javascript/apirone/_script.min.js';
+        $data['css_path'] = 'catalog/view/theme/default/stylesheet/apirone/styles.min.css';
+        $this->response->setOutput($this->load->view('extension/payment/apirone/apirone_mccp_invoice', $data));
+    }
+
+    /**
+     * Callback URI for change order status on success payment
+     * @api
+     */
+    public function linkback()
+    {
+        $this->response->setOutput('Test linkback');
+        return;
         $this->load->model('checkout/order');
         $this->load->model('extension/payment/apirone_mccp');
         $params = false;
@@ -407,21 +439,6 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         }
 
         LoggerWrapper::callbackDebug('', $params);
-    }
-    
-    protected function showInvoice($clear_cart = false)
-    {
-        if ($clear_cart) {
-            $this->cart->clear();    
-        }
-        // TODO: redirect to invoice Vue application
-    }
-    
-    protected function invoice()
-    {
-        // TODO: show invoice view with new Vue application
-
-        $this->response->setOutput($this->load->view('extension/payment/apirone/apirone_mccp_invoice', $data));
     }
     
     /**
