@@ -374,9 +374,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
 
     public function invoice()
     {
-        $data['js_path'] = 'catalog/view/javascript/apirone/script.min.js';
-        $data['css_path'] = 'catalog/view/theme/default/stylesheet/apirone/style.min.css';
-        $this->response->setOutput($this->load->view('extension/payment/apirone/apirone_mccp_invoice', $data));
+        $this->response->setOutput($this->load->view('extension/payment/apirone/apirone_mccp_invoice'));
     }
 
     /**
