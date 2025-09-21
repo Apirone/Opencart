@@ -6,22 +6,12 @@ use Apirone\API\Exceptions\UnauthorizedException;
 use Apirone\API\Exceptions\ForbiddenException;
 use Apirone\API\Exceptions\NotFoundException;
 use Apirone\API\Exceptions\MethodNotAllowedException;
-use Apirone\API\Exceptions\InternalServerErrorException;
-use Apirone\API\Exceptions\JsonException;
 use Apirone\API\Http\Request;
 use Apirone\API\Log\LogLevel;
-
-use ApironeApi\Apirone;
-use ApironeApi\Payment;
 
 use Apirone\SDK\Invoice;
 use Apirone\SDK\Model\Settings;
 use Apirone\SDK\Model\UserData;
-use Apirone\SDK\Service\InvoiceDb;
-use Apirone\SDK\Service\Utils;
-
-require_once(DIR_SYSTEM . 'library/apirone_api/Apirone.php');
-require_once(DIR_SYSTEM . 'library/apirone_api/Payment.php');
 
 require_once(DIR_SYSTEM . 'library/apirone/vendor/autoload.php');
 
@@ -65,9 +55,9 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         try {
             $openCartLogger = new \Log(PLUGIN_LOG_FILE_NAME);
 
-            $logHandler = function($log_level, $message, $context) use ($openCartLogger) {
+            $logHandler = function($log_level, $message, $context = null) use ($openCartLogger) {
                 if ($log_level == LogLevel::ERROR || $this->isDebug()) {
-                    $openCartLogger->write($message.' '.print_r($context, true));
+                    $openCartLogger->write($message . (!isset($context) ? '' : ' CONTEXT: '. json_encode($context)));
                 }
             };
             Invoice::logger($logHandler);
@@ -256,12 +246,12 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             {
                 "currency": "tbtc",
                 "fiat": "usd",
-                "amount": "100",
-                "min": "89163",
-                "cur": "0.00089163",
-                "with-fee-amount": "121.53",
-                "with-fee-min": "108364",
-                "with-fee-cur": "0.00108364"
+                "amount": "9.8",
+                "min": "8916",
+                "cur": "0.00008916",
+                "with-fee-amount": "12.15",
+                "with-fee-min": "10836",
+                "with-fee-cur": "0.00010836"
             }
         ]');
         if (empty($estimations)) {
@@ -300,9 +290,9 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         $this->load->language('extension/payment/apirone_mccp');
         $this->load->model('extension/payment/apirone_mccp');
 
-        $currency_crypto = (isset($this->request->get['currency'])) ? (string) $this->request->get['currency'] : '';
-        $order_key = (isset($this->request->get['key'])) ? (string) $this->request->get['key'] : '';
-        $order_id = (isset($this->request->get['order'])) ? (int) $this->request->get['order'] : 0;
+        $currency_crypto = isset($this->request->get['currency']) ? (string) $this->request->get['currency'] : '';
+        $order_key = isset($this->request->get['key']) ? (string) $this->request->get['key'] : '';
+        $order_id = isset($this->request->get['order']) ? (int) $this->request->get['order'] : 0;
 
         $order = $this->model_checkout_order->getOrder($order_id);
         try {
@@ -310,21 +300,22 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         }
         catch (Exception $e) {
             $this->log->write($e->getMessage());
+            return;
         }
         // Exit if $order_key is !valid
         if (md5($this->settings->secret . $order['total']) != $order_key) {
             return;
         }
         Invoice::settings($this->settings);
-
         Invoice::db($this->getDBHandler(), DB_PREFIX);
 
         // Is order invoice already exists
         $orderInvoices = Invoice::getByOrder($order_id);
         if (count($orderInvoices)) {
             $invoice = $orderInvoices[0];
-            // Update invoice when page loaded or reloaded & status != 0 (expired || completed)
+            // Update invoice when page loaded or reloaded & status != (expired || completed)
             $invoice->update();
+            $this->model_extension_payment_apirone_mccp->updateOrderStatus($invoice);
             if ($invoice->status !== 'expired' && $invoice->details->currency == $currency_crypto) {
                 $this->showInvoice($invoice->invoice);
                 return;
@@ -343,19 +334,26 @@ class ControllerExtensionPaymentApironeMccp extends Controller
 
         $merchant = $this->settings->merchant;
         if (!$merchant) {
-            $merchant = $this->config->get('config_name');
+            $merchant = $order['store_name'];
         }
+        $merchant_url = $order['store_url'];
+
         $userData = UserData::init()
             ->merchant($merchant)
+            ->url($merchant_url)
             ->price($amount_fiat . ' ' . strtoupper($currency_fiat));
+
+        $callback_path = 'extension/payment/apirone_mccp/';
         try {
             $invoice = Invoice::init($currency_crypto, $amount_crypto)
                 ->order($order_id)
                 ->userData($userData)
                 ->lifetime($this->settings->timeout)
                 // TODO: add estimation
-                ->linkback($this->url->link('extension/payment/apirone_mccp/linkback&id=' . md5($this->settings->secret . $order_id)))
+                ->callbackUrl($this->url->link($callback_path.'callback&key='.md5($this->settings->secret . $order_id)))
+                ->linkback($this->url->link($callback_path.'linkback&key='.md5($this->settings->secret . $amount_crypto) .'&order='.$order_id))
                 ->create();
+            $this->model_extension_payment_apirone_mccp->updateOrderStatus($invoice);
 
             $this->cart->clear();    
 
@@ -374,73 +372,135 @@ class ControllerExtensionPaymentApironeMccp extends Controller
 
     public function invoice()
     {
+        // TODO: read Settings, get "logo" and pass it to template as "embed" prop in window.apirone_config
         $this->response->setOutput($this->load->view('extension/payment/apirone/apirone_mccp_invoice'));
     }
 
+    // to test callback on local server
+    // curl -k -w "%{http_code}\n" -X POST -d '{"invoice":"INVOICE_ID_HERE","status":"expired"}' 'https://examples.test/opencart2/index.php?route=extension/payment/apirone_mccp/callback&key=CALLBACK_KEY_HERE'
     /**
-     * Callback URI for change order status on success payment
+     * Callback URI for change invoice and order status
      * @api
      */
-    public function linkback()
+    public function callback()
     {
-        $this->response->setOutput('Test linkback');
-        return;
-        $this->load->model('checkout/order');
-        $this->load->model('extension/payment/apirone_mccp');
         $params = false;
 
         $data = file_get_contents('php://input');
         if($data) {
             $params = json_decode($data);
         }
-
         if (!$params) {
             http_response_code(400);
-            $message = "Data not received";
-            $this->response->setOutput($message);
-            LoggerWrapper::callbackError($message);
-
+            $this->response->setOutput('Data not received');
             return;
         }
-        if (!property_exists($params, 'invoice') || !property_exists($params, 'status')) {
-            http_response_code(400);
-            $message = "Wrong params received: " . json_encode($params);
-            $this->response->setOutput($message);
-            LoggerWrapper::callbackError($message);
+        $invoice_id = property_exists($params, 'invoice') ? (string) $params->invoice : '';
+        $status = property_exists($params, 'status') ? (string) $params->status : '';
+        $callback_key = isset($this->request->get['key']) ? (string) $this->request->get['key'] : '';
 
+        if (!($invoice_id && $status && $callback_key)) {
+            $message = 'Wrong params received';
+            $this->log->write($message
+                .': invoice:'.$invoice_id
+                .', status:'.$status
+                .', key:'.$callback_key
+            );
+            http_response_code(400);
+            $this->response->setOutput($message);
             return;        
         }
-
-
-        $callback_secret = (isset($this->request->get['id'])) ? (string) $this->request->get['id'] : '';
-
-        $invoice = $this->model_extension_payment_apirone_mccp->getInvoiceById($params->invoice);
-        
-        if (!$invoice) {
+        Invoice::db($this->getDBHandler(), DB_PREFIX);
+        $invoice = Invoice::get($invoice_id);
+        // Is invoice exists
+        if (empty($invoice)) {
+            $message = 'Invoice not found';
+            $this->log->write($message . ': '.$invoice_id);
             http_response_code(404);
-            $message = "Invoice not found: " . $params->invoice;
             $this->response->setOutput($message);
-            LoggerWrapper::callbackError($message);
-
             return;
         }
-
-        if (md5($this->settings->secret . $invoice->order_id) != $callback_secret) {
+        try {
+            $this->getSettings();
+        }
+        catch (Exception $e) {
+            $this->log->write($e->getMessage());
+            return;
+        }
+        // Exit if callback key is !valid
+        if (md5($this->settings->secret . $invoice->order) != $callback_key) {
+            $message = 'Key not valid';
+            $this->log->write($message
+                .': key:'.$callback_key
+                .', invoice:'.$invoice_id
+            );
             http_response_code(403);
-            $message = "Secret not valid: " . $callback_secret;
-            $this->response->setOutput($message);
-            LoggerWrapper::callbackError($message);
-
             return;
         }
-
-        $invoiceUpdated = Apirone::invoiceInfoPublic($invoice->invoice);
-
-        if($invoiceUpdated) {
-            $this->model_extension_payment_apirone_mccp->updateInvoice($invoice->order_id, $invoiceUpdated);
+        try {
+            $this->getSettings();
         }
+        catch (Exception $e) {
+            $this->log->write($e->getMessage());
+            http_response_code(500);
+            $this->response->setOutput('Can not get settings');
+            return;
+        }
+        Invoice::settings($this->settings);
 
-        LoggerWrapper::callbackDebug('', $params);
+        if ($invoice->update()) {
+            // Update order if invoice was changed
+            $this->load->model('extension/payment/apirone_mccp');
+            $this->model_extension_payment_apirone_mccp->updateOrderStatus($invoice);
+        };
+    }
+
+    /**
+     * Callback URI for return to shop when order was paid
+     * @api
+     */
+    public function linkback()
+    {
+        $this->load->model('extension/payment/apirone_mccp');
+
+        $invoice_key = isset($this->request->get['key']) ? (string) $this->request->get['key'] : '';
+        $order_id = isset($this->request->get['order']) ? (int) $this->request->get['order'] : 0;
+
+        if (!($invoice_key && $order_id)) {
+            $message = 'Wrong params received';
+            $this->log->write($message .': key:'.$invoice_key .', order:'.$order_id);
+            http_response_code(400);
+            $this->response->setOutput($message);
+            return;        
+        }
+        Invoice::db($this->getDBHandler(), DB_PREFIX);
+        $orderInvoices = Invoice::getByOrder($order_id);
+        // Is order invoice exists
+        if (!count($orderInvoices)) {
+            $message = 'Order not found' ;
+            $this->log->write($message . ': '.$order_id);
+            http_response_code(404);
+            $this->response->setOutput($message);
+            return;
+        }
+        $invoice = $orderInvoices[0];
+        try {
+            $this->getSettings();
+        }
+        catch (Exception $e) {
+            $this->log->write($e->getMessage());
+            http_response_code(500);
+            $this->response->setOutput('Can not get settings');
+            return;
+        }
+        // Exit if $invoice_key is !valid
+        if (md5($this->settings->secret . $invoice->details->amount) != $invoice_key) {
+            $message = 'Key not valid';
+            $this->log->write($message .': key:'.$invoice_key .', invoice:'.$invoice->invoice);
+            http_response_code(403);
+            return;
+        }
+        $this->response->redirect($this->url->link('checkout/success'));
     }
 
     /**
@@ -479,6 +539,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
     {
         // OPTIONS https://examples.test/opencart2/index.php?route=extension/payment/apirone_mccp/wallets
         $this->getFromAPI('options', 'wallets');
+        // TODO: we can also cache this info for any time to reduce calls to Apirone API
     }
 
     protected function getLastSegmentFromRequestUri()
@@ -506,15 +567,25 @@ class ControllerExtensionPaymentApironeMccp extends Controller
     {
         // GET https://examples.test/opencart2/index.php?route=extension/payment/apirone_mccp/invoices/{INVOICE_ID}
 
-        $invoice = $this->getLastSegmentFromRequestUri();
-        if (!$invoice) {
+        $invoice_id = $this->getLastSegmentFromRequestUri();
+        if (!$invoice_id) {
             $message = 'Invoice id not specified';
             $this->log->write($message);
             http_response_code(400);
             $this->response->setOutput($message);
             return;
         }
-        $this->getFromAPI('get', sprintf('invoices/%s', $invoice));
+        Invoice::db($this->getDBHandler(), DB_PREFIX);
+        $invoice = Invoice::get($invoice_id);
+        // Is invoice exists
+        if (empty($invoice)) {
+            $message = 'Invoice not found';
+            $this->log->write($message . ': '.$invoice_id);
+            http_response_code(404);
+            $this->response->setOutput($message);
+            return;
+        }
+        $this->response->setOutput(json_encode($invoice->info()));
     }
 }
 

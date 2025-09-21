@@ -15,8 +15,6 @@ use Apirone\SDK\Service\InvoiceQuery;
 use Apirone\SDK\Model\Settings;
 use Apirone\SDK\Model\Settings\Coin;
 
-require_once(DIR_SYSTEM . 'library/apirone_api/Apirone.php');
-
 require_once(DIR_SYSTEM . 'library/apirone/vendor/autoload.php');
 
 define('PLUGIN_VERSION', '2.0.0');
@@ -59,9 +57,9 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         try {
             $openCartLogger = new \Log(PLUGIN_LOG_FILE_NAME);
 
-            $logHandler = function($log_level, $message, $context) use ($openCartLogger) {
+            $logHandler = function($log_level, $message, $context = null) use ($openCartLogger) {
                 if ($log_level == LogLevel::ERROR || $this->isDebug()) {
-                    $openCartLogger->write($message.' '.print_r($context, true));
+                    $openCartLogger->write($message . (!isset($context) ? '' : ' CONTEXT: '. json_encode($context)));
                 }
             };
             Invoice::logger($logHandler);

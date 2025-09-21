@@ -53,7 +53,7 @@ class ModelExtensionPaymentApironeMccp extends Model
         try {
             $_settings = Settings::fromJson($_settings_json);
         }
-        catch (\Throwable $e) {
+        catch (Exception $e) {
             $this->log->write($e->getMessage());
             return;
         }
@@ -63,74 +63,11 @@ class ModelExtensionPaymentApironeMccp extends Model
         return $_settings->coins;
     }
 
-    public function getInvoiceByOrderId($order_id)
-    {
-        $result = $this->db->query(InvoiceQuery::selectOrder($order_id, DB_PREFIX));
-        if ($result->num_rows) {
-            $invoice = $result->rows[0];
-            $invoice['details'] = json_decode($invoice['details']);
-
-            return json_decode(json_encode($invoice));
-        }
-        else {
-            return false;
-        }
-    }
-
-    public function getInvoiceById($invoice_id)
-    {
-        $result = $this->db->query(InvoiceQuery::selectInvoice($invoice_id, DB_PREFIX));
-
-        if ($result->num_rows) {
-            $invoice = $result->rows[0];
-            $invoice['details'] = json_decode($invoice['details']);
-
-            return json_decode(json_encode($invoice));
-        }
-        else {
-            return false;
-        }
-    }
-
-    public function updateInvoice($order_id, $objInvoice)
+    public function updateOrderStatus($invoice)
     {
         $this->load->model('checkout/order');
 
-        $params = array();
-        $invoice = $this->getInvoiceByOrderId($order_id);
-
-        if($invoice) {
-            // Do update
-            $params['order_id'] = $order_id;
-            $params['status'] = $objInvoice->status;
-            $params['details'] = $objInvoice;
-
-            $result = $this->db->query(InvoiceQuery::updateInvoice($params, DB_PREFIX));
-        }
-        else {
-            // Do insert
-            $params['order_id'] = $order_id;
-            $params['account'] = $objInvoice->account;
-            $params['invoice'] = $objInvoice->invoice;
-            $params['status'] = $objInvoice->status;
-            $params['details'] = $objInvoice;
-
-            $result = $this->db->query(InvoiceQuery::createInvoice($params, DB_PREFIX));
-        }
-        if ($result) {
-            $savedInvoice = $this->getInvoiceByOrderId($order_id);
-            $this->updateOrderStatus($savedInvoice);
-            return $savedInvoice;
-        }
-        else {
-            return false;
-        }
-
-    }
-
-    private function updateOrderStatus($invoice)
-    {
-        $orderHistory = $this->db->query("SELECT * FROM " . DB_PREFIX . "order_history WHERE `order_id` = " . (int) $invoice->order_id);
+        $orderHistory = $this->db->query("SELECT * FROM " . DB_PREFIX . "order_history WHERE `order_id` = " . (int) $invoice->order);
         $invoiceHistory = $invoice->details->history;
 
         foreach ($invoiceHistory as $item) {
@@ -140,9 +77,11 @@ class ModelExtensionPaymentApironeMccp extends Model
                 continue;
             }
 
-            $status = $this->config->get('apirone_mccp_invoice_' . $item->status . '_status_id');
+            // TODO: restore if statuses map is stored in Settings
+            // $status = $this->config->get('apirone_mccp_invoice_' . $item->status . '_status_id');
+            $status = $this->_historyRecordStatusId($item->status);
 
-            $this->model_checkout_order->addOrderHistory($invoice->order_id, $status, $comment);
+            $this->model_checkout_order->addOrderHistory($invoice->order, $status, $comment);
         }
     }
 
@@ -156,23 +95,33 @@ class ModelExtensionPaymentApironeMccp extends Model
         return false;
     }
 
+    private function _historyRecordStatusId($status)
+    {
+        switch ($status) {
+            case 'paid':
+            case 'overpaid':
+            case 'completed':
+                return 5;
+            case 'expired':
+                return 16;
+        }
+        // created, partpaid
+        return 1;
+    }
+
     private function _historyRecordComment($address, $item)
-    {   
-        switch ($item->status) {
+    {
+        $status = $item->status;
+        $prefix = 'Invoice ' . $status;
+        switch ($status) {
             case 'created':
-                $comment = 'Invoice ' . $item->status . '. Payment address: ' . $address;
-                break;
+                return $prefix . '. Payment address: ' . $address;
             case 'paid':
             case 'partpaid':
             case 'overpaid':
-                $comment = 'Invoice ' . $item->status . '. Transaction hash: ' . $item->txid;
-                break;
-            case 'completed':
-            case 'expired':
-                $comment = 'Invoice ' . $item->status;
-                break;
+                return $prefix . '. Transaction hash: ' . $item->txid;
         }
-
-        return $comment;
+        // completed, expired
+        return $prefix;
     }
 }
