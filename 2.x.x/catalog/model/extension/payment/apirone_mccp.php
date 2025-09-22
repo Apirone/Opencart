@@ -1,10 +1,10 @@
 <?php
 
 use Apirone\SDK\Model\Settings;
-use Apirone\SDK\Service\InvoiceQuery;
 
-require_once(DIR_SYSTEM . 'library/apirone_api/Db.php');
 require_once(DIR_SYSTEM . 'library/apirone/vendor/autoload.php');
+
+define('PLUGIN_LOG_FILE_NAME', 'apirone.log');
 
 class ModelExtensionPaymentApironeMccp extends Model 
 {
@@ -54,7 +54,8 @@ class ModelExtensionPaymentApironeMccp extends Model
             $_settings = Settings::fromJson($_settings_json);
         }
         catch (Exception $e) {
-            $this->log->write($e->getMessage());
+            $openCartLogger = new \Log(PLUGIN_LOG_FILE_NAME);
+            $openCartLogger->write($e->getMessage());
             return;
         }
         if (!$_settings) {

@@ -6,6 +6,7 @@
             window.apirone_config = {
                 service_url: 'index.php?route=extension/payment/apirone_mccp/',
                 images_relative_path: 'catalog/view/theme/default/image/apirone',
+                <?php echo $apirone_config; ?>
             };
         </script>
         <script type="module" crossorigin src="catalog/view/javascript/apirone/script.min.js"></script>

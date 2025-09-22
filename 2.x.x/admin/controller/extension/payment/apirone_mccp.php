@@ -8,6 +8,7 @@ use Apirone\API\Exceptions\ForbiddenException;
 use Apirone\API\Exceptions\NotFoundException;
 use Apirone\API\Exceptions\MethodNotAllowedException;
 use Apirone\API\Http\Request;
+use Apirone\API\Log\LoggerWrapper;
 use Apirone\API\Log\LogLevel;
 
 use Apirone\SDK\Invoice;
@@ -36,7 +37,6 @@ class ControllerExtensionPaymentApironeMccp extends Controller
     /**
      * @return write to log extended info except errors
      * @since 2.0.0
-     * @author Valery Yu <vvy1976@gmail.com>
      * @see also in catalog/controller/extension/payment/apirone_mccp.php
      * @internal
      */
@@ -48,7 +48,6 @@ class ControllerExtensionPaymentApironeMccp extends Controller
     /**
      * Initializes logging
      * @since 2.0.0
-     * @author Valery Yu <vvy1976@gmail.com>
      * @see also in catalog/controller/extension/payment/apirone_mccp.php
      * @internal
      */
@@ -81,9 +80,8 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             $this->getSettings();
             $this->data['settings_loaded'] = true;
         }
-        catch (\Throwable $e) {
-            $this->log->write($e->getMessage());
-
+        catch (Exception $e) {
+            LoggerWrapper::error($e->getMessage());
             $this->error['warning'] = $this->data['error'] = $this->language->get('error_service_not_available');
             $this->setCommonPageData();
             return;
