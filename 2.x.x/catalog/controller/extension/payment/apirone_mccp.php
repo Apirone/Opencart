@@ -177,6 +177,15 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         // TODO: remove mocked data below after test
         $estimations = json_decode('[
             {
+                "currency": "usdt@bnb",
+                "fiat": "usd",
+                "amount": "100",
+                "factor": "1.01",
+                "fee": "2.5",
+                "min": "107906072942994608",
+                "cur": "0.10790607294299462"
+            },
+            {
                 "currency": "bnb",
                 "fiat": "usd",
                 "amount": "100",
@@ -390,7 +399,6 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             LoggerWrapper::error($e->getMessage());
             $data['apirone_config'] = '';
         }
-        // TODO: read Settings, get "logo" and pass it to template as "embed" prop in window.apirone_config
         $this->response->setOutput($this->load->view('extension/payment/apirone/apirone_mccp_invoice', $data));
     }
 
