@@ -4,8 +4,6 @@ use Apirone\SDK\Model\Settings;
 
 require_once(DIR_SYSTEM . 'library/apirone/vendor/autoload.php');
 
-define('PLUGIN_LOG_FILE_NAME', 'apirone.log');
-
 class ModelExtensionPaymentApironeMccp extends Model 
 {
     public function getMethod($address, $total)

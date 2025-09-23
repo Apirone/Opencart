@@ -22,7 +22,7 @@
                                 <?php if ($coin->token) : ?>
                                     <img src="catalog/view/theme/default/image/apirone/currencies/<?php echo $coin->network; ?>.svg" width="18">
                                 <?php endif; ?>
-                                <?php echo $coin->alias; ?>: <?php echo $coin->amount ? $coin->amount : $cant_convert; ?>
+                                <?php echo $coin->label; ?>
                             </button></li>
                             <?php endforeach; ?>
                         </ul>

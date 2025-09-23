@@ -168,10 +168,8 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         $this->setValue('testcustomer');
         $this->setValue('timeout', false, true);
         $this->setValue('processing_fee');
+        $this->setValue('with_fee');
         $this->setValue('factor', false, true);
-        $this->setValue('show_in_major');
-        $this->setValue('show_with_fee');
-        $this->setValue('show_in_fiat');
         $this->setValue('logo');
         $this->setValue('debug');
 
@@ -217,10 +215,8 @@ class ControllerExtensionPaymentApironeMccp extends Controller
                     ->testcustomer(trim($this->request->post['apirone_mccp_testcustomer']))
                     ->timeout(intval($this->request->post['apirone_mccp_timeout']))
                     ->processing_fee($this->request->post['apirone_mccp_processing_fee'])
+                    ->with_fee(!!$this->request->post['apirone_mccp_with_fee'])
                     ->factor(floatval($this->request->post['apirone_mccp_factor']))
-                    ->show_in_major(!!$this->request->post['apirone_mccp_show_in_major'])
-                    ->show_with_fee(!!$this->request->post['apirone_mccp_show_with_fee'])
-                    ->show_in_fiat(!!$this->request->post['apirone_mccp_show_in_fiat'])
                     ->logo(!!$this->request->post['apirone_mccp_logo'])
                     ->debug(!!$this->request->post['apirone_mccp_debug'])
                     ->toJsonString();
@@ -296,7 +292,8 @@ class ControllerExtensionPaymentApironeMccp extends Controller
     {
         $plugin_data = $this->model_setting_setting->getSetting('apirone_mccp');
 
-        if ($_settings_json = $plugin_data['apirone_mccp_settings']) {
+        $_settings = false;
+        if (key_exists('apirone_mccp_settings', $plugin_data) && ($_settings_json = $plugin_data['apirone_mccp_settings'])) {
             $_settings = Settings::fromJson($_settings_json);
         }
         if ($_settings && $_settings->account && $_settings->{'transfer-key'}) {

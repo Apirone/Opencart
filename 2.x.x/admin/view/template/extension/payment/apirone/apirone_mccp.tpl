@@ -78,6 +78,22 @@
                                 </select>
                             </div>
                         </div>
+                        <div class="form-group">
+                            <label class="col-lg-4 control-label" for="input-with-fee">
+                                <span data-toggle="tooltip" data-original-title="<?php echo $text_with_fee_tooltip; ?>"><?php echo $entry_with_fee; ?></span>
+                            </label>
+                            <div class="col-lg-8">
+                                <select name="apirone_mccp_with_fee" id="input-with-fee" class="form-control">
+                                    <?php if ($apirone_mccp_with_fee) : ?>
+                                    <option value="1" selected="selected"><?php echo $text_enabled; ?></option>
+                                    <option value="0"><?php echo $text_disabled; ?></option>
+                                    <?php else : ?>
+                                    <option value="1"><?php echo $text_enabled; ?></option>
+                                    <option value="0" selected="selected"><?php echo $text_disabled; ?></option>
+                                    <?php endif; ?>
+                                </select>
+                            </div>
+                        </div>
                         <div class="form-group required">
                             <label class="col-lg-4 control-label" for="input-factor">
                                 <span data-toggle="tooltip" data-original-title="<?php echo $text_factor_tooltip; ?>"><?php echo $entry_factor; ?></span>
@@ -87,54 +103,6 @@
                                 <?php if (isset($errors['apirone_mccp_factor'])) : ?>
                                 <div class=" text-danger"><?php echo $errors['apirone_mccp_factor']; ?></div>
                                 <?php endif; ?>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-lg-4 control-label" for="input-show-in-major">
-                                <span data-toggle="tooltip" data-original-title="<?php echo $text_show_in_major_tooltip; ?>"><?php echo $entry_show_in_major; ?></span>
-                            </label>
-                            <div class="col-lg-8">
-                                <select name="apirone_mccp_show_in_major" id="input-show-in-major" class="form-control">
-                                    <?php if ($apirone_mccp_show_in_major) : ?>
-                                    <option value="1" selected="selected"><?php echo $text_enabled; ?></option>
-                                    <option value="0"><?php echo $text_disabled; ?></option>
-                                    <?php else : ?>
-                                    <option value="1"><?php echo $text_enabled; ?></option>
-                                    <option value="0" selected="selected"><?php echo $text_disabled; ?></option>
-                                    <?php endif; ?>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-lg-4 control-label" for="input-show-with-fee">
-                                <span data-toggle="tooltip" data-original-title="<?php echo $text_show_with_fee_tooltip; ?>"><?php echo $entry_show_with_fee; ?></span>
-                            </label>
-                            <div class="col-lg-8">
-                                <select name="apirone_mccp_show_with_fee" id="input-show-with-fee" class="form-control">
-                                    <?php if ($apirone_mccp_show_with_fee) : ?>
-                                    <option value="1" selected="selected"><?php echo $text_enabled; ?></option>
-                                    <option value="0"><?php echo $text_disabled; ?></option>
-                                    <?php else : ?>
-                                    <option value="1"><?php echo $text_enabled; ?></option>
-                                    <option value="0" selected="selected"><?php echo $text_disabled; ?></option>
-                                    <?php endif; ?>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-lg-4 control-label" for="input-show-in-fiat">
-                                <span data-toggle="tooltip" data-original-title="<?php echo $text_show_in_fiat_tooltip; ?>"><?php echo $entry_show_in_fiat; ?></span>
-                            </label>
-                            <div class="col-lg-8">
-                                <select name="apirone_mccp_show_in_fiat" id="input-show-in-fiat" class="form-control">
-                                    <?php if ($apirone_mccp_show_in_fiat) : ?>
-                                    <option value="1" selected="selected"><?php echo $text_enabled; ?></option>
-                                    <option value="0"><?php echo $text_disabled; ?></option>
-                                    <?php else : ?>
-                                    <option value="1"><?php echo $text_enabled; ?></option>
-                                    <option value="0" selected="selected"><?php echo $text_disabled; ?></option>
-                                    <?php endif; ?>
-                                </select>
                             </div>
                         </div>
                         <div class="form-group">

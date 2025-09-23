@@ -11,10 +11,8 @@ $_['text_edit'] = 'Edit Apirone Crypto Payments';
 $_['text_apirone_mccp'] = '<a href="https://apirone.com/" target="_blank"><img src="view/image/payment/apirone-logo.svg" alt="" title="" width="128"/></a>';
 $_['text_test_currency'] = 'WARNING: Test currency';
 $_['text_test_currency_tooltip'] = 'Use this currency for testing purposes only! It is displayed on the front end for `Test currency customer`.';
+$_['text_with_fee_tooltip'] = 'Include payment fee in invoice amount.';
 $_['text_factor_tooltip'] = 'If you want to add/subtract percent to/from the payment amount, use the following  price adjustment factor multiplied by the amount.<br />For example: 100% * 0.99 = 99%, 100% * 1.01 = 101%';
-$_['text_show_in_major_tooltip'] = 'Show amount in major units in currency selector.';
-$_['text_show_with_fee_tooltip'] = 'Show amount with payment fee in currency selector.';
-$_['text_show_in_fiat_tooltip'] = 'Show amount in fiat in currency selector.';
 $_['text_logo_tooltip'] = 'Show the Apirone logo on the invoice page.';
 $_['text_test_currency_customer'] = 'Enter an email of the registered customer to whom the test currencies will be shown.';
 $_['text_missing'] = 'Missing orders';
@@ -55,15 +53,13 @@ $_['entry_processing_fee'] = 'Processing fee plan';
 
 $_['entry_geo_zone'] = 'Geo Zone';
 $_['entry_status'] = 'Status';
-$_['entry_show_in_major'] = 'Show in major units';
-$_['entry_show_with_fee'] = 'Show with fee';
-$_['entry_show_in_fiat'] = 'Show in fiat';
 $_['entry_logo'] = 'Apirone logo';
 $_['entry_debug'] = 'Debug mode';
 $_['entry_sort_order'] = 'Sort Order';
 $_['entry_merchant'] = 'Merchant Name';
 $_['entry_confirmation'] = 'Confirmations count';
 $_['entry_timeout'] = 'Payment timeout';
+$_['entry_with_fee'] = 'Include fee';
 $_['entry_factor'] = 'Payment adjustment factor';
 
 $_['entry_testcustomer'] = 'Test currency customer';

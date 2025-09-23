@@ -82,11 +82,9 @@ class ControllerExtensionPaymentApironeMccp extends Controller
 
             $order = $this->model_checkout_order->getOrder($this->session->data['order_id']);
 
-            $data['coins'] = $this->getCoins(
-                $order['total'] * $order['currency_value'],
-                $order['currency_code'],
-                $this->showTestnet()
-            );
+            $amount_fiat = $order['total'] * $order['currency_value'];
+            $currency_fiat = $order['currency_code'];
+            $data['coins'] = $this->getCoins($amount_fiat, $currency_fiat, $this->showTestnet());
             $data['order_id'] = $order['order_id'];
             $data['order_key'] = md5($this->settings->secret . $order['total']);
             $data['url_redirect'] = $this->url->link('extension/payment/apirone_mccp/confirm');
@@ -151,13 +149,6 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         if (!$this->settings) {
             return;
         }
-        $account = $this->settings->account;
-        $factor = $this->settings->factor;
-        $currencies = $this->settings->currencies;
-        $show_in_major = $this->settings->show_in_major;
-        $show_with_fee = $this->settings->show_with_fee;
-        $show_in_fiat = $this->settings->show_in_fiat;
-
         $coins_aliases = [];
         $currencies_to_estimate = [];
         foreach ($this->settings->coins as $coin) {
@@ -170,48 +161,49 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         if (!count($currencies_to_estimate)) {
             return;
         }
-        // $estimations = Utils::estimate($account, $amount * $factor, $fiat, $currencies_to_estimate);
+        // try {
+        //     $estimations = Utils::estimate(
+        //         $this->settings->account,
+        //         $amount,
+        //         $this->settings->factor,
+        //         $this->settings->with_fee,
+        //         $fiat,
+        //         $currencies_to_estimate
+        //     );
+        // } catch (Exception $e) {
+        //     LoggerWrapper::error('Can not get estimations for currency selector');
+        //     return;
+        // }
         // TODO: remove mocked data below after test
         $estimations = json_decode('[
+            {
+                "currency": "bnb",
+                "fiat": "usd",
+                "amount": "100",
+                "factor": "1.01",
+                "fee": "2.5",
+                "min": "107906072942994608",
+                "cur": "0.10790607294299462"
+            },
             {
                 "currency": "tbtc",
                 "fiat": "usd",
                 "amount": "100",
-                "min": "89163",
-                "cur": "0.00089163",
-                "with-fee-amount": "121.53",
-                "with-fee-min": "108364",
-                "with-fee-cur": "0.00108364"
+                "factor": "1.01",
+                "fee": "19.16",
+                "min": "103511",
+                "cur": "0.00103511"
             },
             {
-                "currency": "usdt@trx",
-                "fiat": "usd",
-                "amount": "100",
-                "min": "89163",
-                "cur": "0.00089163",
-                "with-fee-amount": "121.53",
-                "with-fee-min": "108364",
-                "with-fee-cur": "0.00108364"
+                "currency": "tltc",
+                "error": "Invalid destinations"
             }
         ]');
-
+        $currencies = $this->settings->currencies;
         $coins = [];
         foreach ($estimations as $estimation) {
             $abbr = $estimation->currency;
-
-            $result_amount = $show_with_fee
-                ? ($show_in_fiat
-                    ? $estimation->{'with-fee-amount'}
-                    : ($show_in_major
-                        ? $estimation->{'with-fee-cur'}
-                        : $estimation->{'with-fee-min'})
-                )
-                : ($show_in_fiat
-                    ? $estimation->amount
-                    : ($show_in_major
-                        ? $estimation->cur
-                        : $estimation->min)
-                );
+            $result_amount = $estimation->min;
             if (!$result_amount) {
                 continue;
             }
@@ -219,8 +211,9 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             $coin->abbr = $currencies[$abbr]->abbr;
             $coin->network = $currencies[$abbr]->network;
             $coin->token = $currencies[$abbr]->token;
-            $coin->alias = $show_in_fiat ? $fiat : $currencies[$abbr]->alias;
-            $coin->amount = $result_amount;
+            $coin->label = $estimation->fee
+                ? sprintf($this->language->get('currency_selector_label_with_fee'), $currencies[$abbr]->alias, $estimation->fee, $fiat)
+                : $currencies[$abbr]->alias;
         }
         return $coins;
     }
@@ -229,36 +222,47 @@ class ControllerExtensionPaymentApironeMccp extends Controller
      * @param float $amount total order amount
      * @param string $fiat fiat currency of amount specified
      * @param string $currency coin crypto currency abbreviation
-     * @return float coin amount in crypto currency
+     * @return stdClass estimation in crypto currency and fee in fiat if with_fee setting is set
      * @internal
      */
-    protected function getCoinAmountMinor($amount, $fiat, $currency)
+    protected function getEstimation($amount, $fiat, $currency)
     {
         if (!$this->settings) {
             return;
         }
-        $account = $this->settings->account;
-        $factor = $this->settings->factor;
-        $show_with_fee = $this->settings->show_with_fee;
-
-        // $estimations = Utils::estimate($account, $amount * $factor, $fiat, $currency);
+        // try {
+        //     $estimations = Utils::estimate(
+        //         $this->settings->account,
+        //         $amount,
+        //         $this->settings->factor,
+        //         $this->settings->with_fee,
+        //         $fiat,
+        //         $currency
+        //     );
+        // } catch (Exception $e) {
+        //     LoggerWrapper::error('Can not get estimation for invoice');
+        //     return;
+        // }
         // TODO: remove mocked data below after test
         $estimations = json_decode('[
             {
                 "currency": "tbtc",
                 "fiat": "usd",
-                "amount": "9.8",
-                "min": "8916",
-                "cur": "0.00008916",
-                "with-fee-amount": "12.15",
-                "with-fee-min": "10836",
-                "with-fee-cur": "0.00010836"
+                "amount": "100",
+                "factor": "1.01",
+                "fee": "19.16",
+                "min": "1351",
+                "cur": "0.00001351"
             }
         ]');
         if (empty($estimations)) {
             return;
         }
-        return $estimations[0]->{$show_with_fee ? 'with-fee-min' : 'min'};
+        $estimation = $estimations[0];
+        if (!(property_exists($estimation, 'min') && $estimation->min)) {
+            return;
+        }
+        return $estimation;
     }
 
     protected function getDBHandler()
@@ -326,12 +330,12 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         $currency_fiat = $order['currency_code'];
         $amount_fiat = $order['total'] * $order['currency_value'];
 
-        // TODO: replace with new Utils::estimate()
-        $amount_crypto = $this->getCoinAmountMinor(
-            $amount_fiat * $this->settings->factor,
-            $currency_fiat,
-            $currency_crypto
-        );
+        $estimation = $this->getEstimation($amount_fiat, $currency_fiat, $currency_crypto);
+        if (!$estimation) {
+            $this->response->redirect($this->url->link('checkout/cart'));
+            return;
+        }
+        $amount_crypto = $estimation->min;
 
         $merchant = $this->settings->merchant;
         if (!$merchant) {
@@ -348,12 +352,17 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         try {
             $invoice = Invoice::init($currency_crypto, $amount_crypto)
                 ->order($order_id)
+                // TODO:
+                // ->estimation($estimation)
                 ->userData($userData)
                 ->lifetime($this->settings->timeout)
-                // TODO: add estimation
                 ->callbackUrl($this->url->link($callback_path.'callback&key='.md5($this->settings->secret . $order_id)))
                 ->linkback($this->url->link($callback_path.'linkback&key='.md5($this->settings->secret . $amount_crypto) .'&order='.$order_id))
                 ->create();
+
+            // $invoice->estimation($estimation);
+            // $invoice->save();
+
             $this->model_extension_payment_apirone_mccp->updateOrderStatus($invoice);
 
             $this->cart->clear();
