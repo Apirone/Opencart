@@ -212,8 +212,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         $coins = [];
         foreach ($estimations as $estimation) {
             $abbr = $estimation->currency;
-            $result_amount = $estimation->min;
-            if (!$result_amount) {
+            if (!(property_exists($estimation, 'min') && $estimation->min)) {
                 continue;
             }
             $coins[] = $coin = new stdClass();
@@ -221,7 +220,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             $coin->network = $currencies[$abbr]->network;
             $coin->token = $currencies[$abbr]->token;
             $coin->label = $estimation->fee
-                ? sprintf($this->language->get('currency_selector_label_with_fee'), $currencies[$abbr]->alias, $estimation->fee, $fiat)
+                ? sprintf($this->language->get('currency_selector_label_with_fee'), $currencies[$abbr]->alias, $amount + $estimation->fee, $fiat)
                 : $currencies[$abbr]->alias;
         }
         return $coins;

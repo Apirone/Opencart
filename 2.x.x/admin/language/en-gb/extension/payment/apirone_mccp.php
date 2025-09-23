@@ -11,7 +11,7 @@ $_['text_edit'] = 'Edit Apirone Crypto Payments';
 $_['text_apirone_mccp'] = '<a href="https://apirone.com/" target="_blank"><img src="view/image/payment/apirone-logo.svg" alt="" title="" width="128"/></a>';
 $_['text_test_currency'] = 'WARNING: Test currency';
 $_['text_test_currency_tooltip'] = 'Use this currency for testing purposes only! It is displayed on the front end for `Test currency customer`.';
-$_['text_with_fee_tooltip'] = 'Include payment fee in invoice amount.';
+$_['text_with_fee_tooltip'] = 'Adds service and network fees to total. Final amount per coin is shown in selector.';
 $_['text_factor_tooltip'] = 'If you want to add/subtract percent to/from the payment amount, use the following  price adjustment factor multiplied by the amount.<br />For example: 100% * 0.99 = 99%, 100% * 1.01 = 101%';
 $_['text_logo_tooltip'] = 'Show the Apirone logo on the invoice page.';
 $_['text_test_currency_customer'] = 'Enter an email of the registered customer to whom the test currencies will be shown.';
@@ -59,7 +59,7 @@ $_['entry_sort_order'] = 'Sort Order';
 $_['entry_merchant'] = 'Merchant Name';
 $_['entry_confirmation'] = 'Confirmations count';
 $_['entry_timeout'] = 'Payment timeout';
-$_['entry_with_fee'] = 'Include fee';
+$_['entry_with_fee'] = 'Include fees';
 $_['entry_factor'] = 'Payment adjustment factor';
 
 $_['entry_testcustomer'] = 'Test currency customer';
