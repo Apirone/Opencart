@@ -148,9 +148,9 @@ class ModelExtensionPaymentApironeMccp extends Model
         $invoiceHistory = $invoice->details->history;
 
         foreach ($invoiceHistory as $item) {
-            $comment = $this->_historyRecordComment($invoice->details->address, $item);
+            $comment = $this->getHistoryRecordComment($invoice->details->address, $item);
 
-            if ($this->_isHistoryRecordExists($comment, $orderHistory)) {
+            if ($this->isHistoryRecordExists($comment, $orderHistory)) {
                 continue;
             }
 
@@ -160,7 +160,7 @@ class ModelExtensionPaymentApironeMccp extends Model
         }
     }
 
-    private function _isHistoryRecordExists($comment, $history)
+    private function isHistoryRecordExists($comment, $history)
     {
         foreach ($history->rows as $row) {
             if ($row['comment'] == $comment) {
@@ -170,7 +170,7 @@ class ModelExtensionPaymentApironeMccp extends Model
         return false;
     }
 
-    private function _historyRecordComment($address, $item)
+    private function getHistoryRecordComment($address, $item)
     {    
         switch ($item->status) {
             case 'created':

@@ -15,7 +15,7 @@ $_['text_with_fee_tooltip'] = 'Adds service and network fees to total. Final amo
 $_['text_factor_tooltip'] = 'If you want to add/subtract percent to/from the payment amount, use the following  price adjustment factor multiplied by the amount.<br />For example: 100% * 0.99 = 99%, 100% * 1.01 = 101%';
 $_['text_logo_tooltip'] = 'Show the Apirone logo on the invoice page.';
 $_['text_test_currency_customer'] = 'Enter an email of the registered customer to whom the test currencies will be shown.';
-$_['text_missing'] = 'Missing orders';
+$_['text_missing'] = 'Missing status';
 $_['text_plugin_version'] = 'Plugin version';
 $_['text_php_version'] = 'PHP version';
 $_['text_apirone_account'] = 'Apirone account';
@@ -31,39 +31,39 @@ $_['text_account_not_exist'] = "Not exist";
 // Tabs
 $_['tab_settings'] = 'Settings';
 $_['tab_currencies'] = 'Currencies';
+$_['tab_statuses'] = 'Statuses';
 $_['tab_info'] = 'Tips & Info';
 
 // Entry
+// Common settings
+$_['entry_merchant'] = 'Merchant Name';
+$_['entry_testcustomer'] = 'Test currency customer';
+$_['entry_testcustomer_placeholder'] = 'example.customer@example.com';
+$_['entry_timeout'] = 'Payment timeout';
+$_['entry_processing_fee'] = 'Processing fee plan';
+$_['entry_with_fee'] = 'Include fees';
+$_['entry_factor'] = 'Payment adjustment factor';
+$_['entry_logo'] = 'Apirone logo';
+$_['entry_debug'] = 'Debug mode';
+
+$_['entry_geo_zone'] = 'Geo Zone';
+$_['entry_status'] = 'Status';
+$_['entry_sort_order'] = 'Sort Order';
+
+// Currencies
+$_['entry_network_name'] = '%s Blockchain';
 $_['currency_activate_tooltip'] = 'Enter valid address to activate <b>%s</b> currency';
-$_['currency_deactivate_tooltip'] = 'Remove address to deactivate <b>%s</b> currency';
 $_['currency_deactivate_tooltip'] = 'Remove address to deactivate <b>%s</b> currency';
 $_['currency_address_incorrect'] = 'Incorrect address. Check address and try again.';
 $_['token_tooltip'] = 'Show/hide <b>%s</b> from currency selector';
 
-$_['entry_currency'] = 'Currency';
-$_['entry_network_name'] = '%s Blockchain';
+// Status ids
 $_['entry_invoice_created'] = 'Invoice Created';
 $_['entry_invoice_paid'] = 'Invoice Paid';
 $_['entry_invoice_partpaid'] = 'Invoice Partpaid';
 $_['entry_invoice_overpaid'] = 'Invoice Overpaid';
 $_['entry_invoice_completed'] = 'Invoice Completed';
 $_['entry_invoice_expired'] = 'Invoice Expired';
-
-$_['entry_processing_fee'] = 'Processing fee plan';
-
-$_['entry_geo_zone'] = 'Geo Zone';
-$_['entry_status'] = 'Status';
-$_['entry_logo'] = 'Apirone logo';
-$_['entry_debug'] = 'Debug mode';
-$_['entry_sort_order'] = 'Sort Order';
-$_['entry_merchant'] = 'Merchant Name';
-$_['entry_confirmation'] = 'Confirmations count';
-$_['entry_timeout'] = 'Payment timeout';
-$_['entry_with_fee'] = 'Include fees';
-$_['entry_factor'] = 'Payment adjustment factor';
-
-$_['entry_testcustomer'] = 'Test currency customer';
-$_['entry_testcustomer_placeholder'] = 'example.customer@example.com';
 
 // Warning
 // Error

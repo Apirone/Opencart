@@ -20,6 +20,14 @@ require_once(DIR_SYSTEM . 'library/apirone/vendor/autoload.php');
 
 define('PLUGIN_VERSION', '2.0.0');
 define('PLUGIN_LOG_FILE_NAME', 'apirone.log');
+define('DEFAULT_STATUS_IDS', [
+    'created' => 1,
+    'partpaid' => 1,
+    'paid' => 5,
+    'overpaid' => 5,
+    'completed' => 5,
+    'expired' => 16,
+]);
 
 class ControllerExtensionPaymentApironeMccp extends Controller
 {
@@ -36,22 +44,18 @@ class ControllerExtensionPaymentApironeMccp extends Controller
 
     /**
      * @return write to log extended info except errors
-     * @since 2.0.0
      * @see also in catalog/controller/extension/payment/apirone_mccp.php
-     * @internal
      */
-    private function isDebug()
+    protected function isDebug()
     {
         return !isset($this->settings) ? false : !!$this->settings->debug;
     }
 
     /**
      * Initializes logging
-     * @since 2.0.0
      * @see also in catalog/controller/extension/payment/apirone_mccp.php
-     * @internal
      */
-    private function initLogging()
+    protected function initLogging()
     {
         try {
             $openCartLogger = new \Log(PLUGIN_LOG_FILE_NAME);
@@ -69,13 +73,12 @@ class ControllerExtensionPaymentApironeMccp extends Controller
     }
 
     /**
-     * Loads main payment settings admin page in response to GET or POST request
-     * @api
+     * Loads main payment settings admin page in response to GET or POST request\
+     * OpenCart required
      */
     public function index()
     {
         $this->load->language('extension/payment/apirone_mccp');
-        $this->load->model('extension/payment/apirone_mccp');
         try {
             $this->getSettings();
             $this->data['settings_loaded'] = true;
@@ -121,7 +124,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
                 if (!$address) {
                     continue;
                 }
-                $coins[] = Coin::init($network);
+                $coins[$abbr] = Coin::init($network);
                 $network->policy($processing_fee);
 
                 $tokens = $network->tokens;
@@ -130,17 +133,17 @@ class ControllerExtensionPaymentApironeMccp extends Controller
                 }
                 $state = !empty($visible_from_post) && array_key_exists($abbr, $visible_from_post) && $visible_from_post[$abbr];
 
-                if ($state != $this->getNetworkTokenVisibility($abbr)) {
+                if ($state != $this->settings->hasCoin($abbr)) {
                     $coins_update_need = true;
                 }
                 foreach ($tokens as $token) {
                     $abbr = $token->abbr;
                     $state = !empty($visible_from_post) && array_key_exists($abbr, $visible_from_post) && $visible_from_post[$abbr];
 
-                    if ($state != $this->getNetworkTokenVisibility($abbr)) {
+                    if ($state != $this->settings->hasCoin($abbr)) {
                         $coins_update_need = true;
                     }
-                    $coins[] = Coin::init($token);
+                    $coins[$abbr] = Coin::init($token);
                     $token->policy($processing_fee);
                 }
             }
@@ -210,6 +213,11 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             }
             else {
                 // Save settings if post & no errors
+
+                $_status_ids = [];
+                foreach (array_keys(DEFAULT_STATUS_IDS) as $apirone_status) {
+                    $_status_ids[$apirone_status] = intval($this->request->post['apirone_mccp_invoice_'.$apirone_status.'_status_id']);
+                }
                 $plugin_data['apirone_mccp_settings'] = $this->settings
                     ->merchant(trim($this->request->post['apirone_mccp_merchant']))
                     ->testcustomer(trim($this->request->post['apirone_mccp_testcustomer']))
@@ -219,40 +227,48 @@ class ControllerExtensionPaymentApironeMccp extends Controller
                     ->factor(floatval($this->request->post['apirone_mccp_factor']))
                     ->logo(!!$this->request->post['apirone_mccp_logo'])
                     ->debug(!!$this->request->post['apirone_mccp_debug'])
+                    ->status_ids($_status_ids)
                     ->toJsonString();
 
                 $plugin_data['apirone_mccp_geo_zone_id'] = $this->request->post['apirone_mccp_geo_zone_id'];
                 $plugin_data['apirone_mccp_status'] = $this->request->post['apirone_mccp_status'];
                 $plugin_data['apirone_mccp_sort_order'] = $this->request->post['apirone_mccp_sort_order'];
 
-                $this->load->model('setting/setting');
                 $this->model_setting_setting->editSetting('apirone_mccp', $plugin_data);
 
                 $this->data['success'] = $this->language->get('text_success');
             }
         }
-        if (count($networks) > 0) {
-            $this->data['networks'] = $this->getNetworksViewModel();
-        }
-        else {
+        if (!count($networks)) {
             $this->data['error'] = $this->language->get('error_cant_get_currencies');
+            $this->setCommonPageData();
+            return;
         }
+        $this->data['networks'] = $this->getNetworksViewModel();
+
+        $this->data['apirone_mccp_invoice_status_ids'] = $this->settings->status_ids;
+
+        $apirone_status_labels = [];
+        foreach (array_keys(DEFAULT_STATUS_IDS) as $apirone_status) {
+            $apirone_status_labels[$apirone_status] = $this->language->get('entry_invoice_'.$apirone_status);
+        }
+        $this->data['apirone_status_labels'] = $apirone_status_labels;
+
+        $this->load->model('localisation/order_status');
+        $this->data['order_statuses'] = $this->model_localisation_order_status->getOrderStatuses();
+        $this->data['order_statuses'][] = ['order_status_id' => 0, 'name' => $this->language->get('text_missing')];
+
         $this->setCommonPageData();
     }
 
     /**
      * Set common page data
-     * @internal
      */
     protected function setCommonPageData()
     {
         $this->document->setTitle($this->language->get('heading_title'));
 
         $this->data = array_merge($this->data, $this->load->language('apirone_mccp'));
-
-        $this->load->model('localisation/order_status');
-        $this->data['order_statuses'] = $this->model_localisation_order_status->getOrderStatuses();
-        $this->data['order_statuses'][] = ['order_status_id' => 0, 'name' => $this->language->get('text_missing')];
 
         $this->load->model('localisation/geo_zone');
         $this->data['geo_zones'] = $this->model_localisation_geo_zone->getGeoZones();
@@ -286,10 +302,10 @@ class ControllerExtensionPaymentApironeMccp extends Controller
      * @throws ForbiddenException
      * @throws NotFoundException
      * @throws MethodNotAllowedException
-     * @internal
      */
     protected function getSettings()
     {
+        $this->load->model('setting/setting');
         $plugin_data = $this->model_setting_setting->getSetting('apirone_mccp');
 
         $_settings = false;
@@ -307,25 +323,9 @@ class ControllerExtensionPaymentApironeMccp extends Controller
     }
 
     /**
-     * @param string $abbr token abbreviation
-     * @return bool state of token visibility for given token from settings
-     * @internal
-     */
-    protected function getNetworkTokenVisibility($abbr)
-    {
-        foreach ($this->settings->coins as $coin) {
-            if ($coin->abbr === $abbr) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
      * @return array Array of networks DTO with keys of networks abbreviations.
      * Each result array item is DTO with icon, name, tooltip, address and tokens array.
      * Each token array item is DTO with icon, visibility state and tooltip.
-     * @internal
      */
     protected function getNetworksViewModel()
     {
@@ -359,7 +359,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             $token_dto->checkbox_id = 'state_'.$network_abbr;
             $token_dto->icon = $network_abbr;
             $token_dto->name = $alias = strtoupper($name);
-            $token_dto->state = $this->getNetworkTokenVisibility($network_abbr);
+            $token_dto->state = $this->settings->hasCoin($network_abbr);
             $token_dto->tooltip = sprintf($this->language->get('token_tooltip'), $alias);
 
             foreach ($tokens as $abbr => $token) {
@@ -368,7 +368,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
                 $token_dto->checkbox_id = 'state_'.$network_abbr.'_'.$token->token;
                 $token_dto->icon = $token->token;
                 $token_dto->name = $alias = strtoupper($token->alias);
-                $token_dto->state = $this->getNetworkTokenVisibility($abbr);
+                $token_dto->state = $this->settings->hasCoin($abbr);
                 $token_dto->tooltip = sprintf($this->language->get('token_tooltip'), $alias);
             }
             $network_dto->tokens = $tokens_dto;
@@ -376,8 +376,13 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         return $networks_dto;
     }
 
+    /**
+     * Validates plugin data\
+     * OpenCart required
+     */
     protected function validate()
     {
+        // do nothing
     }
 
     protected function getBreadcrumbsAndActions()
@@ -429,14 +434,11 @@ class ControllerExtensionPaymentApironeMccp extends Controller
     /**
      * Install plugin:
      * create account and settings,
-     * store settings to DB
-     * @api
+     * store settings to DB\
+     * OpenCart required
      */
     public function install()
     {
-        $this->load->model('extension/payment/apirone_mccp');
-        $this->load->model('setting/setting');
-
         try {
             $_settings = Settings::init()->createAccount();
         } catch (\Throwable $ignore) {
@@ -450,8 +452,10 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             ->timeout(1800)
             ->processing_fee('percentage')
             ->factor(1.0)
-            ->logo(true);
+            ->logo(true)
+            ->status_ids(DEFAULT_STATUS_IDS);
 
+        $this->load->model('setting/setting');
         $this->model_setting_setting->editSetting('apirone_mccp', array(
             // Apirone plugin specific settings
             'apirone_mccp_settings' => $_settings->toJsonString(),
@@ -461,13 +465,14 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             'apirone_mccp_sort_order' => '0',
         ));
 
+        $this->load->model('extension/payment/apirone_mccp');
         $this->model_extension_payment_apirone_mccp->install_invoices_table(
             InvoiceQuery::createInvoicesTable(DB_PREFIX));
     }
 
     /**
-     * Uninstall plugin
-     * @api
+     * Uninstall plugin\
+     * OpenCart required
      */
     public function uninstall()
     {
@@ -478,9 +483,8 @@ class ControllerExtensionPaymentApironeMccp extends Controller
 
     /**
      * Updates database structure if version changed
-     * @internal
      */
-    private function update()
+    protected function update()
     {
         $this->load->model('setting/setting');
         $plugin_data = $this->model_setting_setting->getSetting('apirone_mccp');
@@ -559,12 +563,11 @@ class ControllerExtensionPaymentApironeMccp extends Controller
     }
 
     /**
-     * Updates in settings plugin version only
+     * Updates plugin version only in settings
      * @param string $version new plugin version
      * @return string the same new version as in param
-     * @internal
      */
-    private function upd_version($version)
+    protected function upd_version($version)
     {
         $plugin_data = $this->model_setting_setting->getSetting('apirone_mccp');
 
@@ -583,7 +586,6 @@ class ControllerExtensionPaymentApironeMccp extends Controller
 
     /**
      * Updates database version from 1 to 2
-     * @internal
      */
     private function upd_1_2_6__2_0_0()
     {
@@ -602,16 +604,14 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             ? Settings::fromExistingAccount($account_id, $transfer_key)
             : Settings::init()->createAccount();
 
-        $_settings
-            ->version($version)
-            ->secret($plugin_data['apirone_mccp_secret'])
-            ->merchant($plugin_data['apirone_mccp_merchantname'])
-            ->testcustomer($plugin_data['apirone_mccp_testcustomer'])
-            ->timeout(intval($plugin_data['apirone_mccp_timeout']))
-            ->processing_fee($plugin_data['apirone_mccp_processing_fee'])
-            ->factor(floatval($plugin_data['apirone_mccp_factor']))
-            ->logo(true)
-            ->debug(!!$plugin_data['apirone_mccp_debug']);
+        $_status_ids = [];
+        foreach (DEFAULT_STATUS_IDS as $apirone_status => $oc_default_status_id) {
+            $key = 'apirone_mccp_invoice_'.$apirone_status.'_status_id';
+
+            $_status_ids[$apirone_status] = key_exists($key, $plugin_data)
+                ? intval($plugin_data[$key])
+                : $oc_default_status_id;
+        }
 
         $coins = [];
         foreach ($_settings->networks as $network) {
@@ -629,7 +629,19 @@ class ControllerExtensionPaymentApironeMccp extends Controller
                 $coins[] = Coin::init($token);
             }
         }
-        $_settings->coins($coins);
+
+        $_settings
+            ->version($version)
+            ->secret($plugin_data['apirone_mccp_secret'])
+            ->merchant($plugin_data['apirone_mccp_merchantname'])
+            ->testcustomer($plugin_data['apirone_mccp_testcustomer'])
+            ->timeout(intval($plugin_data['apirone_mccp_timeout']))
+            ->processing_fee($plugin_data['apirone_mccp_processing_fee'])
+            ->factor(floatval($plugin_data['apirone_mccp_factor']))
+            ->logo(true)
+            ->debug(!!$plugin_data['apirone_mccp_debug'])
+            ->status_ids($_status_ids)
+            ->coins($coins);
 
         $this->model_setting_setting->editSetting('apirone_mccp', array(
             // Apirone plugin specific settings
@@ -645,7 +657,6 @@ class ControllerExtensionPaymentApironeMccp extends Controller
 
     /**
      * Updates database from very old version
-     * @internal
      */
     private function upd_1_1_4__1_2_0()
     {
@@ -668,7 +679,6 @@ class ControllerExtensionPaymentApironeMccp extends Controller
 
     /**
      * Updates database from very very old version
-     * @internal
      */
     private function upd_1_0_1__1_1_0()
     {
@@ -698,19 +708,4 @@ class ControllerExtensionPaymentApironeMccp extends Controller
 
         return $plugin_data['apirone_mccp_version'];
     }
-}
-
-function pa($mixed, $title = false)
-{
-    if ($title) {
-        echo $title . ':';
-    }
-    echo '<pre>';
-    if (gettype($mixed) == 'boolean') {
-        print_r($mixed ? 'true' : 'false');
-    }
-    else {
-        print_r(!is_null($mixed) ? $mixed : 'NULL');
-    }
-    echo '</pre>';
 }

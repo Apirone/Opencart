@@ -31,25 +31,16 @@ class ControllerExtensionPaymentApironeMccp extends Controller
 
     /**
      * @return write to log extended info except errors
-     * @since 2.0.0
      * @see also in admin/controller/extension/payment/apirone_mccp.php
-     * @internal
      */
     protected function isDebug()
     {
-        try {
-            return !!$this->settings->debug;
-        }
-        catch (\Throwable $ignore) {
-            return false;
-        }
+        return !isset($this->settings) ? false : !!$this->settings->debug;
     }
 
     /**
      * Initializes logging
-     * @since 2.0.0
      * @see also in admin/controller/extension/payment/apirone_mccp.php
-     * @internal
      */
     protected function initLogging()
     {
@@ -68,18 +59,20 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         }
     }
 
+    /**
+     * Renders crypto currency selector\
+     * OpenCart required
+     */
     public function index()
     {
         $data['button_confirm'] = $this->language->get('button_confirm');
         try {
             $this->getSettings();
 
-            $this->load->model('checkout/order');
             $this->load->language('extension/payment/apirone_mccp');
-            $this->load->model('extension/payment/apirone_mccp');
-
             $data = array_merge($data, $this->load->language('apirone_mccp'));
 
+            $this->load->model('checkout/order');
             $order = $this->model_checkout_order->getOrder($this->session->data['order_id']);
 
             $amount_fiat = $order['total'] * $order['currency_value'];
@@ -105,7 +98,6 @@ class ControllerExtensionPaymentApironeMccp extends Controller
      * @throws ForbiddenException
      * @throws NotFoundException
      * @throws MethodNotAllowedException
-     * @internal
      */
     protected function getSettings()
     {
@@ -118,7 +110,6 @@ class ControllerExtensionPaymentApironeMccp extends Controller
 
     /**
      * @return bool show test networks
-     * @internal
      */
     protected function showTestnet() 
     {
@@ -142,7 +133,6 @@ class ControllerExtensionPaymentApironeMccp extends Controller
      * @param string $fiat fiat currency of amount specified
      * @param bool $show_testnet add test networks to result array
      * @return array array of coins to display in currency selector
-     * @internal
      */
     protected function getCoins($amount, $fiat, $show_testnet)
     {
@@ -161,53 +151,19 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         if (!count($currencies_to_estimate)) {
             return;
         }
-        // try {
-        //     $estimations = Utils::estimate(
-        //         $this->settings->account,
-        //         $amount,
-        //         $this->settings->factor,
-        //         $this->settings->with_fee,
-        //         $fiat,
-        //         $currencies_to_estimate
-        //     );
-        // } catch (Exception $e) {
-        //     LoggerWrapper::error('Can not get estimations for currency selector');
-        //     return;
-        // }
-        // TODO: remove mocked data below after test
-        $estimations = json_decode('[
-            {
-                "currency": "usdt@bnb",
-                "fiat": "usd",
-                "amount": "100",
-                "factor": "1.01",
-                "fee": "2.5",
-                "min": "107906072942994608",
-                "cur": "0.10790607294299462"
-            },
-            {
-                "currency": "bnb",
-                "fiat": "usd",
-                "amount": "100",
-                "factor": "1.01",
-                "fee": "2.5",
-                "min": "107906072942994608",
-                "cur": "0.10790607294299462"
-            },
-            {
-                "currency": "tbtc",
-                "fiat": "usd",
-                "amount": "100",
-                "factor": "1.01",
-                "fee": "19.16",
-                "min": "103511",
-                "cur": "0.00103511"
-            },
-            {
-                "currency": "tltc",
-                "error": "Invalid destinations"
-            }
-        ]');
+        try {
+            $estimations = Utils::estimate(
+                $this->settings->account,
+                $amount,
+                $fiat,
+                $currencies_to_estimate,
+                $this->settings->with_fee,
+                $this->settings->factor,
+            );
+        } catch (Exception $e) {
+            LoggerWrapper::error('Can not get estimations for currency selector');
+            return;
+        }
         $currencies = $this->settings->currencies;
         $coins = [];
         foreach ($estimations as $estimation) {
@@ -231,38 +187,25 @@ class ControllerExtensionPaymentApironeMccp extends Controller
      * @param string $fiat fiat currency of amount specified
      * @param string $currency coin crypto currency abbreviation
      * @return stdClass estimation in crypto currency and fee in fiat if with_fee setting is set
-     * @internal
      */
     protected function getEstimation($amount, $fiat, $currency)
     {
         if (!$this->settings) {
             return;
         }
-        // try {
-        //     $estimations = Utils::estimate(
-        //         $this->settings->account,
-        //         $amount,
-        //         $this->settings->factor,
-        //         $this->settings->with_fee,
-        //         $fiat,
-        //         $currency
-        //     );
-        // } catch (Exception $e) {
-        //     LoggerWrapper::error('Can not get estimation for invoice');
-        //     return;
-        // }
-        // TODO: remove mocked data below after test
-        $estimations = json_decode('[
-            {
-                "currency": "tbtc",
-                "fiat": "usd",
-                "amount": "100",
-                "factor": "1.01",
-                "fee": "19.16",
-                "min": "1351",
-                "cur": "0.00001351"
-            }
-        ]');
+        try {
+            $estimations = Utils::estimate(
+                $this->settings->account,
+                $amount,
+                $fiat,
+                $currency,
+                $this->settings->with_fee,
+                $this->settings->factor,
+            );
+        } catch (Exception $e) {
+            LoggerWrapper::error('Can not get estimation for invoice');
+            return;
+        }
         if (empty($estimations)) {
             return;
         }
@@ -273,6 +216,9 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         return $estimation;
     }
 
+    /**
+     * @return Closure(mixed $query): mixed DB query handler for Invoice
+     */
     protected function getDBHandler()
     {
         return function($query) {
@@ -297,6 +243,12 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         };
     }
 
+    /**
+     * Payment confirmation handler\
+     * Creates new invoice or updates existing for order
+     * OpenCart required
+     * @throws ReflectionException 
+     */
     public function confirm()
     {
         try {
@@ -306,14 +258,11 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             LoggerWrapper::error($e->getMessage());
             return;
         }
-        $this->load->model('checkout/order');
-        $this->load->language('extension/payment/apirone_mccp');
-        $this->load->model('extension/payment/apirone_mccp');
-
         $currency_crypto = isset($this->request->get['currency']) ? (string) $this->request->get['currency'] : '';
         $order_key = isset($this->request->get['key']) ? (string) $this->request->get['key'] : '';
         $order_id = isset($this->request->get['order']) ? (int) $this->request->get['order'] : 0;
 
+        $this->load->model('checkout/order');
         $order = $this->model_checkout_order->getOrder($order_id);
         // Exit if $order_key is !valid
         if (md5($this->settings->secret . $order['total']) != $order_key) {
@@ -328,6 +277,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             $invoice = $orderInvoices[0];
             // Update invoice when page loaded or reloaded & status != (expired || completed)
             $invoice->update();
+            $this->load->model('extension/payment/apirone_mccp');
             $this->model_extension_payment_apirone_mccp->updateOrderStatus($invoice);
             if ($invoice->status !== 'expired' && $invoice->details->currency == $currency_crypto) {
                 $this->showInvoice($invoice->invoice);
@@ -360,17 +310,14 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         try {
             $invoice = Invoice::init($currency_crypto, $amount_crypto)
                 ->order($order_id)
-                // TODO:
-                // ->estimation($estimation)
+                ->estimation($estimation)
                 ->userData($userData)
                 ->lifetime($this->settings->timeout)
                 ->callbackUrl($this->url->link($callback_path.'callback&key='.md5($this->settings->secret . $order_id)))
                 ->linkback($this->url->link($callback_path.'linkback&key='.md5($this->settings->secret . $amount_crypto) .'&order='.$order_id))
                 ->create();
 
-            // $invoice->estimation($estimation);
-            // $invoice->save();
-
+            $this->load->model('extension/payment/apirone_mccp');
             $this->model_extension_payment_apirone_mccp->updateOrderStatus($invoice);
 
             $this->cart->clear();
@@ -405,7 +352,6 @@ class ControllerExtensionPaymentApironeMccp extends Controller
     // curl -k -w "%{http_code}\n" -X POST -d '{"invoice":"INVOICE_ID_HERE","status":"expired"}' 'https://examples.test/opencart2/index.php?route=extension/payment/apirone_mccp/callback&key=CALLBACK_KEY_HERE'
     /**
      * Callback URI for change invoice and order status
-     * @api
      */
     public function callback()
     {
@@ -473,7 +419,6 @@ class ControllerExtensionPaymentApironeMccp extends Controller
 
     /**
      * Callback URI for return to shop when order was paid
-     * @api
      */
     public function linkback()
     {
@@ -485,8 +430,6 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             Utils::sendJson('Can not get settings', 500);
             return;
         }
-        $this->load->model('extension/payment/apirone_mccp');
-
         $invoice_key = isset($this->request->get['key']) ? (string) $this->request->get['key'] : '';
         $order_id = isset($this->request->get['order']) ? (int) $this->request->get['order'] : 0;
 
@@ -524,7 +467,6 @@ class ControllerExtensionPaymentApironeMccp extends Controller
 
     /**
      * API proxy
-     * @api
      */
     public function getFromAPI($method, $path_suffix)
     {
@@ -558,8 +500,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
     }
 
     /**
-     * API proxy endpoint to get currencies with OPTIONS method
-     * @api
+     * API proxy endpoint for invoice app to get currencies
      */
     public function wallets()
     {
@@ -587,7 +528,6 @@ class ControllerExtensionPaymentApironeMccp extends Controller
     
     /**
      * API proxy endpoint to get invoice data with invoice ID in path
-     * @api
      */
     public function invoices()
     {
@@ -619,19 +559,4 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         }
         Utils::sendJson($invoice->info());
     }
-}
-
-function pa($mixed, $title = false)
-{
-    if ($title) {
-        echo $title . ':';
-    }
-    echo '<pre>';
-    if (gettype($mixed) == 'boolean') {
-        print_r($mixed ? 'true' : 'false');
-    }
-    else {
-        print_r(!is_null($mixed) ? $mixed : 'NULL');
-    }
-    echo '</pre>';
 }

@@ -62,21 +62,20 @@
         },
         {
             "name": "apirone/apirone-sdk-php",
-            "version": "2.0-rc.3",
+            "version": "2.0-rc.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Apirone/apirone-sdk-php.git",
-                "reference": "301ebc9fc973147a6b209c77568e9b8cfc0938a1"
+                "reference": "a0e356bbc0c914dc2c48bd429db663714ba17f16"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Apirone/apirone-sdk-php/zipball/301ebc9fc973147a6b209c77568e9b8cfc0938a1",
-                "reference": "301ebc9fc973147a6b209c77568e9b8cfc0938a1",
+                "url": "https://api.github.com/repos/Apirone/apirone-sdk-php/zipball/a0e356bbc0c914dc2c48bd429db663714ba17f16",
+                "reference": "a0e356bbc0c914dc2c48bd429db663714ba17f16",
                 "shasum": ""
             },
             "require": {
-                "apirone/apirone-api-php": "^1.1",
-                "apirone/php-qr-code": "^1.0"
+                "apirone/apirone-api-php": "^1.1"
             },
             "type": "library",
             "autoload": {
@@ -110,49 +109,9 @@
             ],
             "support": {
                 "issues": "https://github.com/Apirone/apirone-sdk-php/issues",
-                "source": "https://github.com/Apirone/apirone-sdk-php/tree/2.0-rc.3"
+                "source": "https://github.com/Apirone/apirone-sdk-php/tree/2.0-rc.7"
             },
-            "time": "2025-09-15T16:45:32+00:00"
-        },
-        {
-            "name": "apirone/php-qr-code",
-            "version": "1.0.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/Apirone/php-qr-code.git",
-                "reference": "cfd206723e25c047ea3c182e09b0f987935c17f0"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/Apirone/php-qr-code/zipball/cfd206723e25c047ea3c182e09b0f987935c17f0",
-                "reference": "cfd206723e25c047ea3c182e09b0f987935c17f0",
-                "shasum": ""
-            },
-            "require": {
-                "ext-gd": "*"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Apirone\\Lib\\PhpQRCode\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Alex Zaytseff",
-                    "email": "alex.zaytseff@gmail.com"
-                }
-            ],
-            "description": "Generate QR-codes from a single PHP file.",
-            "homepage": "https://github.com/apirone/php-qr-code/",
-            "support": {
-                "source": "https://github.com/Apirone/php-qr-code/tree/1.0.0"
-            },
-            "time": "2024-01-19T07:36:49+00:00"
+            "time": "2025-09-29T10:06:53+00:00"
         }
     ],
     "packages-dev": [],

@@ -37,6 +37,7 @@
                     <?php if (isset($settings_loaded) && $settings_loaded) : ?>
                     <li class="active"><a href="#tab-settings" data-toggle="tab"><i class="fa fa-cog"></i> <?php echo $tab_settings; ?></a></li>
                     <li><a href="#tab-currencies" data-toggle="tab"><i class="fa fa-bitcoin"></i> <?php echo $tab_currencies; ?></a></li>
+                    <li><a href="#tab-statuses" data-toggle="tab"><i class="fa fa-check"></i> <?php echo $tab_statuses; ?></a></li>
                     <?php endif; ?>
                     <li><a href="#tab-info" data-toggle="tab"><i class="fa fa-info-circle"></i> <?php echo $tab_info; ?></a></li>
                 </ul>
@@ -173,36 +174,54 @@
                     </div>
                     <div class="tab-pane" id="tab-currencies">
                         <?php foreach ($networks as $network => $network_dto) : ?>
-                            <div class="form-group">
-                                <label class="col-lg-4 control-label" for="address_<?php echo $network; ?>">
-                                    <span data-toggle="tooltip" data-original-title="<?php echo $network_dto->tooltip; ?>" syle="padding:10px 0;"><?php echo $network_dto->name; ?></span>
-                                </label>
-                                <div class="col-lg-8">
-                                    <div class="input-group">
-                                        <span class="input-group-addon">
-                                            <img src="view/image/payment/apirone/currencies/<?php echo $network_dto->icon; ?>.svg" width="18">
-                                        </span>
-                                        <input type="text" name="address[<?php echo $network; ?>]" value="<?php echo $network_dto->address; ?>" id="address_<?php echo $network; ?>" class="form-control" style="height:38px;"/>
-                                    </div>
-                                    <?php if (property_exists($network_dto, 'error') && $network_dto->error) : ?>
-                                    <div class=" text-danger"><?php echo $currency_address_incorrect; ?></div>
-                                    <?php endif ?>
-                                    <?php if ($network_dto->testnet) : ?>
-                                    <label class="control-label" style="color: inherit !important;"><span data-toggle="tooltip" data-original-title="<?php echo $network_dto->test_tooltip; ?>"><?php echo $text_test_currency; ?></span></label>
-                                    <?php endif; ?>
-                                    <?php if (property_exists($network_dto, 'tokens')) : ?>
-                                    <?php foreach ($network_dto->tokens as $abbr => $token_dto) : ?>
-                                    <div class="col-lg-8">
-                                        <input class="checkbox-inline" style="margin-inline-end:4px;" type="checkbox" name="visible[<?php echo $abbr; ?>]" checked="<?php echo $token_dto->state; ?>" value="<?php echo $token_dto->state; ?>" id="<?php echo $token_dto->checkbox_id; ?>" class="form-control" />
-                                        <label class="control-label" for="<?php echo $token_dto->checkbox_id; ?>">
-                                            <img src="view/image/payment/apirone/currencies/<?php echo $token_dto->icon; ?>.svg" width="18">
-                                            <span data-toggle="tooltip" data-original-title="<?php echo $token_dto->tooltip; ?>" style="font-size:12px;padding-left:4px;"><?php echo $token_dto->name; ?></span>
-                                        </label>
-                                    </div>
-                                    <?php endforeach; ?>
-                                    <?php endif ?>
+                        <div class="form-group">
+                            <label class="col-lg-4 control-label" for="address_<?php echo $network; ?>">
+                                <span data-toggle="tooltip" data-original-title="<?php echo $network_dto->tooltip; ?>" syle="padding:10px 0;"><?php echo $network_dto->name; ?></span>
+                            </label>
+                            <div class="col-lg-8">
+                                <div class="input-group">
+                                    <span class="input-group-addon">
+                                        <img src="view/image/payment/apirone/currencies/<?php echo $network_dto->icon; ?>.svg" width="18">
+                                    </span>
+                                    <input type="text" name="address[<?php echo $network; ?>]" value="<?php echo $network_dto->address; ?>" id="address_<?php echo $network; ?>" class="form-control" style="height:38px;"/>
                                 </div>
+                                <?php if (property_exists($network_dto, 'error') && $network_dto->error) : ?>
+                                <div class=" text-danger"><?php echo $currency_address_incorrect; ?></div>
+                                <?php endif ?>
+                                <?php if ($network_dto->testnet) : ?>
+                                <label class="control-label" style="color: inherit !important;"><span data-toggle="tooltip" data-original-title="<?php echo $network_dto->test_tooltip; ?>"><?php echo $text_test_currency; ?></span></label>
+                                <?php endif; ?>
+                                <?php if (property_exists($network_dto, 'tokens')) : ?>
+                                <?php foreach ($network_dto->tokens as $abbr => $token_dto) : ?>
+                                <div class="col-lg-8">
+                                    <input class="checkbox-inline" style="margin-inline-end:4px;" type="checkbox" name="visible[<?php echo $abbr; ?>]" checked="<?php echo $token_dto->state; ?>" value="<?php echo $token_dto->state; ?>" id="<?php echo $token_dto->checkbox_id; ?>" class="form-control" />
+                                    <label class="control-label" for="<?php echo $token_dto->checkbox_id; ?>">
+                                        <img src="view/image/payment/apirone/currencies/<?php echo $token_dto->icon; ?>.svg" width="18">
+                                        <span data-toggle="tooltip" data-original-title="<?php echo $token_dto->tooltip; ?>" style="font-size:12px;padding-left:4px;"><?php echo $token_dto->name; ?></span>
+                                    </label>
+                                </div>
+                                <?php endforeach; ?>
+                                <?php endif ?>
                             </div>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                    <div class="tab-pane" id="tab-statuses">
+                        <?php foreach ($apirone_mccp_invoice_status_ids as $apirone_status => $oc_status_id) : ?>
+                        <div class="form-group">
+                            <label class="col-lg-4 control-label" for="input-invoice-status-<?php echo $apirone_status; ?>"><?php echo $apirone_status_labels[$apirone_status]; ?></label>
+                            <div class="col-lg-8">
+                                <select name="apirone_mccp_invoice_<?php echo $apirone_status; ?>_status_id" id="input-invoice-status-<?php echo $apirone_status; ?>" class="form-control">
+                                    <?php foreach ($order_statuses as $order_status) : ?>
+                                    <?php if ($order_status['order_status_id'] == $oc_status_id) :?>
+                                    <option value="<?php echo $order_status['order_status_id']; ?>" selected="selected"><?php echo $order_status['name']; ?></option>
+                                    <?php else : ?>
+                                    <option value="<?php echo $order_status['order_status_id']; ?>"><?php echo $order_status['name']; ?></option>
+                                    <?php endif; ?>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
                         <?php endforeach; ?>
                     </div>
                     <?php endif; ?>
