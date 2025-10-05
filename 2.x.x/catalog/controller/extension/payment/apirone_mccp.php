@@ -175,7 +175,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             $coin->abbr = $currencies[$abbr]->abbr;
             $coin->network = $currencies[$abbr]->network;
             $coin->token = $currencies[$abbr]->token;
-            $coin->label = $estimation->fee
+            $coin->label = property_exists($estimation, 'fee') && $estimation->fee
                 ? sprintf($this->language->get('currency_selector_label_with_fee'), $currencies[$abbr]->alias, $amount + $estimation->fee, $fiat)
                 : $currencies[$abbr]->alias;
         }
@@ -216,31 +216,10 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         return $estimation;
     }
 
-    /**
-     * @return Closure(mixed $query): mixed DB query handler for Invoice
-     */
-    protected function getDBHandler()
+    public function initInvoiceDB()
     {
-        return function($query) {
-            try {
-                $result = $this->db->query($query);
-                if ($result === true || $result === false) {
-                    return $result;
-                }
-                if (empty($result)) {
-                    return null;
-                }
-                $result = $result->rows;
-                if (empty($result)) {
-                    return null;
-                }
-                return $result;
-            }
-            catch (Exception $e) {
-                LoggerWrapper::error($e->getMessage());
-                return null;
-            }
-        };
+        $this->load->model('extension/payment/apirone_mccp');
+        Invoice::db($this->model_extension_payment_apirone_mccp->getDBHandler(), DB_PREFIX);
     }
 
     /**
@@ -269,15 +248,13 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             return;
         }
         Invoice::settings($this->settings);
-        Invoice::db($this->getDBHandler(), DB_PREFIX);
-
+        $this->initInvoiceDB();
         // Is order invoice already exists
         $orderInvoices = Invoice::getByOrder($order_id);
         if (count($orderInvoices)) {
             $invoice = $orderInvoices[0];
             // Update invoice when page loaded or reloaded & status != (expired || completed)
             $invoice->update();
-            $this->load->model('extension/payment/apirone_mccp');
             $this->model_extension_payment_apirone_mccp->updateOrderStatus($invoice);
             if ($invoice->status !== 'expired' && $invoice->details->currency == $currency_crypto) {
                 $this->showInvoice($invoice->invoice);
@@ -317,7 +294,6 @@ class ControllerExtensionPaymentApironeMccp extends Controller
                 ->linkback($this->url->link($callback_path.'linkback&key='.md5($this->settings->secret . $amount_crypto) .'&order='.$order_id))
                 ->create();
 
-            $this->load->model('extension/payment/apirone_mccp');
             $this->model_extension_payment_apirone_mccp->updateOrderStatus($invoice);
 
             $this->cart->clear();
@@ -389,7 +365,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             Utils::sendJson($message, 400);
             return;        
         }
-        Invoice::db($this->getDBHandler(), DB_PREFIX);
+        $this->initInvoiceDB();
         $invoice = Invoice::get($invoice_id);
         // Is invoice exists
         if (!(property_exists($invoice, 'invoice') && $invoice->invoice == $invoice_id)) {
@@ -442,7 +418,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             Utils::sendJson($message, 400);
             return;        
         }
-        Invoice::db($this->getDBHandler(), DB_PREFIX);
+        $this->initInvoiceDB();
         $orderInvoices = Invoice::getByOrder($order_id);
         // Is order invoice exists
         if (!count($orderInvoices)) {
@@ -548,7 +524,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             Utils::sendJson($message, 400);
             return;
         }
-        Invoice::db($this->getDBHandler(), DB_PREFIX);
+        $this->initInvoiceDB();
         $invoice = Invoice::get($invoice_id);
         // Is invoice exists
         if (!(property_exists($invoice, 'invoice') && $invoice->invoice == $invoice_id)) {

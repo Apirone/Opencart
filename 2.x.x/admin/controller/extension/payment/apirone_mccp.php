@@ -246,7 +246,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         }
         $this->data['networks'] = $this->getNetworksViewModel();
 
-        $this->data['apirone_mccp_invoice_status_ids'] = $this->settings->status_ids;
+        $this->data['apirone_mccp_invoice_status_ids'] = (array)$this->settings->status_ids;
 
         $apirone_status_labels = [];
         foreach (array_keys(DEFAULT_STATUS_IDS) as $apirone_status) {
@@ -425,7 +425,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             $from_config
                 ? $this->config->get($key)
                 : $this->settings->{$key_suffix}
-        ));
+        ) ?? '');
         if ($required && empty($value)) {
             $this->error[$key] = $this->language->get('error_' . $key);
         }
@@ -651,6 +651,10 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             'apirone_mccp_status' => $plugin_data['apirone_mccp_status'],
             'apirone_mccp_sort_order' => $plugin_data['apirone_mccp_sort_order'],
         ));
+
+        $this->load->model('extension/payment/apirone_mccp');
+        $this->model_extension_payment_apirone_mccp->install_invoices_table(
+            InvoiceQuery::createInvoicesTable(DB_PREFIX));
 
         return $version;
     }

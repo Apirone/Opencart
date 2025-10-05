@@ -65,6 +65,34 @@ class ModelExtensionPaymentApironeMccp extends Model
     }
 
     /**
+     * @return Closure(mixed $query): mixed DB query handler for Invoice
+     */
+    public function getDBHandler()
+    {
+        return function($query) {
+            try {
+                $result = $this->db->query($query);
+                if ($result === true || $result === false) {
+                    return $result;
+                }
+                if (empty($result)) {
+                    return null;
+                }
+                $result = $result->rows;
+                if (empty($result)) {
+                    return null;
+                }
+                return $result;
+            }
+            catch (Exception $e) {
+                $openCartLogger = new \Log(PLUGIN_LOG_FILE_NAME);
+                $openCartLogger->write($e->getMessage());
+                return null;
+            }
+        };
+    }
+
+    /**
      * Updates order status from invoice details data when invoice status changed
      * @param Invoice $invoice
      */

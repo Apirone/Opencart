@@ -1,7 +1,7 @@
 <?php
 
-class ModelExtensionPaymentApironeMccp extends Model
-{
+class ModelExtensionPaymentApironeMccp extends Model {
+
     public function install_invoices_table($query = '')
     {
         if(empty($query)) {
@@ -17,4 +17,5 @@ class ModelExtensionPaymentApironeMccp extends Model
         }
         $this->db->query($query);
     }
+
 }
