@@ -1,6 +1,7 @@
 <?php
 
 use Apirone\SDK\Invoice;
+use Apirone\SDK\Model\HistoryItem;
 use Apirone\SDK\Model\Settings;
 
 require_once(DIR_SYSTEM . 'library/apirone/vendor/autoload.php');
@@ -11,49 +12,53 @@ class ModelExtensionPaymentApironeMccp extends Model
      * Gets method data to show in payment method selector\
      * OpenCart required
      */
-    public function getMethod($address, $total)
+    public function getMethod(array $address): array
     {
-        $status = false;
-        $method_data = array();
-
+        $geo_zone_id_allowed = (int) $this->config->get('apirone_mccp_geo_zone_id');
+        if ($geo_zone_id_allowed) {
+            $geo_zone_query_result = $this->db->query(sprintf(
+                'SELECT * FROM %s WHERE geo_zone_id = "%s" AND country_id = "%s" AND (zone_id = "%s" OR zone_id = "0")',
+                DB_PREFIX . 'zone_to_geo_zone',
+                $geo_zone_id_allowed,
+                (int) $address['country_id'],
+                (int) $address['zone_id'],
+            ));
+            if (!$geo_zone_query_result->num_rows) {
+                return [];
+            }
+        }
         $_settings = $this->getSettings();
-        $coins = $_settings ? $_settings->coins : false;
-        if ($coins) {
-            $geozone = $this->db->query("SELECT * FROM " . DB_PREFIX . "zone_to_geo_zone WHERE geo_zone_id = '" 
-                . (int) $this->config->get('apirone_mccp_geo_zone_id') 
-                . "' AND country_id = '" . (int) $address['country_id'] . "' AND (zone_id = '" . (int) $address['zone_id'] . "' OR zone_id = '0')");
-
-            if (!$this->config->get('apirone_geo_zone_id') || $geozone->num_rows) {
-                $status = true;
-            }
+        if (!$_settings) {
+            return [];
         }
-        if ($status) {
-            $currencies = '';
-            foreach ($coins as $coin) {
-                $currencies .= $coin->alias . ', ';
-            }
-            $currencies = substr($currencies, 0, -2);
-
-            $this->load->language('extension/payment/apirone_mccp');
-            $method_data = array(
-                'code'       => 'apirone_mccp',
-                'title'      => '<span data-toggle="tooltip" data-original-title="' . $currencies . '">' . $this->language->get('text_title') . '</span>',
-                'terms'      => '',
-                'sort_order' => $this->config->get('apirone_mccp_sort_order')
-            );  
+        $coins = $_settings->coins;
+        if (empty($coins)) {
+            return [];
         }
-        return $method_data;
+        $currencies = '';
+        foreach ($coins as $coin) {
+            if ($currencies) {
+                $currencies .= ', ';
+            }
+            $currencies .= $coin->alias;
+        }
+        $this->load->language('extension/payment/apirone_mccp');
+        return array(
+            'code'       => 'apirone_mccp',
+            'title'      => sprintf('<span data-toggle="tooltip" data-original-title="%s">%s</span>', $currencies, $this->language->get('text_title')),
+            'terms'      => '',
+            'sort_order' => $this->config->get('apirone_mccp_sort_order'),
+        );  
     }
 
     /**
-     * Gets plugin settings
-     * @return Settings
+     * @return Settings plugin settings
      */
-    protected function getSettings()
+    protected function getSettings(): ?Settings
     {
         $_settings_json = $this->config->get('apirone_mccp_settings');
         if (!$_settings_json) {
-            return;
+            return null;
         }
         try {
             return Settings::fromJson($_settings_json);
@@ -61,13 +66,14 @@ class ModelExtensionPaymentApironeMccp extends Model
         catch (Exception $e) {
             $openCartLogger = new \Log(PLUGIN_LOG_FILE_NAME);
             $openCartLogger->write($e->getMessage());
+            return null;
         }
     }
 
     /**
-     * @return Closure(mixed $query): mixed DB query handler for Invoice
+     * @return Closure DB query handler for Invoice
      */
-    public function getDBHandler()
+    public function getDBHandler(): Closure
     {
         return function($query) {
             try {
@@ -96,7 +102,7 @@ class ModelExtensionPaymentApironeMccp extends Model
      * Updates order status from invoice details data when invoice status changed
      * @param Invoice $invoice
      */
-    public function updateOrderStatus($invoice)
+    public function updateOrderStatus(Invoice $invoice): void
     {
         $_settings = $this->getSettings();
         if (!$_settings) {
@@ -117,7 +123,7 @@ class ModelExtensionPaymentApironeMccp extends Model
         }
     }
 
-    private function isHistoryRecordExists($comment, $history)
+    private function isHistoryRecordExists(string $comment, mixed $history)
     {
         foreach ($history->rows as $row) {
             if ($row['comment'] == $comment) {
@@ -127,7 +133,7 @@ class ModelExtensionPaymentApironeMccp extends Model
         return false;
     }
 
-    private function getHistoryRecordComment($address, $item)
+    private function getHistoryRecordComment(string $address, HistoryItem $item)
     {
         $status = $item->status;
         $prefix = 'Invoice ' . $status;
