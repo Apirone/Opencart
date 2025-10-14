@@ -4,46 +4,8 @@
     	<p>{{ unavailable }}</p>
   	</div>
 {% else %}
+<link rel="stylesheet" crossorigin href="catalog/view/theme/default/stylesheet/apirone/coins.min.css">
 <form id="mccp-form" class="form form-horizontal">
-    <style>
-        #apirone_mccp_dropdown .dropdown-menu,
-        #apirone_mccp_dropdown>button {
-            font-size:16px;
-            width: 50%;
-            padding: 0;
-        }
-        #apirone_mccp_dropdown .dropdown-inner {
-            padding: 0;
-        }
-        #apirone_mccp_dropdown .list-unstyled {
-            margin-bottom: 0;
-        }
-        #apirone_mccp_dropdown > button {
-            border:#1f90bb solid 1px;
-        }
-        #apirone_mccp_dropdown li button {
-            border:none;
-            width: 100%;
-        }
-        #apirone_mccp_dropdown button {
-            padding: 8px;
-            position:relative;
-            background:none;
-            text-align: start;
-        }
-        #apirone_mccp_dropdown button:hover {
-            background:#eee;
-        }
-        .apirone-mccp-img {
-            position:relative;
-        }
-        .apirone-mccp-img-small {
-            position:absolute;
-            top:22px;
-            left:36px;
-        }
-    </style>
-
     <input type="hidden" name="order_id" value="{{ order_id }}">
     <fieldset id="payment">
         <legend>{{ payment_details }}</legend>
@@ -60,7 +22,10 @@
                                 {% if coin.token %}
                                     <img src="catalog/view/theme/default/image/apirone/currencies/{{ coin.network }}.svg" width="20" class="apirone-mccp-img-small">
                                 {% endif %}
-                                {{ coin.label }}
+                                <span class="coin-alias">{{ coin.alias }}</span>
+                                {% if coin.with_fee %}
+                                    <span class="with-fee">{{ coin.with_fee }}</span>
+                                {% endif %}
                             </button></li>
                             {% endfor %}
                         </ul>
@@ -75,7 +40,6 @@
         </div>
     </div>
 </form>
-
 <script type="text/javascript">
     window.mccp_currency = '{{ coins[0].abbr }}';
     $('#apirone_mccp_dropdown>button').html($('#apirone_mccp_dropdown ul li:first-child button').html());

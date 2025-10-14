@@ -4,46 +4,8 @@
     	<p><?php echo $unavailable; ?></p>
   	</div>
 <?php else: ?>
+<link rel="stylesheet" crossorigin href="catalog/view/theme/default/stylesheet/apirone/coins.min.css">
 <form id="mccp-form" class="form form-horizontal">
-    <style>
-        #apirone_mccp_dropdown .dropdown-menu,
-        #apirone_mccp_dropdown>button {
-            font-size:16px;
-            width: 50%;
-            padding: 0;
-        }
-        #apirone_mccp_dropdown .dropdown-inner {
-            padding: 0;
-        }
-        #apirone_mccp_dropdown .list-unstyled {
-            margin-bottom: 0;
-        }
-        #apirone_mccp_dropdown > button {
-            border:#1f90bb solid 1px;
-        }
-        #apirone_mccp_dropdown li button {
-            border:none;
-            width: 100%;
-        }
-        #apirone_mccp_dropdown button {
-            padding: 8px;
-            position:relative;
-            background:none;
-            text-align: start;
-        }
-        #apirone_mccp_dropdown button:hover {
-            background:#eee;
-        }
-        .apirone-mccp-img {
-            position:relative;
-        }
-        .apirone-mccp-img-small {
-            position:absolute;
-            top:22px;
-            left:36px;
-        }
-    </style>
-
     <input type="hidden" name="order_id" value="<?php echo $order_id; ?>">
     <fieldset id="payment">
         <legend><?php echo $payment_details; ?></legend>
@@ -60,7 +22,10 @@
                                 <?php if ($coin->token) : ?>
                                     <img src="catalog/view/theme/default/image/apirone/currencies/<?php echo $coin->network; ?>.svg" width="20" class="apirone-mccp-img-small">
                                 <?php endif; ?>
-                                <?php echo $coin->label; ?>
+                                <span class="coin-alias"><?php echo $coin->alias; ?></span>
+                                <?php if ($coin->with_fee) : ?>
+                                    <span class="with-fee"><?php echo $coin->with_fee; ?></span>
+                                <?php endif; ?>
                             </button></li>
                             <?php endforeach; ?>
                         </ul>
@@ -75,7 +40,6 @@
         </div>
     </div>
 </form>
-
 <script type="text/javascript">
     window.mccp_currency = '<?php echo $coins[0]->abbr; ?>';
     $('#apirone_mccp_dropdown>button').html($('#apirone_mccp_dropdown ul li:first-child button').html());

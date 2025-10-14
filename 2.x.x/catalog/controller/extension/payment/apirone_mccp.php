@@ -176,7 +176,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             $coin->network = $currencies[$abbr]->network;
             $coin->token = $currencies[$abbr]->token;
             $coin->label = property_exists($estimation, 'fee') && $estimation->fee
-                ? sprintf($this->language->get('currency_selector_label_with_fee'), $currencies[$abbr]->alias, $amount + $estimation->fee, $fiat)
+                ? sprintf($this->language->get('currency_selector_with_fee'), $currencies[$abbr]->alias, $amount + $estimation->fee, $fiat)
                 : $currencies[$abbr]->alias;
         }
         return $coins;
