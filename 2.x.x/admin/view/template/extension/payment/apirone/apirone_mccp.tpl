@@ -39,7 +39,7 @@
                     <li><a href="#tab-currencies" data-toggle="tab"><i class="fa fa-bitcoin"></i> <?php echo $tab_currencies; ?></a></li>
                     <li><a href="#tab-statuses" data-toggle="tab"><i class="fa fa-check"></i> <?php echo $tab_statuses; ?></a></li>
                     <?php endif; ?>
-                    <li><a href="#tab-info" data-toggle="tab"><i class="fa fa-info-circle"></i> <?php echo $tab_info; ?></a></li>
+                    <li<?php if (!(isset($settings_loaded) && $settings_loaded)) : ?> class="active"<?php endif; ?>><a href="#tab-info" data-toggle="tab"><i class="fa fa-info-circle"></i> <?php echo $tab_info; ?></a></li>
                 </ul>
                 <div class="tab-content">
                     <?php if (isset($settings_loaded) && $settings_loaded) : ?>
@@ -225,7 +225,7 @@
                         <?php endforeach; ?>
                     </div>
                     <?php endif; ?>
-                    <div class="tab-pane" id="tab-info">
+                    <div class="tab-pane<?php if (!(isset($settings_loaded) && $settings_loaded)) : ?> active<?php endif; ?>" id="tab-info">
                         <div style="padding: 1rem 0; margin-bottom: 1rem">
                             <h4><?php echo $heading_testnet_hint; ?></h4>
                             <hr>

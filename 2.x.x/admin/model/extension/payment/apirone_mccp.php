@@ -1,21 +1,7 @@
 <?php
 
-class ModelExtensionPaymentApironeMccp extends Model {
+require_once(DIR_SYSTEM . 'library/apirone/model/apirone_mccp.php');
 
-    public function install_invoices_table($query = '')
-    {
-        if(empty($query)) {
-            return;
-        }
-        $this->db->query($query);
-    }
-
-    public function delete_invoices_table($query = '')
-    {
-        if(empty($query)) {
-            return;
-        }
-        $this->db->query($query);
-    }
-
+class ModelExtensionPaymentApironeMccp extends ModelExtensionPaymentApironeMccpCommon
+{
 }

@@ -39,7 +39,7 @@
                     <li><a href="#tab-currencies" data-toggle="tab"><i class="fa fa-bitcoin"></i> {{ tab_currencies }}</a></li>
                     <li><a href="#tab-statuses" data-toggle="tab"><i class="fa fa-check"></i> {{ tab_statuses }}</a></li>
                     {% endif %}
-                    <li><a href="#tab-info" data-toggle="tab"><i class="fa fa-info-circle"></i> {{ tab_info }}</a></li>
+                    <li{% if not settings_loaded %} class="active"{% endif %}><a href="#tab-info" data-toggle="tab"><i class="fa fa-info-circle"></i> {{ tab_info }}</a></li>
                 </ul>
                 <div class="tab-content">
                     {% if settings_loaded %}
@@ -225,7 +225,7 @@
                         {% endfor %}
                     </div>
                     {% endif %}
-                    <div class="tab-pane" id="tab-info">
+                    <div class="tab-pane{% if not settings_loaded %} active{% endif %}" id="tab-info">
                         <div style="padding: 1rem 0; margin-bottom: 1rem">
                             <h4>{{ heading_testnet_hint }}</h4>
                             <hr>

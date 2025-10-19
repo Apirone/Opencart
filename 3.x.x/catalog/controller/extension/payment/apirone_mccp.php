@@ -29,8 +29,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
      */
     public function index(): string
     {
-        $this->model->update();
-
+        // all model updates is in model getSettings method
         $this->settings = $this->model->getSettings();
         if (!$this->settings) {
             $data['coins'] = null;
@@ -53,40 +52,19 @@ class ControllerExtensionPaymentApironeMccp extends Controller
     }
 
     /**
-     * @return bool show test networks
-     */
-    protected function showTestnet(): bool
-    {
-        $testcustomer = $this->settings->testcustomer;
-        if ($testcustomer == '*') {
-            return true;
-        }
-        $this->load->model('account/customer');
-        if (!$this->customer->isLogged()) {
-            return false;
-        }
-        return $this->customer->getEmail() == $testcustomer;
-    }
-
-    /**
      * @param float $amount total order amount
      * @param string $fiat fiat currency of amount specified
      * @return array array of coins to display in currency selector
      */
     protected function getCoins(float $amount, string $fiat): ?array
     {
-        $show_testnet = $this->showTestnet();
-        $coins_all = $this->settings->coins;
-        $coins = [];
-        $currencies = [];
-        foreach ($coins_all as $abbr => $coin) {
-            if ($show_testnet || !$coin->test) {
-                $coins[] = $coin->toJson();
-                $currencies[] = $abbr;
-            }
-        }
-        if (!(count($currencies) && $this->settings->with_fee)) {
+        $coins = $this->model->getCoinsAvailable();
+        if (empty($coins) || !$this->settings->with_fee) {
             return $coins;
+        }
+        $currencies = [];
+        foreach ($coins as $coin) {
+            $currencies[] = $coin->abbr;
         }
         try {
             $estimations = Utils::estimate(
@@ -101,12 +79,13 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             $this->model->logError('Can not get estimations for currency selector: '.$e->getMessage());
             return null;
         }
+        $coins_all = $this->settings->coins;
         $coins = [];
         foreach ($estimations as $estimation) {
             if (!(property_exists($estimation, 'min') && $estimation->min)) {
                 continue;
             }
-            $coins[] = $coin = $coins_all[$estimation->currency]->toJson();
+            $coins[] = $coin = $coins_all[$estimation->currency]->toStd();
             $coin->with_fee = sprintf($this->language->get('currency_selector_with_fee'), $amount + $estimation->fee, $fiat);
         }
         return $coins;
@@ -116,9 +95,9 @@ class ControllerExtensionPaymentApironeMccp extends Controller
      * @param float $amount total order amount
      * @param string $fiat fiat currency of amount specified
      * @param string $currency coin crypto currency abbreviation
-     * @return mixed estimation in crypto currency and fee in fiat if with_fee setting is set
+     * @return ?\stdClass estimation in crypto currency and fee in fiat if with_fee setting is set
      */
-    protected function getEstimation(float $amount, string $fiat, string $currency): mixed
+    protected function getEstimation(float $amount, string $fiat, string $currency): ?\stdClass
     {
         try {
             $estimations = Utils::estimate(
@@ -158,8 +137,6 @@ class ControllerExtensionPaymentApironeMccp extends Controller
      */
     public function confirm(): void
     {
-        $this->model->update();
-
         $this->settings = $this->model->getSettings();
         if (!$this->settings) {
             $this->backToCart();
@@ -239,8 +216,6 @@ class ControllerExtensionPaymentApironeMccp extends Controller
 
     public function invoice(): void
     {
-        $this->model->update();
-
         $this->settings = $this->model->getSettings();
         if (!$this->settings) {
             Utils::sendJson('Can not get settings', 500);
@@ -258,8 +233,6 @@ class ControllerExtensionPaymentApironeMccp extends Controller
      */
     public function callback(): void
     {
-        $this->model->update();
-
         $this->settings = $this->model->getSettings();
         if (!$this->settings) {
             Utils::sendJson('Can not get settings', 500);
@@ -320,8 +293,6 @@ class ControllerExtensionPaymentApironeMccp extends Controller
      */
     public function linkback(): void
     {
-        $this->model->update();
-
         if (!$this->model->getSettings()) {
             Utils::sendJson('Can not get settings', 500);
             return;
@@ -423,6 +394,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
     {
         // GET https://examples.test/opencart2/index.php?route=extension/payment/apirone_mccp/invoices/{INVOICE_ID}
 
+        // settings not need, but update need
         $this->model->update();
 
         $invoice_id = $this->getLastSegmentFromRequestUri();
