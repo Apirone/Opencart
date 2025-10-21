@@ -351,13 +351,14 @@ class ControllerExtensionPaymentApironeMccp extends Controller
     }
 
     /**
-     * Install plugin:
-     * create account and settings,
-     * store settings to DB\
+     * Install plugin
      * OpenCart required
      */
     public function install(): void
     {
-        $this->model->install();
+        if (!$this->model->install()) {
+            $this->load->language('extension/payment/apirone_mccp');
+            $this->error['warning'] = $this->language->get('error_service_not_available');
+        }
     }
 }

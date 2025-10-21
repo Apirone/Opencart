@@ -5,8 +5,7 @@
   	</div>
 <?php else: ?>
 <link rel="stylesheet" crossorigin href="catalog/view/theme/default/stylesheet/apirone/coins.min.css">
-<form id="mccp-form" class="form form-horizontal">
-    <input type="hidden" name="order_id" value="<?php echo $order_id; ?>">
+<form id="mccp-form">
     <fieldset id="payment">
         <legend><?php echo $payment_details; ?></legend>
         <div class="form-group">

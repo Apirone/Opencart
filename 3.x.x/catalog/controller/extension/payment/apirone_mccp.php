@@ -7,6 +7,7 @@ use Apirone\SDK\Model\Settings;
 use Apirone\SDK\Model\UserData;
 use Apirone\SDK\Service\Utils;
 
+require_once(DIR_SYSTEM . 'library/apirone/apirone_mccp.php');
 require_once(DIR_SYSTEM . 'library/apirone/vendor/autoload.php');
 
 class ControllerExtensionPaymentApironeMccp extends Controller
@@ -18,7 +19,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
     {
         parent::__construct($registry);
 
-        $this->load->model('extension/payment/apirone_mccp');
+        $this->load->model(PATH_TO_RESOURCES);
         $this->model = $this->model_extension_payment_apirone_mccp;
         $this->model->initLogger();
     }
@@ -33,11 +34,11 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         $this->settings = $this->model->getSettings();
         if (!$this->settings) {
             $data['coins'] = null;
-            return $this->load->view('extension/payment/apirone/apirone_mccp', $data);
+            return $this->load->view(PATH_TO_VIEWS, $data);
         }
         $data['button_confirm'] = $this->language->get('button_confirm');
 
-        $this->load->language('extension/payment/apirone_mccp');
+        $this->load->language(PATH_TO_RESOURCES);
         $data = array_merge($data, $this->load->language('apirone_mccp'));
 
         $this->load->model('checkout/order');
@@ -46,9 +47,9 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         $data['coins'] = $this->getCoins($order['total'] * $order['currency_value'], $order['currency_code']);
         $data['order_id'] = $order['order_id'];
         $data['order_key'] = $this->model->getHash($order['total']);
-        $data['url_redirect'] = $this->url->link('extension/payment/apirone_mccp/confirm');
+        $data['url_redirect'] = $this->url->link(PATH_TO_RESOURCES . '/confirm');
 
-        return $this->load->view('extension/payment/apirone/apirone_mccp', $data);
+        return $this->load->view(PATH_TO_VIEWS, $data);
     }
 
     /**
@@ -85,7 +86,8 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             if (!(property_exists($estimation, 'min') && $estimation->min)) {
                 continue;
             }
-            $coins[] = $coin = $coins_all[$estimation->currency]->toStd();
+            // $coins[] = $coin = $coins_all[$estimation->currency]->toStd();
+            $coins[] = $coin = $this->model->splitCoinAbbr($coins_all[$estimation->currency]);
             $coin->with_fee = sprintf($this->language->get('currency_selector_with_fee'), $amount + $estimation->fee, $fiat);
         }
         return $coins;
@@ -133,7 +135,6 @@ class ControllerExtensionPaymentApironeMccp extends Controller
      * Payment confirmation handler\
      * Creates new invoice or updates existing for order
      * OpenCart required
-     * @throws ReflectionException 
      */
     public function confirm(): void
     {
@@ -188,15 +189,14 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             ->url($order['store_url'])
             ->price($amount_fiat.' '.strtoupper($currency_fiat));
 
-        $callback_path = 'extension/payment/apirone_mccp/';
         try {
             $invoice = Invoice::init($currency_crypto, $amount_crypto)
                 ->order($order_id)
                 ->estimation($estimation)
                 ->userData($userData)
                 ->lifetime($this->settings->timeout)
-                ->callbackUrl($this->url->link($callback_path.'callback&key='.$this->model->getHash($order_id)))
-                ->linkback($this->url->link($callback_path.'linkback&key='.$this->model->getHash($amount_crypto) .'&order='.$order_id))
+                ->callbackUrl($this->url->link(PATH_TO_RESOURCES . '/callback&key='.$this->model->getHash($order_id)))
+                ->linkback($this->url->link(PATH_TO_RESOURCES . '/linkback&key='.$this->model->getHash($amount_crypto) .'&order='.$order_id))
                 ->create();
 
             $this->model->updateOrderStatus($invoice);
@@ -208,10 +208,10 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             $this->backToCart();
         }
     }
-    
+
     protected function showInvoice(string $invoice): void
     {
-        $this->response->redirect($this->url->link('extension/payment/apirone_mccp/invoice&id=' . $invoice));
+        $this->response->redirect($this->url->link(PATH_TO_RESOURCES . '/invoice&id=' . $invoice));
     }
 
     public function invoice(): void
@@ -223,7 +223,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         }
         $data['apirone_config'] = $this->settings->logo ? '' : 'embed: true,';
 
-        $this->response->setOutput($this->load->view('extension/payment/apirone/apirone_mccp_invoice', $data));
+        $this->response->setOutput($this->load->view(PATH_TO_VIEWS . '_invoice', $data));
     }
 
     // to test callback on local server
@@ -258,7 +258,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
                 .', key:'.$callback_key
             );
             Utils::sendJson($message, 400);
-            return;        
+            return;
         }
         $this->model->initInvoiceModel();
         $invoice = Invoice::get($invoice_id);
@@ -283,7 +283,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
 
         if ($invoice->update()) {
             // Update order if invoice was changed
-            $this->load->model('extension/payment/apirone_mccp');
+            $this->load->model(PATH_TO_RESOURCES);
             $this->model->updateOrderStatus($invoice);
         };
     }
@@ -307,7 +307,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
                 .', order:'.$order_id
             );
             Utils::sendJson($message, 400);
-            return;        
+            return;
         }
         $this->model->initInvoiceModel();
         $orderInvoices = Invoice::getByOrder($order_id);

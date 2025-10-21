@@ -10,28 +10,11 @@ use Apirone\SDK\Model\Settings;
 use Apirone\SDK\Model\Settings\Coin;
 use Apirone\SDK\Service\InvoiceDb;
 
+require_once(DIR_SYSTEM . 'library/apirone/apirone_mccp.php');
 require_once(DIR_SYSTEM . 'library/apirone/vendor/autoload.php');
 
-define('USER_TOKEN_KEY', (substr(VERSION, 0, 2) === '2.' ? '' : 'user_') . 'token');
-
-define('EXTENSIONS_ROUTE', (substr(VERSION, 0, 2) === '2.' ? 'extension' : 'marketplace') . '/extension');
-
-define('PLUGIN_VERSION', '2.0.0');
-
-define('SETTINGS_CODE_PREFIX', substr(VERSION, 0, 2) === '2.' ? '' : 'payment_');
-define('SETTINGS_CODE', SETTINGS_CODE_PREFIX . 'apirone_mccp');
-define('SETTING_PREFIX', SETTINGS_CODE . '_');
-
-define('DEFAULT_STATUS_IDS', [
-    'created' => 1,
-    'partpaid' => 1,
-    'paid' => 5,
-    'overpaid' => 5,
-    'completed' => 5,
-    'expired' => 16,
-]);
-
-class ModelExtensionPaymentApironeMccpCommon extends Model 
+// class ExtensionPaymentApironeMccpModelCommon extends \Opencart\System\Engine\Model
+class ExtensionPaymentApironeMccpModelCommon extends Model
 {
     private static ?Log $logger = null;
     private static ?Settings $settings = null;
@@ -52,7 +35,6 @@ class ModelExtensionPaymentApironeMccpCommon extends Model
 
     /**
      * @return bool log extended info except errors
-     * @see also in admin/model/extension/payment/apirone_mccp.php
      */
     protected function isDebug(): bool
     {
@@ -127,6 +109,29 @@ class ModelExtensionPaymentApironeMccpCommon extends Model
         return self::$settings;
     }
 
+    public function splitCoinAbbr(Coin $coin): \stdClass
+    {
+        $std = new \stdClass();
+
+        $abbr = $coin->abbr;
+
+        $std->abbr = $abbr;
+        $std->alias = $coin->alias;
+        $std->test = $coin->test;
+
+        if (!$abbr) {
+            return $std;
+        }
+        $parts = explode('@', $abbr, 2);
+        if (count($parts) == 1) {
+            $std->network = $abbr;
+            return $std;
+        }
+        $std->token = $parts[0];
+        $std->network = $parts[1];
+        return $std;
+    }
+
     /**
      * @return array array of coins available for user
      */
@@ -139,7 +144,8 @@ class ModelExtensionPaymentApironeMccpCommon extends Model
         $coins = [];
         foreach (self::$settings->coins as $abbr => $coin) {
             if ($show_testnet || !$coin->test) {
-                $coins[] = $coin->toStd();
+                // $coins[] = $coin->toStd();
+                $coins[] = $this->splitCoinAbbr($coin);
             }
         }
         return $coins;
@@ -218,14 +224,16 @@ class ModelExtensionPaymentApironeMccpCommon extends Model
         InvoiceDb::uninstall();
     }
 
-    public function install()
+    /**
+     * Creates in DB new settings and invoices table
+     * @return bool `true` on success, `false` otherwise
+     */
+    public function install(): bool
     {
         try {
             $_settings = Settings::init()->createAccount();
         } catch (\Throwable $ignore) {
-            $this->load->language('extension/payment/apirone_mccp');
-            $this->error['warning'] = $this->language->get('error_service_not_available');
-            return;
+            return false;
         }
         $_settings
             ->version(PLUGIN_VERSION)
@@ -248,6 +256,8 @@ class ModelExtensionPaymentApironeMccpCommon extends Model
 
         $this->initInvoiceModel();
         $this->installInvoices();
+
+        return true;
     }
 
     public function uninstall()
@@ -572,10 +582,9 @@ class ModelExtensionPaymentApironeMccpCommon extends Model
 
 /**
  * Debug output
- *
- * @param mixed $mixed 
- * @param string $title 
- * @return void 
+ * @param mixed $mixed
+ * @param string $title
+ * @return void
  */
 function pa($mixed, $title = '') {
 	echo '<pre>' . ($title ? $title . ': ' : '') . "\n";

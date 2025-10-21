@@ -1,0 +1,38 @@
+{% if coins is empty %}
+  	<div class="pull-right">
+        <legend>{{ payment_details }}</legend>
+    	<p>{{ unavailable }}</p>
+  	</div>
+{% else %}
+
+<form id="mccp-form">
+    <fieldset id="payment">
+        <legend>{{ payment_details }}</legend>
+        <div class="input-group" style="margin-top: 10px;">
+            <select name="currency" id="mccp-currency" class="form-select" required>
+                {% for coin in coins %}
+                {% set disabled = not coin.amount or not coin.payable ? ' disabled' : '' %}
+                <option value="{{ coin.abbr }}"{{ disabled }}>
+                    {{ coin.name }}: {{ coin.amount ?: cant_convert }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+    </fieldset>
+    <div class="buttons">
+        <div style="margin-top: 10px; float: right">
+            <button type="button" id="button-confirm" onclick="mccpConfirm(event)" class="btn btn-primary">{{ button_confirm }}</button>
+        </div>
+    </div>
+</form>
+{% endif %}
+
+<script type="text/javascript">
+    function mccpConfirm(event) {
+        event.preventDefault();
+        currency = $('#mccp-currency');
+        if (currency !== 'undefined' && currency.val() !== '' && currency.val() !== null) {
+            location = '{{url_redirect}}&currency='+$('#mccp-currency').val()+'&key={{order_key}}&order={{order_id}}';
+        }
+    }
+</script>

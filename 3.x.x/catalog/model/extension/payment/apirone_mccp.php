@@ -2,7 +2,7 @@
 
 require_once(DIR_SYSTEM . 'library/apirone/model/apirone_mccp.php');
 
-class ModelExtensionPaymentApironeMccp extends ModelExtensionPaymentApironeMccpCommon
+class ModelExtensionPaymentApironeMccp extends ExtensionPaymentApironeMccpModelCommon
 {
     /**
      * Gets method data to show in payment method selector\
@@ -34,12 +34,12 @@ class ModelExtensionPaymentApironeMccp extends ModelExtensionPaymentApironeMccpC
             }
             $currencies .= $coin->alias;
         }
-        $this->load->language('extension/payment/apirone_mccp');
+        $this->load->language(PATH_TO_RESOURCES);
         return array(
             'code'       => 'apirone_mccp',
             'title'      => sprintf('<span data-toggle="tooltip" data-original-title="%s">%s</span>', $currencies, $this->language->get('text_title')),
             'terms'      => '',
             'sort_order' => $this->config->get(SETTING_PREFIX . 'sort_order'),
-        );  
+        );
     }
 }
