@@ -1,15 +1,16 @@
 <?php
 
-use Apirone\API\Http\Request;
-
-use Apirone\SDK\Invoice;
-use Apirone\SDK\Model\Settings;
-use Apirone\SDK\Model\UserData;
-use Apirone\SDK\Service\Utils;
-
 require_once(DIR_SYSTEM . 'library/apirone/apirone_mccp.php');
-require_once(DIR_SYSTEM . 'library/apirone/vendor/autoload.php');
+require_once(PATH_TO_LIBRARY . 'vendor/autoload.php');
 
+use \Apirone\API\Http\Request;
+
+use \Apirone\SDK\Invoice;
+use \Apirone\SDK\Model\Settings;
+use \Apirone\SDK\Model\UserData;
+use \Apirone\SDK\Service\Utils;
+
+// the class name formation matters
 class ControllerExtensionPaymentApironeMccp extends Controller
 {
     private ?Settings $settings = null;
@@ -76,7 +77,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
                 true,
                 $this->settings->factor,
             );
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->model->logError('Can not get estimations for currency selector: '.$e->getMessage());
             return null;
         }
@@ -110,7 +111,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
                 true,
                 $this->settings->factor,
             );
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->model->logError('Can not get estimation for invoice: '.$e->getMessage());
             return null;
         }
@@ -185,7 +186,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         $amount_crypto = $estimation->min;
 
         $userData = UserData::init()
-            ->merchant(trim($this->settings->merchant) ?: $order['store_name'])
+            ->merchant($this->settings->merchant ?: $order['store_name'])
             ->url($order['store_url'])
             ->price($amount_fiat.' '.strtoupper($currency_fiat));
 
@@ -203,7 +204,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             $this->cart->clear();
             $this->showInvoice($invoice->invoice);
         }
-        catch (Exception $e) {
+        catch (\Exception $e) {
             $this->model->logError($e->getMessage());
             $this->backToCart();
         }
@@ -349,7 +350,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             header('Content-Type: application/json');
             echo $response->body;
         }
-        catch (Exception $e) {
+        catch (\Exception $e) {
             $message = $e->getMessage();
             $this->model->logInfo($message);
             Utils::sendJson($message, $e->getCode());

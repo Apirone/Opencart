@@ -1,10 +1,12 @@
 <?php
 
-use Apirone\SDK\Model\Settings;
-use Apirone\SDK\Model\Settings\Coin;
+require_once(DIR_SYSTEM . 'library/apirone/apirone_mccp.php');
+require_once(PATH_TO_LIBRARY . 'vendor/autoload.php');
 
-require_once(DIR_SYSTEM . 'library/apirone/vendor/autoload.php');
+use \Apirone\SDK\Model\Settings;
+use \Apirone\SDK\Model\Settings\Coin;
 
+// the class name formation matters
 class ControllerExtensionPaymentApironeMccp extends Controller
 {
     private ?Settings $settings = null;
@@ -12,10 +14,11 @@ class ControllerExtensionPaymentApironeMccp extends Controller
     private $data = [];
     private $error = [];
 
-    public function __construct($registry)
+    public function __construct(Registry $registry)
     {
         parent::__construct($registry);
-        $this->load->model('extension/payment/apirone_mccp');
+
+        $this->load->model(PATH_TO_RESOURCES);
         $this->model = $this->model_extension_payment_apirone_mccp;
         $this->model->initLogger();
     }
@@ -26,7 +29,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
      */
     public function index(): void
     {
-        $this->load->language('extension/payment/apirone_mccp');
+        $this->load->language(PATH_TO_RESOURCES);
 
         $this->settings = $this->model->getSettings();
         if (!$this->settings) {
@@ -50,7 +53,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
         $networks_update_need = false;
         $coins_update_need = false;
 
-        if (!$this->user->hasPermission('modify', 'extension/payment/apirone_mccp')) {
+        if (!$this->user->hasPermission('modify', PATH_TO_RESOURCES)) {
             $this->data['error'] = $this->language->get('error_permission');
             $has_errors = true;
         }
@@ -243,7 +246,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
             }
         }
 
-        $this->response->setOutput($this->load->view('extension/payment/apirone/apirone_mccp', $this->data));
+        $this->response->setOutput($this->load->view(PATH_TO_VIEWS, $this->data));
     }
 
     /**
@@ -306,7 +309,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
 
         $home_url = $this->url->link('common/dashboard', $user_token_param, true);
         $extensions_url = $this->url->link(EXTENSIONS_ROUTE, $user_token_param . '&type=payment', true);
-        $apirone_mccp_url = $this->url->link('extension/payment/apirone_mccp', $user_token_param, true);
+        $apirone_mccp_url = $this->url->link(PATH_TO_RESOURCES, $user_token_param, true);
 
         $this->data['breadcrumbs'] = [];
         $this->data['breadcrumbs'][] = array(
@@ -357,7 +360,7 @@ class ControllerExtensionPaymentApironeMccp extends Controller
     public function install(): void
     {
         if (!$this->model->install()) {
-            $this->load->language('extension/payment/apirone_mccp');
+            $this->load->language(PATH_TO_RESOURCES);
             $this->error['warning'] = $this->language->get('error_service_not_available');
         }
     }

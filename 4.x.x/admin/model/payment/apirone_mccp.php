@@ -2,21 +2,7 @@
 
 namespace Opencart\Admin\Model\Extension\Apirone\Payment;
 
-class ApironeMccp extends \Opencart\System\Engine\Model
-{
-    public function install_invoices_table($query = ''): void
-    {
-        if(empty($query)) {
-            return;
-        }
-        $this->db->query($query);
-    }
+require_once(DIR_EXTENSION . 'apirone/system/library/model/apirone_mccp.php');
 
-    public function delete_invoices_table($query = ''): void
-    {
-        if(empty($query)) {
-            return;
-        }
-        $this->db->query($query);
-    }
-}
+// model class must be named as plugin
+class ApironeMccp extends \Apirone\Payment\Model\ModelExtensionPaymentApironeMccpCommon {}

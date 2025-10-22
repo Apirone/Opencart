@@ -1,20 +1,25 @@
 <?php
 
-use Apirone\API\Endpoints\Service;
-use Apirone\API\Http\Request;
-use Apirone\API\Log\LoggerWrapper;
-use Apirone\API\Log\LogLevel;
-use Apirone\SDK\Invoice;
-use Apirone\SDK\Model\HistoryItem;
-use Apirone\SDK\Model\Settings;
-use Apirone\SDK\Model\Settings\Coin;
-use Apirone\SDK\Service\InvoiceDb;
+namespace Apirone\Payment\Model;
 
-require_once(DIR_SYSTEM . 'library/apirone/apirone_mccp.php');
-require_once(DIR_SYSTEM . 'library/apirone/vendor/autoload.php');
+require_once(((int) explode('.', VERSION, 2)[0] > 3 ? DIR_EXTENSION . 'apirone/system/library/' : DIR_SYSTEM . 'library/apirone/') . 'apirone_mccp.php');
+require_once(PATH_TO_LIBRARY . 'model/common' . (OC_MAJOR_VERSION > 3 ? '' : '_before_oc4') . '.php');
+require_once(PATH_TO_LIBRARY . 'vendor/autoload.php');
 
-// class ExtensionPaymentApironeMccpModelCommon extends \Opencart\System\Engine\Model
-class ExtensionPaymentApironeMccpModelCommon extends Model
+use \Apirone\Payment\Model\LogCommon as Log;
+
+use \Apirone\API\Endpoints\Service;
+use \Apirone\API\Http\Request;
+use \Apirone\API\Log\LoggerWrapper;
+use \Apirone\API\Log\LogLevel;
+
+use \Apirone\SDK\Invoice;
+use \Apirone\SDK\Model\HistoryItem;
+use \Apirone\SDK\Model\Settings;
+use \Apirone\SDK\Model\Settings\Coin;
+use \Apirone\SDK\Service\InvoiceDb;
+
+class ModelExtensionPaymentApironeMccpCommon extends ModelExtensionPaymentCommon
 {
     private static ?Log $logger = null;
     private static ?Settings $settings = null;
@@ -102,13 +107,14 @@ class ExtensionPaymentApironeMccpModelCommon extends Model
         try {
             self::$settings = Settings::fromJson($_settings_json);
         }
-        catch (Exception $e) {
+        catch (\Exception $e) {
             $this->logError('Can not get Apirone MCCP plugin settings: ' . $e->getMessage());
             return null;
         }
         return self::$settings;
     }
 
+    // TODO: remove when replace with SDK method
     public function splitCoinAbbr(Coin $coin): \stdClass
     {
         $std = new \stdClass();
@@ -120,11 +126,14 @@ class ExtensionPaymentApironeMccpModelCommon extends Model
         $std->test = $coin->test;
 
         if (!$abbr) {
+            $std->network = null;
+            $std->token = null;
             return $std;
         }
         $parts = explode('@', $abbr, 2);
         if (count($parts) == 1) {
             $std->network = $abbr;
+            $std->token = null;
             return $std;
         }
         $std->token = $parts[0];
@@ -183,29 +192,29 @@ class ExtensionPaymentApironeMccpModelCommon extends Model
     }
 
     /**
-     * @return Closure DB query handler for Invoice
+     * @return \Closure DB query handler for Invoice
      */
-    protected function getDBHandler(): Closure
+    protected function getDBHandler(): \Closure
     {
         return function($query) {
             try {
                 $result = $this->db->query($query);
-                if ($result === true || $result === false) {
-                    return $result;
-                }
-                if (empty($result)) {
-                    return null;
-                }
-                $result = $result->rows;
-                if (empty($result)) {
-                    return null;
-                }
-                return $result;
             }
-            catch (Exception $e) {
+            catch (\Exception $e) {
                 $this->logError('Can not execute DB query: ' . $e->getMessage());
                 return null;
             }
+            if ($result === true || $result === false) {
+                return $result;
+            }
+            if (empty($result) || !property_exists($result, 'rows')) {
+                return null;
+            }
+            $result = $result->rows;
+            if (empty($result)) {
+                return null;
+            }
+            return $result;
         };
     }
 
@@ -436,7 +445,7 @@ class ExtensionPaymentApironeMccpModelCommon extends Model
                 ? Settings::fromExistingAccount($account_id, $transfer_key)
                 : Settings::init()->createAccount();
         }
-        catch (Exception $e) {
+        catch (\Exception $e) {
             $this->logError('Can not get or create account: ' . $e->getMessage());
             return null;
         }
@@ -541,7 +550,7 @@ class ExtensionPaymentApironeMccpModelCommon extends Model
             }
             return $this->upd_version('1.2.0');
         }
-        catch (Exception $e) {
+        catch (\Exception $e) {
             $this->logError('Can not update settings: ' . $e->getMessage());
             return null;
         }

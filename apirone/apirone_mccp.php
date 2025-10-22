@@ -13,6 +13,11 @@ define('SETTINGS_CODE', SETTINGS_CODE_PREFIX . 'apirone_mccp');
 define('SETTING_PREFIX', SETTINGS_CODE . '_');
 
 /**
+ * Path for plugin library modules
+ */
+define('PATH_TO_LIBRARY', OC_MAJOR_VERSION > 3 ? DIR_EXTENSION . 'apirone/system/library/' : DIR_SYSTEM . 'library/apirone/');
+
+/**
  * Path for load plugin models, langs translations, get links
  */
 define('PATH_TO_RESOURCES', OC_MAJOR_VERSION > 3 ? 'extension/apirone/payment/apirone_mccp' : 'extension/payment/apirone_mccp');

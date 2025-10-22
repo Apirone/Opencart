@@ -1,11 +1,12 @@
 <?php
 
-use Apirone\SDK\Model\Settings;
-use Apirone\SDK\Model\Settings\Coin;
-
 require_once(DIR_SYSTEM . 'library/apirone/apirone_mccp.php');
-require_once(DIR_SYSTEM . 'library/apirone/vendor/autoload.php');
+require_once(PATH_TO_LIBRARY . 'vendor/autoload.php');
 
+use \Apirone\SDK\Model\Settings;
+use \Apirone\SDK\Model\Settings\Coin;
+
+// the class name formation matters
 class ControllerExtensionPaymentApironeMccp extends Controller
 {
     private ?Settings $settings = null;
@@ -13,9 +14,10 @@ class ControllerExtensionPaymentApironeMccp extends Controller
     private $data = [];
     private $error = [];
 
-    public function __construct($registry)
+    public function __construct(Registry $registry)
     {
         parent::__construct($registry);
+
         $this->load->model(PATH_TO_RESOURCES);
         $this->model = $this->model_extension_payment_apirone_mccp;
         $this->model->initLogger();
