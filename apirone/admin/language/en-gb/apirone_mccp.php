@@ -8,8 +8,10 @@ $_['heading_plugin_info'] = 'Plugin info';
 $_['text_extension'] = 'Extensions';
 $_['text_success'] = 'Success: You have modified Apirone account details!';
 $_['text_edit'] = 'Edit Apirone Crypto Payments';
-// TODO: looks like not used in v4; is relative path to image ok for v4, or try to set path conditionally
-$_['text_apirone_mccp'] = '<a href="https://apirone.com/" target="_blank"><img src="view/image/payment/apirone-logo.svg" alt="" title="" width="128"/></a>';
+
+$PATH_TO_IMAGES = (int) explode('.', VERSION, 2)[0] < 4 ? '' : '../extension/apirone/admin/';
+$_['text_apirone_mccp'] = '<a href="https://apirone.com/" target="_blank"><img src="'. $PATH_TO_IMAGES .'view/image/payment/apirone-logo.svg" alt="' . $_['heading_title'] . '" title="' . $_['heading_title'] . '" width="128"/></a>';
+
 $_['text_test_currency'] = 'WARNING: Test currency';
 $_['text_test_currency_tooltip'] = 'Use this currency for testing purposes only! It is displayed on the front end for `Test currency customer`.';
 $_['text_with_fee_tooltip'] = 'Adds service and network fees to total. Final amount per coin is shown in selector.';

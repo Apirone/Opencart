@@ -2,8 +2,8 @@
 
 namespace Apirone\Payment\Model;
 
-require_once(((int) explode('.', VERSION, 2)[0] > 3 ? DIR_EXTENSION . 'apirone/system/library/' : DIR_SYSTEM . 'library/apirone/') . 'apirone_mccp.php');
-require_once(PATH_TO_LIBRARY . 'model/common' . (OC_MAJOR_VERSION > 3 ? '' : '_before_oc4') . '.php');
+require_once(((int) explode('.', VERSION, 2)[0] < 4 ? DIR_SYSTEM . 'library/apirone/' : DIR_EXTENSION . 'apirone/system/library/') . 'apirone_mccp.php');
+require_once(PATH_TO_LIBRARY . 'model/common' . (OC_MAJOR_VERSION < 4 ? '_before_oc4' : '') . '.php');
 require_once(PATH_TO_LIBRARY . 'vendor/autoload.php');
 
 use \Apirone\Payment\Model\LogCommon as Log;
@@ -17,12 +17,11 @@ use \Apirone\SDK\Invoice;
 use \Apirone\SDK\Model\HistoryItem;
 use \Apirone\SDK\Model\Settings;
 use \Apirone\SDK\Model\Settings\Coin;
-use \Apirone\SDK\Service\InvoiceDb;
 
 class ModelExtensionPaymentApironeMccpCommon extends ModelExtensionPaymentCommon
 {
     private static ?Log $logger = null;
-    private static ?Settings $settings = null;
+    protected static ?Settings $settings = null;
 
     public function initLogger(): void
     {
@@ -114,81 +113,9 @@ class ModelExtensionPaymentApironeMccpCommon extends ModelExtensionPaymentCommon
         return self::$settings;
     }
 
-    // TODO: remove when replace with SDK method
-    public function splitCoinAbbr(Coin $coin): \stdClass
-    {
-        $std = new \stdClass();
-
-        $abbr = $coin->abbr;
-
-        $std->abbr = $abbr;
-        $std->alias = $coin->alias;
-        $std->test = $coin->test;
-
-        if (!$abbr) {
-            $std->network = null;
-            $std->token = null;
-            return $std;
-        }
-        $parts = explode('@', $abbr, 2);
-        if (count($parts) == 1) {
-            $std->network = $abbr;
-            $std->token = null;
-            return $std;
-        }
-        $std->token = $parts[0];
-        $std->network = $parts[1];
-        return $std;
-    }
-
-    /**
-     * @return array array of coins available for user
-     */
-    public function getCoinsAvailable(): ?array
-    {
-        if (!$this->getSettings()) {
-            return null;
-        }
-        $show_testnet = $this->showTestnet();
-        $coins = [];
-        foreach (self::$settings->coins as $abbr => $coin) {
-            if ($show_testnet || !$coin->test) {
-                // $coins[] = $coin->toStd();
-                $coins[] = $this->splitCoinAbbr($coin);
-            }
-        }
-        return $coins;
-    }
-
-    /**
-     * @return bool show test networks
-     */
-    protected function showTestnet(): bool
-    {
-        $testcustomer = self::$settings->testcustomer;
-        if ($testcustomer == '*') {
-            return true;
-        }
-        $this->load->model('account/customer');
-        if (!$this->customer->isLogged()) {
-            return false;
-        }
-        return $this->customer->getEmail() == $testcustomer;
-    }
-
     protected function hash(string $main, string $salt): string
     {
         return md5($main . $salt);
-    }
-
-    public function getHash(string $salt): string
-    {
-        return $this->hash($this->getSettings()->secret, $salt);
-    }
-
-    public function hashInvalid(string $salt, string $hash): bool
-    {
-        return $this->getHash($salt) != $hash;
     }
 
     /**
@@ -221,61 +148,6 @@ class ModelExtensionPaymentApironeMccpCommon extends ModelExtensionPaymentCommon
     public function initInvoiceModel(): void
     {
         Invoice::db($this->getDBHandler(), DB_PREFIX);
-    }
-
-    public function installInvoices(): void
-    {
-        InvoiceDb::install();
-    }
-
-    public function uninstallInvoices(): void
-    {
-        InvoiceDb::uninstall();
-    }
-
-    /**
-     * Creates in DB new settings and invoices table
-     * @return bool `true` on success, `false` otherwise
-     */
-    public function install(): bool
-    {
-        try {
-            $_settings = Settings::init()->createAccount();
-        } catch (\Throwable $ignore) {
-            return false;
-        }
-        $_settings
-            ->version(PLUGIN_VERSION)
-            ->secret($this->hash(time(), $this->session->data[USER_TOKEN_KEY]))
-            ->timeout(1800)
-            ->processing_fee('percentage')
-            ->factor(1.0)
-            ->logo(true)
-            ->status_ids(DEFAULT_STATUS_IDS);
-
-        $this->load->model('setting/setting');
-        $this->model_setting_setting->editSetting(SETTINGS_CODE, array(
-            // Apirone plugin specific settings
-            SETTING_PREFIX . 'settings' => $_settings->toJsonString(),
-            // OpenCart common plugin settings
-            SETTING_PREFIX . 'geo_zone_id' => '0',
-            SETTING_PREFIX . 'status' => '0',
-            SETTING_PREFIX . 'sort_order' => '0',
-        ));
-
-        $this->initInvoiceModel();
-        $this->installInvoices();
-
-        return true;
-    }
-
-    public function uninstall()
-    {
-        // do nothing
-        // OpenCart automatically removes plugin settings
-        // all invoices data in DB and logs remains for history
-        // $this->model->initInvoiceModel();
-        // $this->model->uninstallInvoices();
     }
 
     /**
@@ -587,16 +459,4 @@ class ModelExtensionPaymentApironeMccpCommon extends ModelExtensionPaymentCommon
 		}
         return $version;
     }
-}
-
-/**
- * Debug output
- * @param mixed $mixed
- * @param string $title
- * @return void
- */
-function pa($mixed, $title = '') {
-	echo '<pre>' . ($title ? $title . ': ' : '') . "\n";
-	print_r(gettype($mixed) !== 'boolean' ? $mixed : ($mixed ? 'true' : 'false'));
-	echo '</pre>';
 }

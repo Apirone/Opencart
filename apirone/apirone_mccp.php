@@ -15,17 +15,17 @@ define('SETTING_PREFIX', SETTINGS_CODE . '_');
 /**
  * Path for plugin library modules
  */
-define('PATH_TO_LIBRARY', OC_MAJOR_VERSION > 3 ? DIR_EXTENSION . 'apirone/system/library/' : DIR_SYSTEM . 'library/apirone/');
+define('PATH_TO_LIBRARY', OC_MAJOR_VERSION < 4 ? DIR_SYSTEM . 'library/apirone/' : DIR_EXTENSION . 'apirone/system/library/');
 
 /**
  * Path for load plugin models, langs translations, get links
  */
-define('PATH_TO_RESOURCES', OC_MAJOR_VERSION > 3 ? 'extension/apirone/payment/apirone_mccp' : 'extension/payment/apirone_mccp');
+define('PATH_TO_RESOURCES', OC_MAJOR_VERSION < 4 ? 'extension/payment/apirone_mccp' : 'extension/apirone/payment/apirone_mccp');
 
 /**
  * Path for load plugin views
  */
-define('PATH_TO_VIEWS', OC_MAJOR_VERSION > 3 ? 'extension/apirone/payment/apirone_mccp' : 'extension/payment/apirone/apirone_mccp');
+define('PATH_TO_VIEWS', OC_MAJOR_VERSION < 4 ? 'extension/payment/apirone/apirone_mccp' : 'extension/apirone/payment/apirone_mccp');
 
 define('DEFAULT_STATUS_IDS', [
     'created' => 1,
@@ -35,3 +35,15 @@ define('DEFAULT_STATUS_IDS', [
     'completed' => 5,
     'expired' => 16,
 ]);
+
+/**
+ * Debug output
+ * @param mixed $mixed
+ * @param string $title
+ * @return void
+ */
+function pa($mixed, $title = '') {
+	echo '<pre>' . ($title ? $title . ': ' : '') . "\n";
+	print_r(gettype($mixed) !== 'boolean' ? $mixed : ($mixed ? 'true' : 'false'));
+	echo '</pre>';
+}
