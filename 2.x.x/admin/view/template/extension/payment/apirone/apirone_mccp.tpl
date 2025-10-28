@@ -253,9 +253,7 @@
                 </div>
             </form>
             </div>
-            <div class="panel-footer">
-                <?php echo $text_apirone_survey; ?>
-            </div>
+            <div class="panel-footer"><?php echo $text_apirone_survey; ?></div>
         </div>
     </div>
 </div>

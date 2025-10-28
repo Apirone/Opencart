@@ -207,10 +207,9 @@ class ModelExtensionPaymentApironeMccpCommon extends ModelExtensionPaymentCommon
      */
     public function update(): bool
     {
-        $_settings_json = $this->config->get(SETTING_PREFIX . 'settings');
-        if (!$_settings_json) {
+        if (!$this->config->has(SETTING_PREFIX . 'settings')) {
             $version = $this->config->get(SETTING_PREFIX . 'version');
-            if (!($version || $this->config->get(SETTING_PREFIX . 'account'))) {
+            if (!($version || $this->config->has(SETTING_PREFIX . 'account'))) {
                 // no valid plugin data stored, nothing to update
                 $this->logError('No valid plugin settings');
                 return false;

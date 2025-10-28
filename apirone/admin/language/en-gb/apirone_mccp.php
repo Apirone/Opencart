@@ -9,8 +9,8 @@ $_['text_extension'] = 'Extensions';
 $_['text_success'] = 'Success: You have modified Apirone account details!';
 $_['text_edit'] = 'Edit Apirone Crypto Payments';
 
-$PATH_TO_IMAGES = (int) explode('.', VERSION, 2)[0] < 4 ? '' : '../extension/apirone/admin/';
-$_['text_apirone_mccp'] = '<a href="https://apirone.com/" target="_blank"><img src="'. $PATH_TO_IMAGES .'view/image/payment/apirone-logo.svg" alt="' . $_['heading_title'] . '" title="' . $_['heading_title'] . '" width="128"/></a>';
+$PATH_TO_IMAGES = (int) explode('.', VERSION, 2)[0] < 4 ? 'view/image/payment/apirone/' : '../extension/apirone/admin/view/image/payment/';
+$_['text_apirone_mccp'] = '<a href="https://apirone.com/" target="_blank"><img src="'. $PATH_TO_IMAGES .'logo-primary.svg" alt="' . $_['heading_title'] . '" title="' . $_['heading_title'] . '" width="128"/></a>';
 
 $_['text_test_currency'] = 'WARNING: Test currency';
 $_['text_test_currency_tooltip'] = 'Use this currency for testing purposes only! It is displayed on the front end for `Test currency customer`.';
