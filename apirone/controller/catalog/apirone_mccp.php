@@ -48,9 +48,8 @@ class ControllerExtensionPaymentApironeMccpCatalog extends \Apirone\Payment\Cont
             if (!(property_exists($estimation, 'min') && $estimation->min)) {
                 continue;
             }
-            // $coins[] = $coin = $coins_all[$estimation->currency]->toStd();
             $coins[] = $coin = $this->model->splitCoinAbbr($coins_all[$estimation->currency]);
-            $coin->with_fee = sprintf($this->language->get('currency_selector_with_fee'), $amount + $estimation->fee, $fiat);
+            $coin->with_fee = \sprintf($this->language->get('currency_selector_with_fee'), $amount + $estimation->fee, $fiat);
         }
         return $coins;
     }
@@ -157,11 +156,13 @@ class ControllerExtensionPaymentApironeMccpCatalog extends \Apirone\Payment\Cont
                 ->estimation($estimation)
                 ->userData($userData)
                 ->lifetime($this->settings->timeout)
-                ->callbackUrl($this->url->link(PATH_TO_RESOURCES . '/callback&key='.$this->model->getHash($order_id)))
-                ->linkback($this->url->link(PATH_TO_RESOURCES . '/linkback&key='.$this->model->getHash($amount_crypto) .'&order='.$order_id))
+                ->callbackUrl($this->url->link(PATH_FOR_ROUTES . 'callback&key='.$this->model->getHash($order_id), '', true))
+                ->linkback($this->url->link(PATH_FOR_ROUTES . 'linkback&key='.$this->model->getHash($amount_crypto) .'&order='.$order_id, '', true))
                 ->create();
 
             $this->model->updateOrderStatus($invoice);
+            // TODO: for OC4 only? or not need at all?
+            // unset($this->session->data['order_id']);
             $this->cart->clear();
             $this->showInvoice($invoice->invoice);
         }
@@ -173,7 +174,7 @@ class ControllerExtensionPaymentApironeMccpCatalog extends \Apirone\Payment\Cont
 
     protected function showInvoice(string $invoice): void
     {
-        $this->response->redirect($this->url->link(PATH_TO_RESOURCES . '/invoice&id=' . $invoice));
+        $this->response->redirect($this->url->link(PATH_FOR_ROUTES . 'invoice&id=' . $invoice));
     }
 
     public function invoice(): void
@@ -183,13 +184,18 @@ class ControllerExtensionPaymentApironeMccpCatalog extends \Apirone\Payment\Cont
             Utils::sendJson('Can not get settings', 500);
             return;
         }
-        $data['apirone_config'] = $this->settings->logo ? '' : 'embed: true,';
+        $data['apirone_path_to_images'] = OC_MAJOR_VERSION < 4 ? 'catalog/view/theme/default/image/apirone' : 'extension/apirone/catalog/view/image';
+        $data['apirone_path_to_js'] = OC_MAJOR_VERSION < 4 ? 'catalog/view/javascript/apirone/' : 'extension/apirone/catalog/view/javascript/';
+        $data['apirone_path_to_css'] = OC_MAJOR_VERSION < 4 ? 'catalog/view/theme/default/stylesheet/apirone/' : 'extension/apirone/catalog/view/stylesheet/';
+        $data['apirone_path_for_routes'] = PATH_FOR_ROUTES;
+        $data['apirone_config'] = \sprintf('logo: %s,', $this->settings->logo ? 'true' : 'false');
 
         $this->response->setOutput($this->load->view(PATH_TO_VIEWS . '_invoice', $data));
     }
 
     // to test callback on local server
-    // curl -k -w "%{http_code}\n" -X POST -d '{"invoice":"INVOICE_ID_HERE","status":"expired"}' 'https://examples.test/opencart2/index.php?route=extension/payment/apirone_mccp/callback&key=CALLBACK_KEY_HERE'
+    // OC2, OC3: curl -k -w "%{http_code}\n" -X POST -d '{"invoice":"INVOICE_ID_HERE","status":"expired"}' 'https://examples.test/opencart2/index.php?route=extension/payment/apirone_mccp/callback&key=CALLBACK_KEY_HERE'
+    // OC4:      curl -k -w "%{http_code}\n" -X POST -d '{"invoice":"INVOICE_ID_HERE","status":"expired"}' 'https://examples.test/opencart2/index.php?route=extension/payment/apirone_mccp|callback&key=CALLBACK_KEY_HERE'
     /**
      * Callback URI for change invoice and order status
      */
@@ -328,38 +334,18 @@ class ControllerExtensionPaymentApironeMccpCatalog extends \Apirone\Payment\Cont
         // TODO: we can also cache this info until any expiration time to reduce calls to Apirone API
     }
 
-    protected function getLastSegmentFromRequestUri(): string
-    {
-        $route = key_exists('route', $this->request->get) ? (string) $this->request->get['route'] : '';
-        if (!$route) {
-            return '';
-        }
-        $path_segments = explode('/', $route, 10);
-        $path_segments_count = count($path_segments);
-        if (!$path_segments_count) {
-            return '';
-        }
-        $path_last_segment = $path_segments[$path_segments_count - 1];
-        if ($path_last_segment) {
-            return $path_last_segment;
-        }
-        if ($path_segments_count < 2) {
-            return '';
-        }
-        return $path_segments[$path_segments_count - 2];
-    }
-
     /**
      * API proxy endpoint to get invoice data with invoice ID in path
      */
     public function invoices(): void
     {
-        // GET https://examples.test/opencart2/index.php?route=extension/payment/apirone_mccp/invoices/{INVOICE_ID}
+        // OC2, OC3: GET https://examples.test/opencart2/index.php?route=extension/payment/apirone_mccp/invoices&id={INVOICE_ID}
+        // OC4:      GET https://examples.test/opencart2/index.php?route=extension/payment/apirone_mccp|invoices&id={INVOICE_ID}
 
         // settings not need, but update need
         $this->model->update();
 
-        $invoice_id = $this->getLastSegmentFromRequestUri();
+        $invoice_id = key_exists('id', $this->request->get) ? (string) $this->request->get['id'] : '';
         if (!$invoice_id) {
             $message = 'Invoice id not specified';
             $this->model->logInfo($message);

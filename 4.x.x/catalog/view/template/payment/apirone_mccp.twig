@@ -1,14 +1,14 @@
 {% if coins is empty %}
-  	<div class="pull-right">
+  	<div class="float-end">
         <legend>{{ payment_details }}</legend>
     	<p>{{ unavailable }}</p>
   	</div>
 {% else %}
-<link rel="stylesheet" crossorigin href="catalog/view/theme/default/stylesheet/apirone/coins.min.css">
+<link rel="stylesheet" crossorigin href="{{ apirone_path_to_css }}coins.min.css">
 <form id="mccp-form">
     <fieldset id="payment">
         <legend>{{ payment_details }}</legend>
-        <div class="form-group">
+        <div class="row mb-3">
             <div class="col-sm-12">
                 {{ pay_message }}
                 <div id="apirone_mccp_dropdown" class="dropdown">
@@ -17,9 +17,9 @@
                         <ul class="list-unstyled">
                             {% for coin in coins %}
                             <li><button type="button" onclick="mccpDropdownSelect(event, '{{ coin.abbr }}')">
-                                <img src="catalog/view/theme/default/image/apirone/currencies/{{ coin.token ?? coin.network }}.svg" width="50" height="30" class="apirone-mccp-img">
+                                <img src="{{ apirone_path_to_images }}currencies/{{ coin.token ?? coin.network }}.svg" width="50" height="30" class="apirone-mccp-img">
                                 {% if coin.token %}
-                                    <img src="catalog/view/theme/default/image/apirone/currencies/{{ coin.network }}.svg" width="20" class="apirone-mccp-img-small">
+                                    <img src="{{ apirone_path_to_images }}currencies/{{ coin.network }}.svg" width="20" class="apirone-mccp-img-small">
                                 {% endif %}
                                 <span class="coin-alias">{{ coin.alias }}</span>
                                 {% if coin.with_fee %}
@@ -34,7 +34,7 @@
         </div>
     </fieldset>
     <div class="buttons">
-        <div class="pull-right">
+        <div class="float-end">
             <button type="button" id="button-confirm" onclick="mccpConfirm(event)" class="btn btn-primary">{{ button_confirm }}</button>
         </div>
     </div>
@@ -46,15 +46,17 @@
     function mccpDropdownToggle(event) {
         event.preventDefault();
 
-        $('#apirone_mccp_dropdown').toggleClass('open');
+        $('#apirone_mccp_dropdown>.dropdown-menu').toggleClass('show');
     }
     function mccpDropdownSelect(event, currency) {
         event.preventDefault();
 
-        window.mccp_currency = currency;
+        $('#apirone_mccp_dropdown>.dropdown-menu').removeClass('show');
 
-        $('#apirone_mccp_dropdown').removeClass('open');
-        $('#apirone_mccp_dropdown>button').html(event.target.innerHTML);
+        if (button = event.target.closest('button')) {
+            $('#apirone_mccp_dropdown>button').html(button.innerHTML);
+            window.mccp_currency = currency;
+        }
     }
     function mccpConfirm(event) {
         event.preventDefault();

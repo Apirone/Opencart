@@ -4,7 +4,7 @@
     	<p><?php echo $unavailable; ?></p>
   	</div>
 <?php else: ?>
-<link rel="stylesheet" crossorigin href="catalog/view/theme/default/stylesheet/apirone/coins.min.css">
+<link rel="stylesheet" crossorigin href="<?php echo $apirone_path_to_css; ?>coins.min.css">
 <form id="mccp-form">
     <fieldset id="payment">
         <legend><?php echo $payment_details; ?></legend>
@@ -17,9 +17,9 @@
                         <ul class="list-unstyled">
                             <?php foreach($coins as $coin) : ?>
                             <li><button type="button" onclick="mccpDropdownSelect(event, '<?php echo $coin->abbr; ?>')">
-                                <img src="catalog/view/theme/default/image/apirone/currencies/<?php echo $coin->token ?? $coin->network; ?>.svg" width="50" height="30" class="apirone-mccp-img">
+                                <img src="<?php echo $apirone_path_to_images; ?>currencies/<?php echo $coin->token ?? $coin->network; ?>.svg" width="50" height="30" class="apirone-mccp-img">
                                 <?php if ($coin->token) : ?>
-                                    <img src="catalog/view/theme/default/image/apirone/currencies/<?php echo $coin->network; ?>.svg" width="20" class="apirone-mccp-img-small">
+                                    <img src="<?php echo $apirone_path_to_images; ?>currencies/<?php echo $coin->network; ?>.svg" width="20" class="apirone-mccp-img-small">
                                 <?php endif; ?>
                                 <span class="coin-alias"><?php echo $coin->alias; ?></span>
                                 <?php if ($coin->with_fee) : ?>
@@ -51,10 +51,12 @@
     function mccpDropdownSelect(event, currency) {
         event.preventDefault();
 
-        window.mccp_currency = currency;
-
         $('#apirone_mccp_dropdown').removeClass('open');
-        $('#apirone_mccp_dropdown>button').html(event.target.innerHTML);
+
+        if (button = event.target.closest('button')) {
+            $('#apirone_mccp_dropdown>button').html(button.innerHTML);
+            window.mccp_currency = currency;
+        }
     }
     function mccpConfirm(event) {
         event.preventDefault();

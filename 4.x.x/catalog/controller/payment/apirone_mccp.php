@@ -4,12 +4,11 @@ namespace Opencart\Catalog\Controller\Extension\Apirone\Payment;
 
 require_once(DIR_EXTENSION . 'apirone/system/library/apirone_mccp.php');
 require_once(PATH_TO_LIBRARY . 'controller/catalog/apirone_mccp.php');
-require_once(PATH_TO_LIBRARY . 'vendor/autoload.php');
 
 use \Apirone\Payment\Controller\Catalog\ControllerExtensionPaymentApironeMccpCatalog;
 
-// the class name formation matters
-class ControllerExtensionPaymentApironeMccp extends ControllerExtensionPaymentApironeMccpCatalog
+// class must be named as plugin
+class ApironeMccp extends ControllerExtensionPaymentApironeMccpCatalog
 {    /**
      * Renders crypto currency selector\
      * OpenCart required
@@ -33,7 +32,10 @@ class ControllerExtensionPaymentApironeMccp extends ControllerExtensionPaymentAp
         $data['coins'] = $this->getCoins($order['total'] * $order['currency_value'], $order['currency_code']);
         $data['order_id'] = $order['order_id'];
         $data['order_key'] = $this->model->getHash($order['total']);
-        $data['url_redirect'] = $this->url->link(PATH_TO_RESOURCES . '/confirm');
+        $data['url_redirect'] = $this->url->link(PATH_FOR_ROUTES . 'confirm');
+
+        $data['apirone_path_to_images'] = 'extension/apirone/catalog/view/image/';
+        $data['apirone_path_to_css'] = 'extension/apirone/catalog/view/stylesheet/';
 
         return $this->load->view(PATH_TO_VIEWS, $data);
     }

@@ -31,7 +31,10 @@ class ControllerExtensionPaymentApironeMccp extends ControllerExtensionPaymentAp
         $data['coins'] = $this->getCoins($order['total'] * $order['currency_value'], $order['currency_code']);
         $data['order_id'] = $order['order_id'];
         $data['order_key'] = $this->model->getHash($order['total']);
-        $data['url_redirect'] = $this->url->link(PATH_TO_RESOURCES . '/confirm');
+        $data['url_redirect'] = $this->url->link(PATH_FOR_ROUTES . 'confirm');
+
+        $data['apirone_path_to_images'] = 'catalog/view/theme/default/image/apirone/';
+        $data['apirone_path_to_css'] = 'catalog/view/theme/default/stylesheet/apirone/';
 
         return $this->load->view(PATH_TO_VIEWS, $data);
     }

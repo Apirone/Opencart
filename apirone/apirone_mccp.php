@@ -23,6 +23,11 @@ define('PATH_TO_LIBRARY', OC_MAJOR_VERSION < 4 ? DIR_SYSTEM . 'library/apirone/'
 define('PATH_TO_RESOURCES', OC_MAJOR_VERSION < 4 ? 'extension/payment/apirone_mccp' : 'extension/apirone/payment/apirone_mccp');
 
 /**
+ * Path for get links for controller routes
+ */
+define('PATH_FOR_ROUTES', PATH_TO_RESOURCES . (OC_MAJOR_VERSION < 4 ? '/' : '|'));
+
+/**
  * Path for load plugin views
  */
 define('PATH_TO_VIEWS', OC_MAJOR_VERSION < 4 ? 'extension/payment/apirone/apirone_mccp' : 'extension/apirone/payment/apirone_mccp');

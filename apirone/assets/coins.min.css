@@ -1,8 +1,17 @@
+#apirone_mccp_dropdown {
+    container-type: inline-size;
+}
 #apirone_mccp_dropdown .dropdown-menu,
 #apirone_mccp_dropdown>button {
     font-size: 16px;
     width: 50%;
     padding: 0;
+}
+@container (width < 500px) {
+    #apirone_mccp_dropdown .dropdown-menu,
+    #apirone_mccp_dropdown>button {
+        width: 100%;
+    }
 }
 #apirone_mccp_dropdown .dropdown-inner {
     padding: 0;

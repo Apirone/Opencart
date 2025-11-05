@@ -28,35 +28,35 @@
                     <li class="nav-item" role="presentatin"><a href="#tab-info" data-bs-toggle="tab" class="nav-link{% if not settings_loaded %} active"{% endif %}" aria-selected="true" role="tab"><i class="fa fa-info-circle"></i> {{ tab_info }}</a></li>
                 </ul>
                 <style>
-                label>span[data-bs-toggle="tooltip"]:after {
-                    font-family: FontAwesome;
-                    color: #1E91CF;
-                    content: "\f059";
-                    margin-left: 4px;
-                }
-                .input-group-addon {
-                    padding: 8px 13px;
-                    font-size: 13px;
-                    font-weight: normal;
-                    line-height: 1;
-                    color: #555;
-                    text-align: center;
-                    background-color: #eee;
-                    border: 1px solid #ccc;
-                    border-radius: 3px;
-                }
-                .token-checkbox>span {
-                    position: relative;
-                    padding-inline-start: 15px;
-                }
-                .token-checkbox>span>input {
-                    position: relative;
-                    top: 3px;
-                    margin-inline-end: 4px;
-                }
-                .token-checkbox>label {
-                    padding-bottom: 0;
-                }
+                    label>span[data-bs-toggle="tooltip"]:after {
+                        font-family: FontAwesome;
+                        color: #1E91CF;
+                        content: "\f059";
+                        margin-left: 4px;
+                    }
+                    .input-group-addon {
+                        padding: 8px 13px;
+                        font-size: 13px;
+                        font-weight: normal;
+                        line-height: 1;
+                        color: #555;
+                        text-align: center;
+                        background-color: #eee;
+                        border: 1px solid #ccc;
+                        border-radius: 3px;
+                    }
+                    .token-checkbox>span {
+                        position: relative;
+                        padding-inline-start: 15px;
+                    }
+                    .token-checkbox>span>input {
+                        position: relative;
+                        top: 3px;
+                        margin-inline-end: 4px;
+                    }
+                    .token-checkbox>label {
+                        padding-bottom: 0;
+                    }
                 </style>
                 <div class="tab-content">
                     {% if settings_loaded %}

@@ -4,7 +4,7 @@
     	<p>{{ unavailable }}</p>
   	</div>
 {% else %}
-<link rel="stylesheet" crossorigin href="catalog/view/theme/default/stylesheet/apirone/coins.min.css">
+<link rel="stylesheet" crossorigin href="{{ apirone_path_to_css }}coins.min.css">
 <form id="mccp-form">
     <fieldset id="payment">
         <legend>{{ payment_details }}</legend>
@@ -17,9 +17,9 @@
                         <ul class="list-unstyled">
                             {% for coin in coins %}
                             <li><button type="button" onclick="mccpDropdownSelect(event, '{{ coin.abbr }}')">
-                                <img src="catalog/view/theme/default/image/apirone/currencies/{{ coin.token ?? coin.network }}.svg" width="50" height="30" class="apirone-mccp-img">
+                                <img src="{{ apirone_path_to_images }}currencies/{{ coin.token ?? coin.network }}.svg" width="50" height="30" class="apirone-mccp-img">
                                 {% if coin.token %}
-                                    <img src="catalog/view/theme/default/image/apirone/currencies/{{ coin.network }}.svg" width="20" class="apirone-mccp-img-small">
+                                    <img src="{{ apirone_path_to_images }}currencies/{{ coin.network }}.svg" width="20" class="apirone-mccp-img-small">
                                 {% endif %}
                                 <span class="coin-alias">{{ coin.alias }}</span>
                                 {% if coin.with_fee %}
@@ -51,10 +51,12 @@
     function mccpDropdownSelect(event, currency) {
         event.preventDefault();
 
-        window.mccp_currency = currency;
-
         $('#apirone_mccp_dropdown').removeClass('open');
-        $('#apirone_mccp_dropdown>button').html(event.target.innerHTML);
+
+        if (button = event.target.closest('button')) {
+            $('#apirone_mccp_dropdown>button').html(button.innerHTML);
+            window.mccp_currency = currency;
+        }
     }
     function mccpConfirm(event) {
         event.preventDefault();

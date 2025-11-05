@@ -141,7 +141,12 @@ class ModelExtensionPaymentApironeMccpCatalog extends ModelExtensionPaymentApiro
             if ($this->isHistoryRecordExists($comment, $orderHistory)) {
                 continue;
             }
-            $this->model_checkout_order->addOrderHistory($invoice->order, $_settings->status_ids->{$item->status}, $comment);
+            if (OC_MAJOR_VERSION < 4) {
+                $this->model_checkout_order->addOrderHistory($invoice->order, $_settings->status_ids->{$item->status}, $comment);
+            }
+            else {
+                $this->model_checkout_order->addHistory($invoice->order, $_settings->status_ids->{$item->status}, $comment);
+            }
         }
     }
 
