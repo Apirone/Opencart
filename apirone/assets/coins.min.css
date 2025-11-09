@@ -1,26 +1,26 @@
 #apirone_mccp_dropdown {
     container-type: inline-size;
 }
-#apirone_mccp_dropdown .dropdown-menu,
-#apirone_mccp_dropdown>button {
+#apirone_mccp_dropdown > button,
+#apirone_mccp_dropdown > .dropdown-menu {
     font-size: 16px;
-    width: 50%;
+    width: 100%;
     padding: 0;
 }
-@container (width < 500px) {
-    #apirone_mccp_dropdown .dropdown-menu,
-    #apirone_mccp_dropdown>button {
-        width: 100%;
+@container (width > 700px) {
+    #apirone_mccp_dropdown > button,
+    #apirone_mccp_dropdown > .dropdown-menu {
+        width: 50%;
     }
+}
+#apirone_mccp_dropdown > button {
+    border: #1f90bb solid 1px;
 }
 #apirone_mccp_dropdown .dropdown-inner {
     padding: 0;
 }
 #apirone_mccp_dropdown .list-unstyled {
     margin-bottom: 0;
-}
-#apirone_mccp_dropdown > button {
-    border: #1f90bb solid 1px;
 }
 #apirone_mccp_dropdown li button {
     border: none;
@@ -47,7 +47,6 @@
     position: relative;
     top: 1px;
 }
-
 .coin-alias {
     font-weight: bold;
 }
