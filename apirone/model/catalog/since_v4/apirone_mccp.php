@@ -9,7 +9,7 @@ class ApironeMccp extends \Apirone\Payment\Model\Catalog\ModelExtensionPaymentAp
 {
     /**
      * Gets method data to show in payment method selector\
-     * OpenCart required
+     * OpenCart required\
      * Before 4.0.2.0
      * @param array $address
      * @return array
@@ -30,7 +30,7 @@ class ApironeMccp extends \Apirone\Payment\Model\Catalog\ModelExtensionPaymentAp
 
     /**
      * Gets method data to show in payment method selector\
-     * OpenCart required
+     * OpenCart required\
      * Since 4.0.2.0
      * @param array $address
      * @return array

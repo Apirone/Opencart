@@ -10,6 +10,7 @@ use \Apirone\API\Http\Request;
 
 use \Apirone\SDK\Invoice;
 use \Apirone\SDK\Model\UserData;
+use \Apirone\SDK\Service\Api;
 use \Apirone\SDK\Service\Utils;
 
 class ControllerExtensionPaymentApironeMccpCatalog extends \Apirone\Payment\Controller\ControllerExtensionPaymentApironeMccpCommon
@@ -38,8 +39,7 @@ class ControllerExtensionPaymentApironeMccpCatalog extends \Apirone\Payment\Cont
                 true,
                 $this->settings->factor,
             );
-        } catch (\Exception $e) {
-            $this->model->logError('Can not get estimations for currency selector: '.$e->getMessage());
+        } catch (\Exception $ignore) {
             return null;
         }
         $coins_all = $this->settings->coins;
@@ -48,6 +48,7 @@ class ControllerExtensionPaymentApironeMccpCatalog extends \Apirone\Payment\Cont
             if (!(property_exists($estimation, 'min') && $estimation->min)) {
                 continue;
             }
+            // TODO: can be replaced with SDK method if it will
             $coins[] = $coin = $this->model->splitCoinAbbr($coins_all[$estimation->currency]);
             $coin->with_fee = \sprintf($this->language->get('currency_selector_with_fee'), $amount + $estimation->fee, $fiat);
         }
@@ -71,8 +72,7 @@ class ControllerExtensionPaymentApironeMccpCatalog extends \Apirone\Payment\Cont
                 true,
                 $this->settings->factor,
             );
-        } catch (\Exception $e) {
-            $this->model->logError('Can not get estimation for invoice: '.$e->getMessage());
+        } catch (\Exception $ignore) {
             return null;
         }
         if (empty($estimations)) {
@@ -94,7 +94,7 @@ class ControllerExtensionPaymentApironeMccpCatalog extends \Apirone\Payment\Cont
 
     /**
      * Payment confirmation handler\
-     * Creates new invoice or updates existing for order
+     * Creates new invoice or updates existing for order\
      * OpenCart required
      */
     public function confirm(): void
@@ -126,7 +126,7 @@ class ControllerExtensionPaymentApironeMccpCatalog extends \Apirone\Payment\Cont
         $orderInvoices = Invoice::getByOrder($order_id);
         if (count($orderInvoices)) {
             $invoice = $orderInvoices[0];
-            // Update invoice when page loaded or reloaded & status != (expired || completed)
+            // Update existing invoice when page is loaded or reloaded & status != expired & the same crypto currency
             $invoice->update();
             $this->model->updateOrderStatus($invoice);
             if ($invoice->status !== 'expired' && $invoice->details->currency == $currency_crypto) {
@@ -193,9 +193,57 @@ class ControllerExtensionPaymentApironeMccpCatalog extends \Apirone\Payment\Cont
         $this->response->setOutput($this->load->view(PATH_TO_VIEWS . '_invoice', $data));
     }
 
+    /**
+     * @return \Closure callback input checker
+     */
+    protected function getCallbackChecker(): \Closure
+    {
+        return function(Invoice $invoice): void
+        {
+            $invoice_id = $invoice->invoice;
+            $order_id = $invoice->order;
+            $status = $invoice->status;
+
+            $callback_key = key_exists('key', $this->request->get) ? (string) $this->request->get['key'] : '';
+            if (!$callback_key) {
+                $message = 'Wrong params received';
+                $this->model->logInfo($message
+                    .': invoice:'.$invoice_id
+                    .', status:'.$status
+                    .', order:'.$order_id
+                    .', key:'.$callback_key
+                );
+                Utils::sendJson($message, 400);
+                exit;
+            }
+            if ($this->model->hashInvalid($order_id, $callback_key)) {
+                $message = 'Key not valid';
+                $this->model->logInfo($message
+                    .', invoice:'.$invoice_id
+                    .', status:'.$status
+                    .', order:'.$order_id
+                    .': key:'.$callback_key
+                );
+                Utils::sendJson($message, 403);
+                exit;
+            }
+         };
+    }
+
+    /**
+     * @return \Closure payment processing handler
+     */
+    protected function getPaymentProcessor(): \Closure
+    {
+        return function(Invoice $invoice): void
+        {
+            $this->model->updateOrderStatus($invoice);
+        };
+    }
+
     // to test callback on local server
-    // OC2, OC3: curl -k -w "%{http_code}\n" -X POST -d '{"invoice":"INVOICE_ID_HERE","status":"expired"}' 'https://examples.test/opencart2/index.php?route=extension/payment/apirone_mccp/callback&key=CALLBACK_KEY_HERE'
-    // OC4:      curl -k -w "%{http_code}\n" -X POST -d '{"invoice":"INVOICE_ID_HERE","status":"expired"}' 'https://examples.test/opencart2/index.php?route=extension/payment/apirone_mccp|callback&key=CALLBACK_KEY_HERE'
+    // OC2, OC3: curl -k -w "%{http_code}\n" -X POST -d '{"invoice":"INVOICE_ID_HERE","status":"expired"}' 'https://examples.test/opencartX/index.php?route=extension/payment/apirone_mccp/callback&key=CALLBACK_KEY_HERE'
+    // OC4:      curl -k -w "%{http_code}\n" -X POST -d '{"invoice":"INVOICE_ID_HERE","status":"expired"}' 'https://examples.test/opencart4/index.php?route=extension/apirone/payment/apirone_mccp|callback&key=CALLBACK_KEY_HERE'
     /**
      * Callback URI for change invoice and order status
      */
@@ -204,56 +252,10 @@ class ControllerExtensionPaymentApironeMccpCatalog extends \Apirone\Payment\Cont
         $this->settings = $this->model->getSettings();
         if (!$this->settings) {
             Utils::sendJson('Can not get settings', 500);
-            return;
-        }
-        $data = file_get_contents('php://input');
-        $params = $data ? json_decode(Utils::sanitize($data)) : false;
-        if (!$params) {
-            $message = 'Data not received';
-            $this->model->logInfo($message);
-            Utils::sendJson($message, 400);
-            return;
-        }
-        $invoice_id = property_exists($params, 'invoice') ? (string) $params->invoice : '';
-        $status = property_exists($params, 'status') ? (string) $params->status : '';
-        $callback_key = key_exists('key', $this->request->get) ? (string) $this->request->get['key'] : '';
-
-        if (!($invoice_id && $status && $callback_key)) {
-            $message = 'Wrong params received';
-            $this->model->logInfo($message
-                .': invoice:'.$invoice_id
-                .', status:'.$status
-                .', key:'.$callback_key
-            );
-            Utils::sendJson($message, 400);
-            return;
-        }
-        $this->model->initInvoiceModel();
-        $invoice = Invoice::get($invoice_id);
-        // Is invoice exists
-        if (!(property_exists($invoice, 'invoice') && $invoice->invoice == $invoice_id)) {
-            $message = 'Invoice not found';
-            $this->model->logInfo($message . ': '.$invoice_id);
-            Utils::sendJson($message, 404);
-            return;
-        }
-        // Exit if callback key is !valid
-        if ($this->model->hashInvalid($invoice->order, $callback_key)) {
-            $message = 'Key not valid';
-            $this->model->logInfo($message
-                .': key:'.$callback_key
-                .', invoice:'.$invoice_id
-            );
-            Utils::sendJson($message, 403);
-            return;
+            exit;
         }
         Invoice::settings($this->settings);
-
-        if ($invoice->update()) {
-            // Update order if invoice was changed
-            $this->load->model(PATH_TO_RESOURCES);
-            $this->model->updateOrderStatus($invoice);
-        };
+        Invoice::callbackHandler($this->getCallbackChecker(), $this->getPaymentProcessor());
     }
 
     /**
@@ -286,11 +288,13 @@ class ControllerExtensionPaymentApironeMccpCatalog extends \Apirone\Payment\Cont
             return;
         }
         $invoice = $orderInvoices[0];
-        if ($this->model->hashInvalid($invoice->details->amount, $invoice_key)) {
+        $amount = $invoice->details->amount;
+        if ($this->model->hashInvalid($amount, $invoice_key)) {
             $message = 'Key not valid';
             $this->model->logInfo($message
-                .': key:'.$invoice_key
                 .', invoice:'.$invoice->invoice
+                .', amount:'.$amount
+                .': key:'.$invoice_key
             );
             Utils::sendJson($message, 403);
             return;
@@ -299,38 +303,13 @@ class ControllerExtensionPaymentApironeMccpCatalog extends \Apirone\Payment\Cont
     }
 
     /**
-     * API proxy
-     */
-    public function getFromAPI($method, $path_suffix): void
-    {
-        $request_server = $this->request->server;
-        if (strtolower($request_server['REQUEST_METHOD']) != strtolower($method)
-            || !$request_server['HTTPS']
-        ) {
-            $message = 'Method or protocol not allowed';
-            $this->model->logInfo($message);
-            Utils::sendJson($message, 405);
-            return;
-        }
-        try {
-            $response = Request::execute($method, 'v2/'.$path_suffix);
-            header('Content-Type: application/json');
-            echo $response->body;
-        }
-        catch (\Exception $e) {
-            $message = $e->getMessage();
-            $this->model->logInfo($message);
-            Utils::sendJson($message, $e->getCode());
-        }
-    }
-
-    /**
      * API proxy endpoint for invoice app to get currencies
      */
     public function wallets(): void
     {
-        // OPTIONS https://examples.test/opencart2/index.php?route=extension/payment/apirone_mccp/wallets
-        $this->getFromAPI('options', 'wallets');
+        // OC2, OC3: OPTIONS https://examples.test/opencartX/index.php?route=extension/payment/apirone_mccp/wallets
+        // OC4:      OPTIONS https://examples.test/opencart4/index.php?route=extension/apirone/payment/apirone_mccp|wallets
+        Api::wallets();
         // TODO: we can also cache this info until any expiration time to reduce calls to Apirone API
     }
 
@@ -339,8 +318,8 @@ class ControllerExtensionPaymentApironeMccpCatalog extends \Apirone\Payment\Cont
      */
     public function invoices(): void
     {
-        // OC2, OC3: GET https://examples.test/opencart2/index.php?route=extension/payment/apirone_mccp/invoices&id={INVOICE_ID}
-        // OC4:      GET https://examples.test/opencart2/index.php?route=extension/payment/apirone_mccp|invoices&id={INVOICE_ID}
+        // OC2, OC3: GET https://examples.test/opencartX/index.php?route=extension/payment/apirone_mccp/invoices&id={INVOICE_ID}
+        // OC4:      GET https://examples.test/opencart4/index.php?route=extension/apirone/payment/apirone_mccp|invoices&id={INVOICE_ID}
 
         // settings not need, but update need
         $this->model->update();
@@ -353,13 +332,7 @@ class ControllerExtensionPaymentApironeMccpCatalog extends \Apirone\Payment\Cont
             return;
         }
         $this->model->initInvoiceModel();
-        $invoice = Invoice::get($invoice_id);
-        if (!(property_exists($invoice, 'invoice') && $invoice->invoice == $invoice_id)) {
-            $message = 'Invoice not found';
-            $this->model->logInfo($message . ': '.$invoice_id);
-            Utils::sendJson($message, 404);
-            return;
-        }
-        Utils::sendJson($invoice->info());
+        Invoice::checkInterval(30);
+        Api::invoices($invoice_id, $this->getPaymentProcessor());
     }
 }

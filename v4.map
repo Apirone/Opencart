@@ -1,0 +1,40 @@
+apirone/install.json install.json
+
+# Admin
+apirone/language/en-gb/admin.php admin/language/en-gb/payment/apirone_mccp.php
+apirone/model/admin/since_v4 admin/model/payment
+apirone/controller/admin/since_v4 admin/controller/payment
+apirone/view/template/admin/v4 admin/view/template/payment
+vendor/apirone/apirone-sdk-php/src/assets/img admin/view/image/payment
+
+# Catalog
+apirone/language/en-gb/catalog.php catalog/language/en-gb/payment/apirone_mccp.php
+apirone/model/catalog/since_v4 catalog/model/payment
+apirone/controller/catalog/since_v4 catalog/controller/payment
+apirone/view/template/catalog/v4 catalog/view/template/payment
+apirone/assets/coins.min.css catalog/view/stylesheet/coins.min.css
+
+# Currency images & Invoice app
+vendor/apirone/apirone-sdk-php/src/assets/img catalog/view/image
+vendor/apirone/apirone-sdk-php/src/assets/script.min.js catalog/view/javascript/script.min.js
+vendor/apirone/apirone-sdk-php/src/assets/style.min.css catalog/view/stylesheet/style.min.css
+
+#Common definitions
+apirone/apirone_mccp.php system/library/apirone_mccp.php
+
+#Common model classes
+apirone/model/common/common_since_v4.php system/library/model/common.php
+apirone/model/common/apirone_mccp.php system/library/model/apirone_mccp.php
+
+apirone/model/admin/apirone_mccp.php system/library/model/admin/apirone_mccp.php
+apirone/model/catalog/apirone_mccp.php system/library/model/catalog/apirone_mccp.php
+
+#Common controller classes
+apirone/controller/common/common_since_v4.php system/library/controller/common.php
+apirone/controller/common/apirone_mccp.php system/library/controller/apirone_mccp.php
+
+apirone/controller/admin/apirone_mccp.php system/library/controller/admin/apirone_mccp.php
+apirone/controller/catalog/apirone_mccp.php system/library/controller/catalog/apirone_mccp.php
+
+# Libs
+vendor system/library/vendor

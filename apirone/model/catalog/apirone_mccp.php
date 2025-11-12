@@ -14,7 +14,7 @@ use \Apirone\SDK\Model\Settings\Coin;
 
 class ModelExtensionPaymentApironeMccpCatalog extends ModelExtensionPaymentApironeMccpCommon
 {
-    // TODO: remove when replace with SDK method
+    // TODO: can be replaced with SDK method if it will
     public function splitCoinAbbr(Coin $coin): \stdClass
     {
         $std = new \stdClass();
@@ -53,6 +53,7 @@ class ModelExtensionPaymentApironeMccpCatalog extends ModelExtensionPaymentApiro
         $coins = [];
         foreach (self::$settings->coins as $coin) {
             if ($show_testnet || !$coin->test) {
+                // TODO: can be replaced with SDK method if it will
                 // $coins[] = $coin->toStd();
                 $coins[] = $this->splitCoinAbbr($coin);
             }

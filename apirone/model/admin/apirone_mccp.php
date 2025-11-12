@@ -9,7 +9,7 @@ require_once(PATH_TO_LIBRARY . 'vendor/autoload.php');
 use \Apirone\Payment\Model\ModelExtensionPaymentApironeMccpCommon;
 
 use \Apirone\SDK\Model\Settings;
-use \Apirone\SDK\Service\InvoiceDb;
+use \Apirone\SDK\Service\Db;
 
 class ModelExtensionPaymentApironeMccpAdmin extends ModelExtensionPaymentApironeMccpCommon
 {
@@ -44,7 +44,7 @@ class ModelExtensionPaymentApironeMccpAdmin extends ModelExtensionPaymentApirone
         ));
 
         $this->initInvoiceModel();
-        InvoiceDb::install();
+        Db::install();
 
         return true;
     }
@@ -55,6 +55,6 @@ class ModelExtensionPaymentApironeMccpAdmin extends ModelExtensionPaymentApirone
         // OpenCart automatically removes plugin settings
         // all invoices data in DB and logs remains for history
         // $this->initInvoiceModel();
-        // InvoiceDb::uninstall();
+        // Db::uninstall();
     }
 }

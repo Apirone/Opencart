@@ -10,13 +10,13 @@ use \Apirone\Payment\Model\LogCommon as Log;
 
 use \Apirone\API\Endpoints\Service;
 use \Apirone\API\Http\Request;
-use \Apirone\API\Log\LoggerWrapper;
 use \Apirone\API\Log\LogLevel;
 
-use \Apirone\SDK\Invoice;
-use \Apirone\SDK\Model\HistoryItem;
 use \Apirone\SDK\Model\Settings;
 use \Apirone\SDK\Model\Settings\Coin;
+
+use \Apirone\SDK\Service\Db;
+use \Apirone\SDK\Service\Logger;
 
 class ModelExtensionPaymentApironeMccpCommon extends ModelExtensionPaymentCommon
 {
@@ -26,7 +26,7 @@ class ModelExtensionPaymentApironeMccpCommon extends ModelExtensionPaymentCommon
     public function initLogger(): void
     {
         self::$logger = new Log('apirone.log');
-        LoggerWrapper::setLogger($this);
+        Logger::set($this);
     }
 
     protected function getLogger(): Log
@@ -119,11 +119,12 @@ class ModelExtensionPaymentApironeMccpCommon extends ModelExtensionPaymentCommon
     }
 
     /**
-     * @return \Closure DB query handler for Invoice
+     * @return \Closure DB query handler
      */
     protected function getDBHandler(): \Closure
     {
-        return function($query) {
+        return function($query): mixed
+        {
             try {
                 $result = $this->db->query($query);
             }
@@ -147,58 +148,9 @@ class ModelExtensionPaymentApironeMccpCommon extends ModelExtensionPaymentCommon
 
     public function initInvoiceModel(): void
     {
-        Invoice::db($this->getDBHandler(), DB_PREFIX);
-    }
-
-    /**
-     * Updates order status from invoice details data when invoice status changed
-     * @param Invoice $invoice
-     */
-    public function updateOrderStatus(Invoice $invoice): void
-    {
-        $_settings = $this->getSettings();
-        if (!$_settings) {
-            return;
-        }
-        $this->load->model('checkout/order');
-
-        $orderHistory = $this->db->query("SELECT * FROM " . DB_PREFIX . "order_history WHERE `order_id` = " . (int) $invoice->order);
-        $invoiceHistory = $invoice->details->history;
-
-        foreach ($invoiceHistory as $item) {
-            $comment = $this->getHistoryRecordComment($invoice->details->address, $item);
-
-            if ($this->isHistoryRecordExists($comment, $orderHistory)) {
-                continue;
-            }
-            $this->model_checkout_order->addOrderHistory($invoice->order, $_settings->status_ids->{$item->status}, $comment);
-        }
-    }
-
-    private function isHistoryRecordExists(string $comment, \stdClass $history): bool
-    {
-        foreach ($history->rows as $row) {
-            if ($row['comment'] == $comment) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private function getHistoryRecordComment(string $address, HistoryItem $item): string
-    {
-        $status = $item->status;
-        $prefix = 'Invoice ' . $status;
-        switch ($status) {
-            case 'created':
-                return $prefix . '. Payment address: ' . $address;
-            case 'paid':
-            case 'partpaid':
-            case 'overpaid':
-                return $prefix . '. Transaction hash: ' . $item->txid;
-        }
-        // completed, expired
-        return $prefix;
+        Db::adapter('mysql');
+        Db::prefix(DB_PREFIX);
+        Db::handler($this->getDBHandler());
     }
 
     /**
