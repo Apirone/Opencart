@@ -16,7 +16,6 @@ use Apirone\API\Http\Request;
 use Apirone\API\Log\LogLevel;
 
 use Apirone\SDK\Model\Settings;
-use Apirone\SDK\Model\Settings\Coin;
 
 use Apirone\SDK\Service\Db;
 use Apirone\SDK\Service\Logger;
@@ -289,14 +288,19 @@ class ModelExtensionPaymentApironeMccpCommon extends ModelExtensionPaymentCommon
                 continue;
             }
             // address stored for currency
+
+            // TODO: is currency network in tokens array?
+            // $coins[] = $network->abbr;
+
             if (!count($tokens = $network->tokens)) {
+                // TODO: is currency network in tokens array?
                 // currency with address has no tokens, add it as visible
-                $coins[] = Coin::init($network);
+                $coins[] = $network->abbr;
                 continue;
             }
             // currency has tokens, add all as visible by default
             foreach ($tokens as $token) {
-                $coins[] = Coin::init($token);
+                $coins[] = $token->abbr;
             }
         }
         $_settings

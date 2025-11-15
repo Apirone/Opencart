@@ -20,41 +20,41 @@ class ControllerExtensionPaymentApironeMccpCatalog extends \Apirone\Payment\Cont
     /**
      * @param float $amount total order amount
      * @param string $fiat fiat currency of amount specified
-     * @return array array of coins to display in currency selector
+     * @return array associative array of coins (as stdClass) to display in currency selector with abbr as key
      */
     protected function getCoins(float $amount, string $fiat): ?array
     {
-        $coins = $this->model->getCoinsAvailable();
-        if (empty($coins) || !$this->settings->with_fee) {
-            return $coins;
-        }
-        $currencies = [];
-        foreach ($coins as $coin) {
-            $currencies[] = $coin->abbr;
+        $coins_available = $this->model->getCoinsAvailable();
+        if (empty($coins_available) || !$this->settings->with_fee) {
+            return $coins_available;
         }
         try {
             $estimations = Utils::estimate(
                 $this->settings->account,
                 $amount,
                 $fiat,
-                $currencies,
+                array_keys($coins_available),
                 true,
                 $this->settings->factor,
             );
         } catch (\Exception $ignore) {
             return null;
         }
-        $coins_all = $this->settings->coins;
         $coins = [];
         foreach ($estimations as $estimation) {
             if (!(property_exists($estimation, 'min') && $estimation->min)) {
                 continue;
             }
-            // TODO: can be replaced with SDK method if it will
-            $coins[] = $coin = $this->model->splitCoinAbbr($coins_all[$estimation->currency]);
+            $abbr = $estimation->currency;
+            if (!key_exists($abbr, $coins_available)) {
+                continue;
+            }
+            $coins[$abbr] = $coin = $coins_available[$abbr];
+
             $coin->with_fee = \sprintf($this->language->get('currency_selector_with_fee'), $amount + $estimation->fee, $fiat);
         }
         return $coins;
+        // TODO: test for all OC versions how associative array works in template
     }
 
     /**

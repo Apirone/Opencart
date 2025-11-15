@@ -6,8 +6,6 @@ require_once(PATH_TO_LIBRARY . 'vendor/autoload.php');
 
 use Apirone\Payment\Controller\Admin\ControllerExtensionPaymentApironeMccpAdmin;
 
-use Apirone\SDK\Model\Settings\Coin;
-
 // the class name formation matters
 class ControllerExtensionPaymentApironeMccp extends ControllerExtensionPaymentApironeMccpAdmin
 {
@@ -75,11 +73,14 @@ class ControllerExtensionPaymentApironeMccp extends ControllerExtensionPaymentAp
                 if (!$address) {
                     continue;
                 }
-                $coins[$abbr] = Coin::init($network);
+                // TODO: is currency network in tokens array?
+                $coins[] = $abbr;
                 $network->policy($processing_fee);
 
                 $tokens = $network->tokens;
                 if (!count($tokens)) {
+                    // TODO: is currency network in tokens array?
+                    // $coins[] = $abbr;
                     continue;
                 }
                 $state = !empty($visible_from_post) && array_key_exists($abbr, $visible_from_post) && $visible_from_post[$abbr];
@@ -94,7 +95,7 @@ class ControllerExtensionPaymentApironeMccp extends ControllerExtensionPaymentAp
                     if ($state != $this->settings->hasCoin($abbr)) {
                         $coins_update_need = true;
                     }
-                    $coins[$abbr] = Coin::init($token);
+                    $coins[] = $abbr;
                     $token->policy($processing_fee);
                 }
             }

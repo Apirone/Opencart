@@ -14,57 +14,10 @@ use Apirone\Payment\Model\ModelExtensionPaymentApironeMccpCommon;
 
 use Apirone\SDK\Invoice;
 use Apirone\SDK\Model\HistoryItem;
-use Apirone\SDK\Model\Settings\Coin;
+use Apirone\SDK\Service\Utils;
 
 class ModelExtensionPaymentApironeMccpCatalog extends ModelExtensionPaymentApironeMccpCommon
 {
-    // TODO: can be replaced with SDK method if it will
-    public function splitCoinAbbr(Coin $coin): \stdClass
-    {
-        $std = new \stdClass();
-
-        $abbr = $coin->abbr;
-
-        $std->abbr = $abbr;
-        $std->alias = $coin->alias;
-        $std->test = $coin->test;
-
-        if (!$abbr) {
-            $std->network = null;
-            $std->token = null;
-            return $std;
-        }
-        $parts = explode('@', $abbr, 2);
-        if (count($parts) == 1) {
-            $std->network = $abbr;
-            $std->token = null;
-            return $std;
-        }
-        $std->token = $parts[0];
-        $std->network = $parts[1];
-        return $std;
-    }
-
-    /**
-     * @return array array of coins available for user
-     */
-    public function getCoinsAvailable(): ?array
-    {
-        if (!$this->getSettings()) {
-            return null;
-        }
-        $show_testnet = $this->showTestnet();
-        $coins = [];
-        foreach (self::$settings->coins as $coin) {
-            if ($show_testnet || !$coin->test) {
-                // TODO: can be replaced with SDK method if it will
-                // $coins[] = $coin->toStd();
-                $coins[] = $this->splitCoinAbbr($coin);
-            }
-        }
-        return $coins;
-    }
-
     /**
      * @return bool show test networks
      */
@@ -79,6 +32,25 @@ class ModelExtensionPaymentApironeMccpCatalog extends ModelExtensionPaymentApiro
             return false;
         }
         return $this->customer->getEmail() == $testcustomer;
+    }
+
+    /**
+     * @return array associative array of coins (as stdClass) available for user with abbr as key
+     */
+    public function getCoinsAvailable(): ?array
+    {
+        if (!$this->getSettings()) {
+            return null;
+        }
+        $show_testnet = $this->showTestnet();
+        $coins = [];
+        foreach (self::$settings->coins as $abbr) {
+            $coin = Utils::getCrypto($abbr);
+            if ($show_testnet || !$coin->test) {
+                $coins[$abbr] = $coin;
+            }
+        }
+        return $coins;
     }
 
     /**
