@@ -31,4 +31,5 @@ do
 done
 
 cd "${BUILD_PATH}"
-zip -rq "${ARC_PATH}" ./*
+rm -f "${ARC_PATH}"
+zip -qr "${ARC_PATH}" ./*

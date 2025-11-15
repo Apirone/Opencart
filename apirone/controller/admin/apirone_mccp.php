@@ -2,7 +2,11 @@
 
 namespace Apirone\Payment\Controller\Admin;
 
-require_once(((int) explode('.', VERSION, 2)[0] < 4 ? DIR_SYSTEM . 'library/apirone/' : DIR_EXTENSION . 'apirone/system/library/') . 'apirone_mccp.php');
+require_once((version_compare(VERSION, 4, '<')
+    ? DIR_SYSTEM . 'library/apirone/'
+    : DIR_EXTENSION . 'apirone/system/library/'
+) . 'apirone_mccp.php');
+
 require_once(PATH_TO_LIBRARY . 'controller/apirone_mccp.php');
 
 class ControllerExtensionPaymentApironeMccpAdmin extends \Apirone\Payment\Controller\ControllerExtensionPaymentApironeMccpCommon

@@ -2,21 +2,24 @@
 
 namespace Apirone\Payment\Model;
 
-require_once(((int) explode('.', VERSION, 2)[0] < 4 ? DIR_SYSTEM . 'library/apirone/' : DIR_EXTENSION . 'apirone/system/library/') . 'apirone_mccp.php');
+require_once((version_compare(VERSION, 4, '<')
+    ? DIR_SYSTEM . 'library/apirone/'
+    : DIR_EXTENSION . 'apirone/system/library/'
+) . 'apirone_mccp.php');
+
 require_once(PATH_TO_LIBRARY . 'model/common.php');
 require_once(PATH_TO_LIBRARY . 'vendor/autoload.php');
 
-use \Apirone\Payment\Model\LogCommon as Log;
+use Apirone\Payment\Model\LogCommon as Log;
 
-use \Apirone\API\Endpoints\Service;
-use \Apirone\API\Http\Request;
-use \Apirone\API\Log\LogLevel;
+use Apirone\API\Http\Request;
+use Apirone\API\Log\LogLevel;
 
-use \Apirone\SDK\Model\Settings;
-use \Apirone\SDK\Model\Settings\Coin;
+use Apirone\SDK\Model\Settings;
+use Apirone\SDK\Model\Settings\Coin;
 
-use \Apirone\SDK\Service\Db;
-use \Apirone\SDK\Service\Logger;
+use Apirone\SDK\Service\Db;
+use Apirone\SDK\Service\Logger;
 
 class ModelExtensionPaymentApironeMccpCommon extends ModelExtensionPaymentCommon
 {
@@ -364,9 +367,7 @@ class ModelExtensionPaymentApironeMccpCommon extends ModelExtensionPaymentCommon
         $params['processing-fee-policy'] = 'percentage';
 
         try {
-            $currencies = Service::account();
-
-            foreach ($currencies as $currency) {
+            foreach (Settings::init()->currencies as $currency) {
                 $params['currency'] = $currency->abbr;
 
                 Request::patch($endpoint, $params);

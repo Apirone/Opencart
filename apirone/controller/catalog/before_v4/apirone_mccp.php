@@ -3,7 +3,7 @@
 require_once(DIR_SYSTEM . 'library/apirone/apirone_mccp.php');
 require_once(PATH_TO_LIBRARY . 'controller/catalog/apirone_mccp.php');
 
-use \Apirone\Payment\Controller\Catalog\ControllerExtensionPaymentApironeMccpCatalog;
+use Apirone\Payment\Controller\Catalog\ControllerExtensionPaymentApironeMccpCatalog;
 
 // the class name formation matters
 class ControllerExtensionPaymentApironeMccp extends ControllerExtensionPaymentApironeMccpCatalog

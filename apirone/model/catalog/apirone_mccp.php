@@ -2,15 +2,19 @@
 
 namespace Apirone\Payment\Model\Catalog;
 
-require_once(((int) explode('.', VERSION, 2)[0] < 4 ? DIR_SYSTEM . 'library/apirone/' : DIR_EXTENSION . 'apirone/system/library/') . 'apirone_mccp.php');
+require_once((version_compare(VERSION, 4, '<')
+    ? DIR_SYSTEM . 'library/apirone/'
+    : DIR_EXTENSION . 'apirone/system/library/'
+) . 'apirone_mccp.php');
+
 require_once(PATH_TO_LIBRARY . 'model/apirone_mccp.php');
 require_once(PATH_TO_LIBRARY . 'vendor/autoload.php');
 
-use \Apirone\Payment\Model\ModelExtensionPaymentApironeMccpCommon;
+use Apirone\Payment\Model\ModelExtensionPaymentApironeMccpCommon;
 
-use \Apirone\SDK\Invoice;
-use \Apirone\SDK\Model\HistoryItem;
-use \Apirone\SDK\Model\Settings\Coin;
+use Apirone\SDK\Invoice;
+use Apirone\SDK\Model\HistoryItem;
+use Apirone\SDK\Model\Settings\Coin;
 
 class ModelExtensionPaymentApironeMccpCatalog extends ModelExtensionPaymentApironeMccpCommon
 {

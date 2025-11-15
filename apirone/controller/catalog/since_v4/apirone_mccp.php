@@ -5,7 +5,7 @@ namespace Opencart\Catalog\Controller\Extension\Apirone\Payment;
 require_once(DIR_EXTENSION . 'apirone/system/library/apirone_mccp.php');
 require_once(PATH_TO_LIBRARY . 'controller/catalog/apirone_mccp.php');
 
-use \Apirone\Payment\Controller\Catalog\ControllerExtensionPaymentApironeMccpCatalog;
+use Apirone\Payment\Controller\Catalog\ControllerExtensionPaymentApironeMccpCatalog;
 
 // class must be named as plugin
 class ApironeMccp extends ControllerExtensionPaymentApironeMccpCatalog

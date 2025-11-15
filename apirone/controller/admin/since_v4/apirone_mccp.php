@@ -6,9 +6,9 @@ require_once(DIR_EXTENSION . 'apirone/system/library/apirone_mccp.php');
 require_once(PATH_TO_LIBRARY . 'controller/admin/apirone_mccp.php');
 require_once(PATH_TO_LIBRARY . 'vendor/autoload.php');
 
-use \Apirone\Payment\Controller\Admin\ControllerExtensionPaymentApironeMccpAdmin;
+use Apirone\Payment\Controller\Admin\ControllerExtensionPaymentApironeMccpAdmin;
 
-use \Apirone\SDK\Model\Settings\Coin;
+use Apirone\SDK\Model\Settings\Coin;
 
 // class must be named as plugin
 class ApironeMccp extends ControllerExtensionPaymentApironeMccpAdmin

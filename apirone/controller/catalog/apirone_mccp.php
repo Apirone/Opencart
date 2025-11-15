@@ -2,16 +2,18 @@
 
 namespace Apirone\Payment\Controller\Catalog;
 
-require_once(((int) explode('.', VERSION, 2)[0] < 4 ? DIR_SYSTEM . 'library/apirone/' : DIR_EXTENSION . 'apirone/system/library/') . 'apirone_mccp.php');
+require_once((version_compare(VERSION, 4, '<')
+    ? DIR_SYSTEM . 'library/apirone/'
+    : DIR_EXTENSION . 'apirone/system/library/'
+) . 'apirone_mccp.php');
+
 require_once(PATH_TO_LIBRARY . 'controller/apirone_mccp.php');
 require_once(PATH_TO_LIBRARY . 'vendor/autoload.php');
 
-use \Apirone\API\Http\Request;
-
-use \Apirone\SDK\Invoice;
-use \Apirone\SDK\Model\UserData;
-use \Apirone\SDK\Service\Api;
-use \Apirone\SDK\Service\Utils;
+use Apirone\SDK\Invoice;
+use Apirone\SDK\Model\UserData;
+use Apirone\SDK\Service\Api;
+use Apirone\SDK\Service\Utils;
 
 class ControllerExtensionPaymentApironeMccpCatalog extends \Apirone\Payment\Controller\ControllerExtensionPaymentApironeMccpCommon
 {
@@ -184,9 +186,18 @@ class ControllerExtensionPaymentApironeMccpCatalog extends \Apirone\Payment\Cont
             Utils::sendJson('Can not get settings', 500);
             return;
         }
-        $data['apirone_path_to_images'] = OC_MAJOR_VERSION < 4 ? 'catalog/view/theme/default/image/apirone' : 'extension/apirone/catalog/view/image';
-        $data['apirone_path_to_js'] = OC_MAJOR_VERSION < 4 ? 'catalog/view/javascript/apirone/' : 'extension/apirone/catalog/view/javascript/';
-        $data['apirone_path_to_css'] = OC_MAJOR_VERSION < 4 ? 'catalog/view/theme/default/stylesheet/apirone/' : 'extension/apirone/catalog/view/stylesheet/';
+        $data['apirone_path_to_images'] = OC_MAJOR_VERSION < 4
+            ? 'catalog/view/theme/default/image/apirone'
+            : 'extension/apirone/catalog/view/image';
+
+        $data['apirone_path_to_js'] = OC_MAJOR_VERSION < 4
+            ? 'catalog/view/javascript/apirone/'
+            : 'extension/apirone/catalog/view/javascript/';
+
+        $data['apirone_path_to_css'] = OC_MAJOR_VERSION < 4
+            ? 'catalog/view/theme/default/stylesheet/apirone/'
+            : 'extension/apirone/catalog/view/stylesheet/';
+
         $data['apirone_path_for_routes'] = PATH_FOR_ROUTES;
         $data['apirone_config'] = \sprintf('logo: %s,', $this->settings->logo ? 'true' : 'false');
 
