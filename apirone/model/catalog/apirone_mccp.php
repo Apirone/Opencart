@@ -16,6 +16,8 @@ use Apirone\SDK\Invoice;
 use Apirone\SDK\Model\HistoryItem;
 use Apirone\SDK\Service\Utils;
 
+define('ANCHOR_PATTERN', '<a href="%s" target="_blank">%s</a>');
+
 class ModelExtensionPaymentApironeMccpCatalog extends ModelExtensionPaymentApironeMccpCommon
 {
     /**
@@ -45,8 +47,8 @@ class ModelExtensionPaymentApironeMccpCatalog extends ModelExtensionPaymentApiro
         $show_testnet = $this->showTestnet();
         $coins = [];
         foreach (self::$settings->coins as $abbr) {
-            $coin = Utils::getCrypto($abbr);
-            if ($show_testnet || !$coin->test) {
+            $coin = Utils::getCoin($abbr);
+            if ($show_testnet || !$coin->testnet) {
                 $coins[$abbr] = $coin;
             }
         }
@@ -55,7 +57,7 @@ class ModelExtensionPaymentApironeMccpCatalog extends ModelExtensionPaymentApiro
 
     /**
      * @param array $address customer address data
-     * @return ?string comma separated crypto currencies the customer can pay with
+     * @return ?string comma separated crypto currencies aliases the customer can pay with
      */
     public function getCurrencies(array $address): ?string
     {
@@ -113,7 +115,7 @@ class ModelExtensionPaymentApironeMccpCatalog extends ModelExtensionPaymentApiro
         $invoiceHistory = $invoice->details->history;
 
         foreach ($invoiceHistory as $item) {
-            $comment = $this->getHistoryRecordComment($invoice->details->address, $item);
+            $comment = $this->getHistoryRecordComment($invoice->details->currency, $invoice->details->address, $item);
 
             if ($this->isHistoryRecordExists($comment, $orderHistory)) {
                 continue;
@@ -137,17 +139,19 @@ class ModelExtensionPaymentApironeMccpCatalog extends ModelExtensionPaymentApiro
         return false;
     }
 
-    private function getHistoryRecordComment(string $address, HistoryItem $item): string
+    private function getHistoryRecordComment(string $currency, string $address, HistoryItem $item): string
     {
         $status = $item->status;
         $prefix = 'Invoice ' . $status;
         switch ($status) {
             case 'created':
-                return $prefix . '. Payment address: ' . $address;
+                return $prefix . '. Payment address: ' .
+                    sprintf(ANCHOR_PATTERN, Utils::getAddressLink($currency, $address), $address);
             case 'paid':
             case 'partpaid':
             case 'overpaid':
-                return $prefix . '. Transaction hash: ' . $item->txid;
+                return $prefix . '. Transaction hash: ' .
+                    sprintf(ANCHOR_PATTERN, Utils::getTransactionLink($currency, $item->txid), $item->txid);
         }
         // completed, expired
         return $prefix;

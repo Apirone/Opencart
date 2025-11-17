@@ -33,6 +33,8 @@ class ControllerExtensionPaymentApironeMccpAdmin extends \Apirone\Payment\Contro
      */
     protected function getNetworksViewModel(): array
     {
+        $coins = $this->settings->coins;
+
         foreach ($this->settings->networks as $network) {
             $network_abbr = $network->network;
             $name = $network->name;
@@ -63,7 +65,7 @@ class ControllerExtensionPaymentApironeMccpAdmin extends \Apirone\Payment\Contro
             $token_dto->checkbox_id = 'state_'.$network_abbr;
             $token_dto->icon = $network_abbr;
             $token_dto->name = $alias = strtoupper($name);
-            $token_dto->state = $this->settings->hasCoin($network_abbr);
+            $token_dto->state = in_array($network_abbr, $coins);
             $token_dto->tooltip = sprintf($this->language->get('token_tooltip'), $alias);
 
             foreach ($tokens as $abbr => $token) {
@@ -72,7 +74,7 @@ class ControllerExtensionPaymentApironeMccpAdmin extends \Apirone\Payment\Contro
                 $token_dto->checkbox_id = 'state_'.$network_abbr.'_'.$token->token;
                 $token_dto->icon = $token->token;
                 $token_dto->name = $alias = strtoupper($token->alias);
-                $token_dto->state = $this->settings->hasCoin($abbr);
+                $token_dto->state = in_array($abbr, $coins);
                 $token_dto->tooltip = sprintf($this->language->get('token_tooltip'), $alias);
             }
             $network_dto->tokens = $tokens_dto;

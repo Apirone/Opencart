@@ -49,6 +49,7 @@ class ApironeMccp extends ControllerExtensionPaymentApironeMccpAdmin
         }
 
         $saved_processing_fee = $this->settings->processing_fee;
+        $saved_coins = $this->settings->coins;
 
         $post_data = null;
         if ($this->request->server['REQUEST_METHOD'] == 'POST') {
@@ -75,26 +76,23 @@ class ApironeMccp extends ControllerExtensionPaymentApironeMccpAdmin
                 if (!$address) {
                     continue;
                 }
-                // TODO: is currency network in tokens array?
                 $coins[] = $abbr;
                 $network->policy($processing_fee);
 
                 $tokens = $network->tokens;
                 if (!count($tokens)) {
-                    // TODO: is currency network in tokens array?
-                    // $coins[] = $abbr;
                     continue;
                 }
                 $state = !empty($visible_from_post) && array_key_exists($abbr, $visible_from_post) && $visible_from_post[$abbr];
 
-                if ($state != $this->settings->hasCoin($abbr)) {
+                if ($state != in_array($abbr, $saved_coins)) {
                     $coins_update_need = true;
                 }
                 foreach ($tokens as $token) {
                     $abbr = $token->abbr;
                     $state = !empty($visible_from_post) && array_key_exists($abbr, $visible_from_post) && $visible_from_post[$abbr];
 
-                    if ($state != $this->settings->hasCoin($abbr)) {
+                    if ($state != in_array($abbr, $saved_coins)) {
                         $coins_update_need = true;
                     }
                     $coins[] = $abbr;

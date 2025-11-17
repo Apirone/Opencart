@@ -42,19 +42,21 @@ class ControllerExtensionPaymentApironeMccpCatalog extends \Apirone\Payment\Cont
         }
         $coins = [];
         foreach ($estimations as $estimation) {
-            if (!(property_exists($estimation, 'min') && $estimation->min)) {
+            if (!(
+                property_exists($estimation, 'min') && $estimation->min
+                && property_exists($estimation, 'currency')
+            )) {
                 continue;
             }
             $abbr = $estimation->currency;
-            if (!key_exists($abbr, $coins_available)) {
+            if (!($abbr && array_key_exists($abbr, $coins_available))) {
                 continue;
             }
             $coins[$abbr] = $coin = $coins_available[$abbr];
 
-            $coin->with_fee = \sprintf($this->language->get('currency_selector_with_fee'), $amount + $estimation->fee, $fiat);
+            $coin->with_fee = sprintf($this->language->get('currency_selector_with_fee'), $amount + $estimation->fee, $fiat);
         }
         return $coins;
-        // TODO: test for all OC versions how associative array works in template
     }
 
     /**
@@ -163,8 +165,7 @@ class ControllerExtensionPaymentApironeMccpCatalog extends \Apirone\Payment\Cont
                 ->create();
 
             $this->model->updateOrderStatus($invoice);
-            // TODO: for OC4 only? or not need at all?
-            // unset($this->session->data['order_id']);
+            unset($this->session->data['order_id']);
             $this->cart->clear();
             $this->showInvoice($invoice->invoice);
         }

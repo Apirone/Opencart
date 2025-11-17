@@ -27,7 +27,8 @@ class ControllerExtensionPaymentApironeMccp extends ControllerExtensionPaymentAp
         $this->load->model('checkout/order');
         $order = $this->model_checkout_order->getOrder($this->session->data['order_id']);
 
-        $data['coins'] = $this->getCoins($order['total'] * $order['currency_value'], $order['currency_code']);
+        $data['coins'] = $coins = $this->getCoins($order['total'] * $order['currency_value'], $order['currency_code']);
+        $data['coin_first'] = array_key_first($coins);
         $data['order_id'] = $order['order_id'];
         $data['order_key'] = $this->model->getHash($order['total']);
         $data['url_redirect'] = $this->url->link(PATH_FOR_ROUTES . 'confirm');

@@ -125,7 +125,7 @@ class ModelExtensionPaymentApironeMccpCommon extends ModelExtensionPaymentCommon
      */
     protected function getDBHandler(): \Closure
     {
-        return function($query): mixed
+        return function($query)
         {
             try {
                 $result = $this->db->query($query);

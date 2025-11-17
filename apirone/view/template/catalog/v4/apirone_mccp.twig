@@ -40,7 +40,7 @@
     </div>
 </form>
 <script type="text/javascript">
-    window.mccp_currency = '{{ coins[0].abbr }}';
+    window.mccp_currency = '{{ coin_first }}';
     $('#apirone_mccp_dropdown>button').html($('#apirone_mccp_dropdown ul li:first-child button').html());
 
     function mccpDropdownToggle(event) {
