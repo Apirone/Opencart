@@ -288,14 +288,10 @@ class ModelExtensionPaymentApironeMccpCommon extends ModelExtensionPaymentCommon
                 continue;
             }
             // address stored for currency
-
-            // TODO: is currency network in tokens array?
-            // $coins[] = $network->abbr;
+            $coins[] = $network->abbr;
 
             if (!count($tokens = $network->tokens)) {
-                // TODO: is currency network in tokens array?
-                // currency with address has no tokens, add it as visible
-                $coins[] = $network->abbr;
+                // currency has no tokens
                 continue;
             }
             // currency has tokens, add all as visible by default
