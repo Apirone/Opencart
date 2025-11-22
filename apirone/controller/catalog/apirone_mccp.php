@@ -200,7 +200,8 @@ class ControllerExtensionPaymentApironeMccpCatalog extends \Apirone\Payment\Cont
             : 'extension/apirone/catalog/view/stylesheet/';
 
         $data['apirone_path_for_routes'] = PATH_FOR_ROUTES;
-        $data['apirone_config'] = \sprintf('logo: %s,', $this->settings->logo ? 'true' : 'false');
+
+        $data['invoice_app_config'] = sprintf('logo: %s,', $this->settings->logo ? 'true' : 'false');
 
         $this->response->setOutput($this->load->view(PATH_TO_VIEWS . '_invoice', $data));
     }

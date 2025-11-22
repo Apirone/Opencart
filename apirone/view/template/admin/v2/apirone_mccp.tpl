@@ -194,7 +194,7 @@
                                 <?php if (property_exists($network_dto, 'tokens')) : ?>
                                 <?php foreach ($network_dto->tokens as $abbr => $token_dto) : ?>
                                 <div class="col-lg-8">
-                                    <input class="checkbox-inline" style="margin-inline-end:4px;" type="checkbox" name="visible[<?php echo $abbr; ?>]" checked="<?php echo $token_dto->state; ?>" value="<?php echo $token_dto->state; ?>" id="<?php echo $token_dto->checkbox_id; ?>" class="form-control" />
+                                    <input class="checkbox-inline" style="margin-inline-end:4px;" type="checkbox" name="visible[<?php echo $abbr; ?>]" <?php if ($token_dto->state) :?>checked<?php endif ?> id="<?php echo $token_dto->checkbox_id; ?>" class="form-control" />
                                     <label class="control-label" for="<?php echo $token_dto->checkbox_id; ?>">
                                         <img src="view/image/payment/apirone/currencies/<?php echo $token_dto->icon; ?>.svg" width="18">
                                         <span data-toggle="tooltip" data-original-title="<?php echo $token_dto->tooltip; ?>" style="font-size:12px;padding-left:4px;"><?php echo $token_dto->name; ?></span>

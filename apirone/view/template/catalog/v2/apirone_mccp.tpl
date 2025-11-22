@@ -22,7 +22,7 @@
                                     <img src="<?php echo $apirone_path_to_images; ?>currencies/<?php echo $coin->network; ?>.svg" width="20" class="apirone-mccp-img-small">
                                 <?php endif; ?>
                                 <span class="coin-alias"><?php echo $coin->alias; ?></span>
-                                <?php if ($coin->with_fee) : ?>
+                                <?php if (property_exists($coin, 'with_fee') && $coin->with_fee) : ?>
                                     <span class="with-fee"><?php echo $coin->with_fee; ?></span>
                                 <?php endif; ?>
                             </button></li>

@@ -205,7 +205,7 @@
                                 {% if network_dto.tokens %}
                                 {% for abbr, token_dto in network_dto.tokens %}
                                 <div class="col-lg-8 token-checkbox">
-                                    <span><input class="checkbox-inline" type="checkbox" name="visible[{{ abbr }}]" checked="{{ token_dto.state }}" value="{{ token_dto.state }}" id="{{ token_dto.checkbox_id }}" class="form-control" /></span>
+                                    <span><input class="checkbox-inline" type="checkbox" name="visible[{{ abbr }}]" {% if token_dto.state %}checked{% endif %} id="{{ token_dto.checkbox_id }}" class="form-control" /></span>
                                     <label class="col-form-label" for="{{ token_dto.checkbox_id }}">
                                         <img src="../extension/apirone/admin/view/image/payment/currencies/{{ token_dto.icon }}.svg" width="18">
                                         <span data-bs-toggle="tooltip" data-bs-original-title="{{ token_dto.tooltip }}" style="font-size:12px;padding-left:4px;">{{ token_dto.name }}</span>
