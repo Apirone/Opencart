@@ -21,7 +21,7 @@ class ApironeMccp extends \Apirone\Payment\Model\Catalog\ModelExtensionPaymentAp
         return !$currencies ? null : array(
             'code'       => 'apirone_mccp',
             // TODO: check 'title' can be in HTML and tooltip can be visible by this HTML
-            'title'      => sprintf('<span data-toggle="tooltip" data-original-title="%s">%s</span>', $currencies, $this->language->get('text_title')),
+            'title'      => sprintf($this->language->get('text_title_currencies'), $currencies),
             // TODO: check 'terms' presence not log notifications
             'terms'      => '',
             'sort_order' => $this->config->get(SETTING_PREFIX . 'sort_order'),
@@ -43,7 +43,7 @@ class ApironeMccp extends \Apirone\Payment\Model\Catalog\ModelExtensionPaymentAp
         }
         $option['apirone_mccp'] = [
             'code' => 'apirone_mccp.apirone_mccp',
-            'name' => $currencies,
+            'name' => sprintf($this->language->get('text_title_currencies'), $currencies),
         ];
         return [
             'code'       => 'apirone_mccp',

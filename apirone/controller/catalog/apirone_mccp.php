@@ -124,14 +124,13 @@ class ControllerExtensionPaymentApironeMccpCatalog extends \Apirone\Payment\Cont
             $this->backToCart();
             return;
         }
-        Invoice::settings($this->settings);
         $this->model->initInvoiceModel();
         // Is order invoice already exists
         $orderInvoices = Invoice::getByOrder($order_id);
         if (count($orderInvoices)) {
             $invoice = $orderInvoices[0];
             // Update existing invoice when page is loaded or reloaded & status != expired & the same crypto currency
-            $invoice->update();
+            $invoice->update(30);
             $this->model->updateOrderStatus($invoice);
             if ($invoice->status !== 'expired' && $invoice->details->currency == $currency_crypto) {
                 $this->showInvoice($invoice->invoice);
@@ -155,7 +154,8 @@ class ControllerExtensionPaymentApironeMccpCatalog extends \Apirone\Payment\Cont
             ->price($amount_fiat.' '.strtoupper($currency_fiat));
 
         try {
-            $invoice = Invoice::init($currency_crypto, $amount_crypto)
+            $invoice = Invoice::init($this->settings->account, $currency_crypto)
+                ->amount($amount_crypto)
                 ->order($order_id)
                 ->estimation($estimation)
                 ->userData($userData)
@@ -213,6 +213,11 @@ class ControllerExtensionPaymentApironeMccpCatalog extends \Apirone\Payment\Cont
     {
         return function(Invoice $invoice): void
         {
+            $this->settings = $this->model->getSettings();
+            if (!$this->settings) {
+                Utils::sendJson('Can not get settings', 500);
+                exit;
+            }
             $invoice_id = $invoice->invoice;
             $order_id = $invoice->order;
             $status = $invoice->status;
@@ -262,13 +267,7 @@ class ControllerExtensionPaymentApironeMccpCatalog extends \Apirone\Payment\Cont
      */
     public function callback(): void
     {
-        $this->settings = $this->model->getSettings();
-        if (!$this->settings) {
-            Utils::sendJson('Can not get settings', 500);
-            exit;
-        }
-        Invoice::settings($this->settings);
-        Invoice::callbackHandler($this->getCallbackChecker(), $this->getPaymentProcessor());
+        Invoice::callbackHandler($this->getPaymentProcessor(), $this->getCallbackChecker());
     }
 
     /**
@@ -345,7 +344,7 @@ class ControllerExtensionPaymentApironeMccpCatalog extends \Apirone\Payment\Cont
             return;
         }
         $this->model->initInvoiceModel();
-        Invoice::checkInterval(30);
+        Api::checkInterval(30);
         Api::invoices($invoice_id, $this->getPaymentProcessor());
     }
 }

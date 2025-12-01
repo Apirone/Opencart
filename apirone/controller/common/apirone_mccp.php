@@ -10,6 +10,7 @@ require_once((version_compare(VERSION, 4, '<')
 require_once(PATH_TO_LIBRARY . 'controller/common.php');
 require_once(PATH_TO_LIBRARY . 'vendor/autoload.php');
 
+use Apirone\API\Http\Request;
 use Apirone\SDK\Model\Settings;
 
 class ControllerExtensionPaymentApironeMccpCommon extends ControllerExtensionPaymentCommon
@@ -20,6 +21,8 @@ class ControllerExtensionPaymentApironeMccpCommon extends ControllerExtensionPay
     public function __construct($registry)
     {
         parent::__construct($registry);
+
+        Request::setUserAgent('OC/' . VERSION . ' MCCP/' . PLUGIN_VERSION);
 
         $this->load->model(PATH_TO_RESOURCES);
         $this->model = $this->{'model_' . str_replace('/', '_', PATH_TO_RESOURCES)};
