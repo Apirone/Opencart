@@ -70,6 +70,11 @@ $_['entry_invoice_overpaid'] = 'Invoice Overpaid';
 $_['entry_invoice_completed'] = 'Invoice Completed';
 $_['entry_invoice_expired'] = 'Invoice Expired';
 
+// Order history comments
+$_['order_history'] = 'Invoice %s';
+$_['order_history_address'] = $_['order_history'] . ' in %s. Payment address: %s';
+$_['order_history_txid'] = $_['order_history'] . '. Transaction hash: %s';
+
 // Warning
 // Error
 $_['error_update'] = 'Can\'t update plugin DB.';

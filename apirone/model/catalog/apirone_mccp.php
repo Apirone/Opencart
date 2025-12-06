@@ -16,8 +16,6 @@ use Apirone\SDK\Invoice;
 use Apirone\SDK\Model\HistoryItem;
 use Apirone\SDK\Service\Utils;
 
-define('ANCHOR_PATTERN', '<a href="%s" target="_blank">%s</a>');
-
 class ModelExtensionPaymentApironeMccpCatalog extends ModelExtensionPaymentApironeMccpCommon
 {
     /**
@@ -141,19 +139,19 @@ class ModelExtensionPaymentApironeMccpCatalog extends ModelExtensionPaymentApiro
 
     private function getHistoryRecordComment(string $currency, string $address, HistoryItem $item): string
     {
-        $status = $item->status;
-        $prefix = 'Invoice ' . $status;
+        $comment = [];
+        $comment['abbr'] = $currency;
+        $comment['status'] = $status = $item->status;
         switch ($status) {
             case 'created':
-                return $prefix . '. Payment address: ' .
-                    sprintf(ANCHOR_PATTERN, Utils::getAddressLink($currency, $address), $address);
+                $comment['address'] = $address;
+                break;
             case 'paid':
             case 'partpaid':
             case 'overpaid':
-                return $prefix . '. Transaction hash: ' .
-                    sprintf(ANCHOR_PATTERN, Utils::getTransactionLink($currency, $item->txid), $item->txid);
+                $comment['txid'] = $item->txid;
         }
-        // completed, expired
-        return $prefix;
+        // other statuses without additional info: completed, expired
+        return json_encode($comment);
     }
 }
