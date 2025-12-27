@@ -32,7 +32,7 @@
                 <h3 class="panel-title"><i class="fa fa-pencil"></i> {{ text_edit }}</h3>
             </div>
             <div class="panel-body" style="font-size:14px;">
-                <form action="{{ action }}" method="post" id="form-apirone" class="form-horizontal">
+            <form action="{{ action }}" method="post" id="form-apirone" class="form-horizontal">
                 <ul class="nav nav-tabs">
                     {% if settings_loaded %}
                     <li class="active"><a href="#tab-settings" data-toggle="tab"><i class="fa fa-cog"></i> {{ tab_settings }}</a></li>
@@ -186,7 +186,7 @@
                                     <input type="text" name="address[{{ network }}]" value="{{ network_dto.address }}" id="address_{{ network }}" class="form-control" style="height:38px;"/>
                                 </div>
                                 {% if network_dto.error %}
-                                <div class=" text-danger">{{ currency_address_incorrect }}</div>
+                                <div class=" text-danger">{{ network_dto.error }}</div>
                                 {% endif %}
                                 {% if network_dto.testnet %}
                                 <label class="control-label" style="color: inherit !important;"><span data-toggle="tooltip" data-original-title="{{ network_dto.test_tooltip }}">{{ text_test_currency }}</span></label>

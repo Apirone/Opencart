@@ -38,43 +38,26 @@ class ControllerExtensionPaymentApironeMccp extends ControllerExtensionPaymentAp
             $this->setErrorPageData('error_cant_get_currencies');
             return;
         }
-        $checkValuesResults = $this->checkAndSetValues();
-        $has_errors = $checkValuesResults['has_errors'];
-        $active_networks = $checkValuesResults['active_networks'];
+        $networks_errors = $this->checkAndSetValues();
 
-        if ($this->request->server['REQUEST_METHOD'] == 'POST') {
-            if ($has_errors) {
-                $this->data['error'] = $this->language->get('error_warning');
-                // No addresses
-                if (!$active_networks) {
-                    $this->data['error'] = $this->language->get('error_empty_currencies');
-                }
-                foreach ($networks as $network) {
-                    if ($network->hasError()) {
-                        if (!(array_key_exists('error', $this->data) && $this->data['error'])) {
-                            $this->data['error'] = sprintf($this->language->get('error_currency_save'), $network->name, $network->error);
-                        }
-                    }
-                }
-                // Payment timeout
-                $timeout = $this->data['apirone_mccp_timeout'];
-                if ($timeout === 0 || $timeout < 0) {
-                    $this->error['apirone_mccp_timeout'] = $this->language->get('error_apirone_mccp_timeout_positive');
-                }
-                elseif (empty($timeout)) {
-                    $this->error['apirone_mccp_timeout'] = $this->language->get('error_apirone_mccp_timeout');
-                }
-                // Invalid payment adjustment factor
-                $factor = $this->data['apirone_mccp_factor'];
-                if ($factor <= 0 || empty($factor)) {
-                    $this->error['apirone_mccp_factor'] = $this->language->get('error_apirone_mccp_factor');
-                }
-            }
-            else {
-                // Save settings if post & no errors
-                $this->saveSettingsFromPostData();
-                $this->data['success'] = $this->language->get('text_success');
-            }
+        if ($this->request->server['REQUEST_METHOD'] != 'POST') {
+            // First page loading
+            $this->setPageData();
+            return;
+        }
+        // Post data handling
+
+        // Save settings anyway
+        $this->saveSettingsFromPostData();
+
+        if (!empty($networks_errors)
+            || array_key_exists('apirone_mccp_timeout', $this->error)
+            || array_key_exists('apirone_mccp_factor', $this->error)
+        ) {
+            $this->data['error'] = $this->language->get('error_warning');
+        }
+        else {
+            $this->data['success'] = $this->language->get('text_success');
         }
         $this->setPageData();
     }

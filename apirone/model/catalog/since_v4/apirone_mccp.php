@@ -16,13 +16,9 @@ class ApironeMccp extends \Apirone\Payment\Model\Catalog\ModelExtensionPaymentAp
      */
     public function getMethod(array $address): ?array
     {
-        $currencies = $this->getCurrencies($address);
-        $this->logError('getMethod debug currencies: ' . json_encode($currencies));
-        return !$currencies ? null : array(
+        return !$this->getCurrencies($address) ? null : array(
             'code'       => 'apirone_mccp',
-            // TODO: check 'title' can be in HTML and tooltip can be visible by this HTML
-            'title'      => sprintf($this->language->get('text_title_currencies'), $currencies),
-            // TODO: check 'terms' presence not log notifications
+            'title'      => $this->language->get('text_title'),
             'terms'      => '',
             'sort_order' => $this->config->get(SETTING_PREFIX . 'sort_order'),
         );  
@@ -37,17 +33,18 @@ class ApironeMccp extends \Apirone\Payment\Model\Catalog\ModelExtensionPaymentAp
      */
     public function getMethods(array $address): ?array
     {
-        $currencies = $this->getCurrencies($address);
-        if (!$currencies) {
+        if (!$this->getCurrencies($address)) {
             return null;
         }
+        $text_title = $this->language->get('text_title');
+
         $option['apirone_mccp'] = [
             'code' => 'apirone_mccp.apirone_mccp',
-            'name' => sprintf($this->language->get('text_title_currencies'), $currencies),
+            'name' => $text_title,
         ];
         return [
             'code'       => 'apirone_mccp',
-            'name'       => $this->language->get('text_title'),
+            'name'       => $text_title,
             'option'     => $option,
             'sort_order' => $this->config->get('payment_apirone_mccp_sort_order'),
         ];

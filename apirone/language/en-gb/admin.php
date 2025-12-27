@@ -17,7 +17,7 @@ $_['text_apirone_mccp'] = '<a href="https://apirone.com/" target="_blank"><img s
 $_['text_test_currency'] = 'WARNING: Test currency';
 $_['text_test_currency_tooltip'] = 'Use this currency for testing purposes only! It is displayed on the front end for `Test currency customer`.';
 $_['text_with_fee_tooltip'] = 'Adds service and network fees to total. Final amount per coin is shown in selector.';
-$_['text_factor_tooltip'] = 'If you want to add/subtract percent to/from the payment amount, use the following  price adjustment factor multiplied by the amount.<br />For example: 100% * 0.99 = 99%, 100% * 1.01 = 101%';
+$_['text_factor_tooltip'] = 'If you want to add/subtract percent to/from the payment amount, use the following  price adjustment factor multiplied by the amount. For example: 100% * 0.99 = 99%, 100% * 1.01 = 101%';
 $_['text_logo_tooltip'] = 'Show the Apirone logo on the invoice page.';
 $_['text_test_currency_customer'] = 'Enter an email of the registered customer to whom the test currencies will be shown.';
 $_['text_missing'] = 'Missing status';
@@ -57,10 +57,9 @@ $_['entry_sort_order'] = 'Sort Order';
 
 // Currencies
 $_['entry_network_name'] = '%s Blockchain';
-$_['currency_activate_tooltip'] = 'Enter valid address to activate <b>%s</b> currency';
-$_['currency_deactivate_tooltip'] = 'Remove address to deactivate <b>%s</b> currency';
-$_['currency_address_incorrect'] = 'Incorrect address. Check address and try again.';
-$_['token_tooltip'] = 'Show/hide <b>%s</b> from currency selector';
+$_['currency_activate_tooltip'] = 'Enter valid address to activate %s currency';
+$_['currency_deactivate_tooltip'] = 'Remove address to deactivate %s currency';
+$_['token_tooltip'] = 'Show/hide %s from currency selector';
 
 // Status ids
 $_['entry_invoice_created'] = 'Invoice Created';
@@ -80,7 +79,7 @@ $_['order_history_txid'] = $_['order_history'] . '. Transaction hash: %s';
 $_['error_update'] = 'Can\'t update plugin DB.';
 $_['error_service_not_available'] = 'Can\'t get plugin settings. Service unavailable or DB is corrupted. Please, try later.';
 $_['error_warning'] = 'Warning: Please check the form carefully for errors!';
-$_['error_currency_save'] = '<b>%s</b> has error: %s';
+$_['error_currency_save'] = '%s has error: %s';
 $_['error_cant_get_currencies'] = 'Can\'t get list of currencies. Service unavailable. Please, try later.';
 $_['error_empty_currencies'] = 'At least one of the addresses is required.';
 $_['error_permission'] = 'Warning: You do not have permission to modify payment Apirone!';

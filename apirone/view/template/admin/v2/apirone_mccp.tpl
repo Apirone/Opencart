@@ -32,7 +32,7 @@
                 <h3 class="panel-title"><i class="fa fa-pencil"></i> <?php echo $text_edit; ?></h3>
             </div>
             <div class="panel-body" style="font-size:14px;">
-                <form action="<?php echo $action; ?>" method="post" id="form-apirone" class="form-horizontal">
+            <form action="<?php echo $action; ?>" method="post" id="form-apirone" class="form-horizontal">
                 <ul class="nav nav-tabs">
                     <?php if (isset($settings_loaded) && $settings_loaded) : ?>
                     <li class="active"><a href="#tab-settings" data-toggle="tab"><i class="fa fa-cog"></i> <?php echo $tab_settings; ?></a></li>
@@ -186,7 +186,7 @@
                                     <input type="text" name="address[<?php echo $network; ?>]" value="<?php echo $network_dto->address; ?>" id="address_<?php echo $network; ?>" class="form-control" style="height:38px;"/>
                                 </div>
                                 <?php if (property_exists($network_dto, 'error') && $network_dto->error) : ?>
-                                <div class=" text-danger"><?php echo $currency_address_incorrect; ?></div>
+                                <div class=" text-danger"><?php echo $network_dto->error; ?></div>
                                 <?php endif ?>
                                 <?php if ($network_dto->testnet) : ?>
                                 <label class="control-label" style="color: inherit !important;"><span data-toggle="tooltip" data-original-title="<?php echo $network_dto->test_tooltip; ?>"><?php echo $text_test_currency; ?></span></label>

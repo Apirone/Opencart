@@ -20,7 +20,7 @@ class ApironeMccp extends ControllerExtensionPaymentApironeMccpAdmin
         $this->load->language(PATH_TO_RESOURCES);
 
         if ($this->request->server['REQUEST_METHOD'] == 'POST' && !$this->user->hasPermission('modify', PATH_TO_RESOURCES)) {
-            $this->errorResponse('error_permission');
+            $this->errorPostResponse('error_permission');
             return;
         }
         $this->settings = $this->model->getSettings();
@@ -40,50 +40,40 @@ class ApironeMccp extends ControllerExtensionPaymentApironeMccpAdmin
             $this->errorResponse('error_cant_get_currencies');
             return;
         }
-        $checkValuesResults = $this->checkAndSetValues();
-        $has_errors = $checkValuesResults['has_errors'];
-        $active_networks = $checkValuesResults['active_networks'];
+        $networks_errors = $this->checkAndSetValues();
 
-        if ($this->request->server['REQUEST_METHOD'] == 'POST') {
-            $post_response = [];
-            if ($has_errors) {
-                $post_response['error']['warning'] = $this->language->get('error_warning');
-                // No addresses
-                if (!$active_networks) {
-                    $post_response['error']['warning'] = $this->language->get('error_empty_currencies');
-                }
-                // Wrong addresses
-                foreach ($networks as $network) {
-                    if ($network->hasError()) {
-                        $post_response['error']['address_' . $network->abbr] = sprintf($this->language->get('error_currency_save'), $network->name, $network->error);
-                    }
-                }
-                // Payment timeout
-                $timeout = $this->data['apirone_mccp_timeout'];
-                if ($timeout === 0 || $timeout < 0) {
-                    $post_response['error']['timeout'] = $this->language->get('error_apirone_mccp_timeout_positive');
-                }
-                elseif (empty($timeout)) {
-                    $post_response['error']['timeout'] = $this->language->get('error_apirone_mccp_timeout');
-                }
-                // Invalid payment adjustment factor
-                $factor = $this->data['apirone_mccp_factor'];
-                if ($factor <= 0 || empty($factor)) {
-                    $post_response['error']['factor'] = $this->language->get('error_apirone_mccp_factor');
-                }
-            }
-            else {
-                // Save settings if post & no errors
-                $this->saveSettingsFromPostData();
-                $post_response['success'] = $this->language->get('text_success');
-            }
-            $this->postResponse($post_response);
+        if ($this->request->server['REQUEST_METHOD'] != 'POST') {
+            // Full page render
+            $this->setPageData();
             return;
         }
-        $this->setPageData();
+        // Post data handling
+        $post_response = [];
+
+        // Save settings anyway
+        $this->saveSettingsFromPostData();
+
+        if (!empty($networks_errors)) {
+            foreach ($networks_errors as $abbr => $error) {
+                $post_response['error']['address_' . $abbr] = $error;
+            }
+        }
+        if (array_key_exists('apirone_mccp_timeout', $this->error)) {
+            $post_response['error']['timeout'] = $this->error['apirone_mccp_timeout'];
+        }
+        if (array_key_exists('apirone_mccp_factor', $this->error)) {
+            $post_response['error']['factor'] = $this->error['apirone_mccp_factor'];
+        }
+        if (array_key_exists('error', $post_response) && !empty($post_response['error'])) {
+            $post_response['error']['warning'] = $this->language->get('error_warning');
+        }
+        else {
+            $post_response['success'] = $this->language->get('text_success');
+        }
+        $this->postResponse($post_response);
     }
 
-    protected function postResponse($data): void
+    protected function postResponse(&$data): void
     {
         $this->response->addHeader('Content-Type: application/json');
         $this->response->setOutput(json_encode($data));

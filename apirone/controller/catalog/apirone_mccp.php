@@ -10,6 +10,8 @@ require_once((version_compare(VERSION, 4, '<')
 require_once(PATH_TO_LIBRARY . 'controller/apirone_mccp.php');
 require_once(PATH_TO_LIBRARY . 'vendor/autoload.php');
 
+use Apirone\API\Log\LogLevel;
+
 use Apirone\SDK\Invoice;
 use Apirone\SDK\Model\UserData;
 use Apirone\SDK\Service\Api;
@@ -26,26 +28,40 @@ class ControllerExtensionPaymentApironeMccpCatalog extends \Apirone\Payment\Cont
     {
         $coins_available = $this->model->getCoinsAvailable();
         if (empty($coins_available) || !$this->settings->with_fee) {
+            // no any coins or no fees to be included to payment amount
             return $coins_available;
         }
+        // fees will be included to payment amount
+        $account = $this->settings->account;
+        $factor = $this->settings->factor;
         try {
             $estimations = Utils::estimate(
-                $this->settings->account,
+                $account,
                 $amount,
                 $fiat,
                 array_keys($coins_available),
                 true,
-                $this->settings->factor,
+                $factor,
             );
         } catch (\Exception $ignore) {
             return null;
         }
         $coins = [];
         foreach ($estimations as $estimation) {
-            if (!(
-                property_exists($estimation, 'min') && $estimation->min
-                && property_exists($estimation, 'currency')
-            )) {
+            $error = property_exists($estimation, 'err');
+            $currency = property_exists($estimation, 'currency') ? $estimation->currency : null;
+            $min = property_exists($estimation, 'min') ? $estimation->min : null;
+            $fee = property_exists($estimation, 'fee') ? $estimation->fee : null;
+
+            if ($error || !($currency && $min && ($fee || $fee == 0))) {
+                $this->model->log(LogLevel::ERROR, 'Invalid estimation while get coins with fee', [
+                    'account' => $account,
+                    'amount' => $amount,
+                    'fiat' => $fiat,
+                    'currency' => $currency,
+                    'factor' => $factor,
+                    'result' => $estimation,
+                ]);
                 continue;
             }
             $abbr = $estimation->currency;
@@ -54,7 +70,7 @@ class ControllerExtensionPaymentApironeMccpCatalog extends \Apirone\Payment\Cont
             }
             $coins[$abbr] = $coin = $coins_available[$abbr];
 
-            $coin->with_fee = sprintf($this->language->get('currency_selector_with_fee'), $amount + $estimation->fee, $fiat);
+            $coin->with_fee = sprintf($this->language->get('currency_selector_with_fee'), $amount + $fee, $fiat);
         }
         return $coins;
     }
@@ -67,25 +83,41 @@ class ControllerExtensionPaymentApironeMccpCatalog extends \Apirone\Payment\Cont
      */
     protected function getEstimation(float $amount, string $fiat, string $currency): ?\stdClass
     {
+        $account = $this->settings->account;
+        $with_fee = $this->settings->with_fee;
+        $factor = $this->settings->factor;
         try {
             $estimations = Utils::estimate(
-                $this->settings->account,
+                $account,
                 $amount,
                 $fiat,
                 $currency,
-                true,
-                $this->settings->factor,
+                $with_fee,
+                $factor,
             );
-        } catch (\Exception $ignore) {
+        } catch (\Exception $e) {
+            $this->model->logError('Fail get estimation before make invoice for '.$currency.'. Error: '.$e->getMessage());
             return null;
         }
         if (empty($estimations)) {
-            $this->model->logError('No estimation for '.$currency);
+            $this->model->logError('No estimation before make invoice for '.$currency);
             return null;
         }
         $estimation = $estimations[0];
-        if (!(property_exists($estimation, 'min') && $estimation->min)) {
-            $this->model->logError('Invalid estimation for '.$currency);
+
+        $error = property_exists($estimation, 'err');
+        $min = property_exists($estimation, 'min') ? $estimation->min : null;
+
+        if ($error || !$min) {
+            $this->model->log(LogLevel::ERROR, 'Invalid estimation before make invoice', [
+                'account' => $account,
+                'amount' => $amount,
+                'fiat' => $fiat,
+                'currency' => $currency,
+                'with_fee' => $with_fee,
+                'factor' => $factor,
+                'result' => $estimation,
+            ]);
             return null;
         }
         return $estimation;
@@ -259,9 +291,6 @@ class ControllerExtensionPaymentApironeMccpCatalog extends \Apirone\Payment\Cont
         };
     }
 
-    // to test callback on local server
-    // OC2, OC3: curl -k -w "%{http_code}\n" -X POST -d '{"invoice":"INVOICE_ID_HERE","status":"expired"}' 'https://examples.test/opencartX/index.php?route=extension/payment/apirone_mccp/callback&key=CALLBACK_KEY_HERE'
-    // OC4:      curl -k -w "%{http_code}\n" -X POST -d '{"invoice":"INVOICE_ID_HERE","status":"expired"}' 'https://examples.test/opencart4/index.php?route=extension/apirone/payment/apirone_mccp|callback&key=CALLBACK_KEY_HERE'
     /**
      * Callback URI for change invoice and order status
      */
@@ -319,10 +348,7 @@ class ControllerExtensionPaymentApironeMccpCatalog extends \Apirone\Payment\Cont
      */
     public function wallets(): void
     {
-        // OC2, OC3: OPTIONS https://examples.test/opencartX/index.php?route=extension/payment/apirone_mccp/wallets
-        // OC4:      OPTIONS https://examples.test/opencart4/index.php?route=extension/apirone/payment/apirone_mccp|wallets
         Api::wallets();
-        // TODO: we can also cache this info until any expiration time to reduce calls to Apirone API
     }
 
     /**
@@ -330,9 +356,6 @@ class ControllerExtensionPaymentApironeMccpCatalog extends \Apirone\Payment\Cont
      */
     public function invoices(): void
     {
-        // OC2, OC3: GET https://examples.test/opencartX/index.php?route=extension/payment/apirone_mccp/invoices&id={INVOICE_ID}
-        // OC4:      GET https://examples.test/opencart4/index.php?route=extension/apirone/payment/apirone_mccp|invoices&id={INVOICE_ID}
-
         // settings not need, but update need
         $this->model->update();
 

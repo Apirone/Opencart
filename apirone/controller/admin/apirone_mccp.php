@@ -39,8 +39,8 @@ class ControllerExtensionPaymentApironeMccpAdmin extends \Apirone\Payment\Contro
      */
     public function uninstall(): void
     {
-        $this->clearOrderHistoryEvent();
         $this->model->uninstall();
+        $this->clearOrderHistoryEvent();
     }
 
     /**
@@ -65,7 +65,7 @@ class ControllerExtensionPaymentApironeMccpAdmin extends \Apirone\Payment\Contro
             $network_dto->icon = $network_abbr;
             $network_dto->name = $has_tokens ? sprintf($this->language->get('entry_network_name'), $name) : $name;
             $network_dto->address = $address;
-            $network_dto->tooltip = sprintf($this->language->get(!$address ? 'currency_activate_tooltip' : 'currency_deactivate_tooltip'), $name);
+            $network_dto->tooltip = sprintf($this->language->get($address ? 'currency_deactivate_tooltip' : 'currency_activate_tooltip'), $name);
             $network_dto->testnet = $testnet;
             $network_dto->error = $network->error;
 
@@ -76,14 +76,13 @@ class ControllerExtensionPaymentApironeMccpAdmin extends \Apirone\Payment\Contro
                 continue;
             }
             $tokens_dto = [];
-            $addressNotSet = !$address;
 
             $tokens_dto[$network_abbr] = $token_dto = new \stdClass();
 
             $token_dto->checkbox_id = 'state_'.$network_abbr;
             $token_dto->icon = $network_abbr;
             $token_dto->name = $alias = strtoupper($name);
-            $token_dto->state = $addressNotSet || in_array($network_abbr, $coins);
+            $token_dto->state = $address && in_array($network_abbr, $coins);
             $token_dto->tooltip = sprintf($this->language->get('token_tooltip'), $alias);
 
             foreach ($tokens as $abbr => $token) {
@@ -92,7 +91,7 @@ class ControllerExtensionPaymentApironeMccpAdmin extends \Apirone\Payment\Contro
                 $token_dto->checkbox_id = 'state_'.$network_abbr.'_'.$token->token;
                 $token_dto->icon = $token->token;
                 $token_dto->name = $alias = strtoupper($token->alias);
-                $token_dto->state = $addressNotSet || in_array($abbr, $coins);
+                $token_dto->state = $address && in_array($abbr, $coins);
                 $token_dto->tooltip = sprintf($this->language->get('token_tooltip'), $alias);
             }
             $network_dto->tokens = $tokens_dto;
@@ -141,58 +140,12 @@ class ControllerExtensionPaymentApironeMccpAdmin extends \Apirone\Payment\Contro
 
     /**
      * Checks and sets values into template vars
-     * @return array associative array with keys 'has_errors' and 'active_networks' and bool values
+     * @return ?array networks errors
      */
-    protected function checkAndSetValues(): array
+    protected function checkAndSetValues(): ?array
     {
         $this->data['settings_loaded'] = true;
 
-        $has_errors = false;
-        $active_networks = false;
-
-        $saved_processing_fee = $this->settings->processing_fee;
-        $networks = $this->settings->networks;
-     
-        if ($this->request->server['REQUEST_METHOD'] == 'POST') {
-            $processing_fee = $this->getPostValue('apirone_mccp_processing_fee');
-            if ($processing_fee != $saved_processing_fee) {
-                $this->settings->processing_fee($processing_fee);
-            }
-            $coins = [];
-
-            $address_from_post = $this->getPostValue('address');
-            $visible_from_post = $this->getPostValue('visible');
-
-            foreach ($networks as $network) {
-                $abbr = $network->abbr;
-
-                $address = !empty($address_from_post) && array_key_exists($abbr, $address_from_post)
-                    ? $address_from_post[$abbr]
-                    : null;
-                $network->address($address);
-                if (!$network->address) {
-                    continue;
-                }
-                $network->policy($processing_fee);
-
-                if (!count($network->tokens)) {
-                    $coins[] = $abbr;
-                    continue;
-                }
-                foreach (array_merge([$abbr], array_keys($network->tokens)) as $abbr) {
-                    if (!empty($visible_from_post) && array_key_exists($abbr, $visible_from_post) && $visible_from_post[$abbr]) {
-                        $coins[] = $abbr;
-                    }
-                }
-            }
-            $this->settings->coins($coins);
-
-            $this->settings->saveCurrencies();
-            foreach ($networks as $network) {
-                $has_errors = $has_errors || $network->hasError();
-                $active_networks = $active_networks || !!$network->address;
-            }
-        }
         // Set values into template vars
         $this->setValue('merchant');
         $this->setValue('testcustomer');
@@ -207,22 +160,52 @@ class ControllerExtensionPaymentApironeMccpAdmin extends \Apirone\Payment\Contro
         $this->setValue('geo_zone_id', true);
         $this->setValue('sort_order', true);
 
-        if (!($active_networks && count($networks)
-            && $this->data['apirone_mccp_timeout'] > 0
-            && $this->data['apirone_mccp_factor'] > 0
-        )) {
-            $has_errors = true;
+        $saved_processing_fee = $this->settings->processing_fee;
+        $networks = $this->settings->networks;
+     
+        if ($this->request->server['REQUEST_METHOD'] != 'POST') {
+            return null;
         }
-        $has_errors = $has_errors || !!count($this->error);
+        $processing_fee = $this->getPostValue('apirone_mccp_processing_fee');
+        if ($processing_fee != $saved_processing_fee) {
+            $this->settings->processing_fee($processing_fee);
+        }
+        $coins = [];
 
-        return [
-            'has_errors' => $has_errors,
-            'active_networks' => $active_networks,
-        ];
+        $address_from_post = $this->getPostValue('address');
+        $visible_from_post = $this->getPostValue('visible');
+
+        foreach ($networks as $network) {
+            $abbr = $network->abbr;
+
+            $address = !empty($address_from_post) && array_key_exists($abbr, $address_from_post)
+                ? trim($address_from_post[$abbr])
+                : null;
+            $network->address($address);
+            if (!$address) {
+                continue;
+            }
+            $network->policy($processing_fee);
+
+            if (!count($network->tokens)) {
+                $coins[] = $abbr;
+                continue;
+            }
+            foreach (array_merge([$abbr], array_keys($network->tokens)) as $abbr) {
+                if (!empty($visible_from_post) && array_key_exists($abbr, $visible_from_post) && $visible_from_post[$abbr]) {
+                    $coins[] = $abbr;
+                }
+            }
+        }
+        $this->settings->coins($coins);
+
+        return $this->settings->saveNetworks();
     }
 
     /**
-     * Saves settings from post data
+     * Saves settings from post data.
+     * Fields that not passed validation are not changed, but an error is filled for them.
+     * The valid settings values are saved anyway.
      */
     protected function saveSettingsFromPostData(): void
     {
@@ -230,18 +213,32 @@ class ControllerExtensionPaymentApironeMccpAdmin extends \Apirone\Payment\Contro
         foreach (array_keys(DEFAULT_STATUS_IDS) as $apirone_status) {
             $_status_ids[$apirone_status] = intval($this->getPostValue('apirone_mccp_invoice_'.$apirone_status.'_status_id'));
         }
-        $plugin_data[SETTING_PREFIX . 'settings'] = $this->settings
+        $this->settings
             ->merchant(trim($this->getPostValue('apirone_mccp_merchant')))
             ->testcustomer(trim($this->getPostValue('apirone_mccp_testcustomer')))
-            ->timeout(intval($this->getPostValue('apirone_mccp_timeout')))
             ->processing_fee($this->getPostValue('apirone_mccp_processing_fee'))
             ->with_fee(!!$this->getPostValue('apirone_mccp_with_fee'))
-            ->factor(floatval($this->getPostValue('apirone_mccp_factor')))
             ->logo(!!$this->getPostValue('apirone_mccp_logo'))
             ->debug(!!$this->getPostValue('apirone_mccp_debug'))
-            ->status_ids($_status_ids)
-            ->toJsonString();
+            ->status_ids($_status_ids);
 
+        if (!array_key_exists('apirone_mccp_timeout', $this->error)) {
+            if ($this->data['apirone_mccp_timeout'] >= 0) {
+                $this->settings->timeout(intval($this->getPostValue('apirone_mccp_timeout')));
+            }
+            else {
+                $this->error['apirone_mccp_timeout'] = $this->language->get('error_apirone_mccp_timeout_positive');
+            }
+        }
+        if (!array_key_exists('apirone_mccp_factor', $this->error)) {
+            if ($this->data['apirone_mccp_factor'] > 0) {
+                $this->settings->factor(floatval($this->getPostValue('apirone_mccp_factor')));
+            }
+            else {
+                $this->error['apirone_mccp_factor'] = $this->language->get('error_apirone_mccp_factor');
+            }
+        }
+        $plugin_data[SETTING_PREFIX . 'settings'] = $this->settings->toJsonString();
         $plugin_data[SETTING_PREFIX . 'geo_zone_id'] = $this->getPostValue('apirone_mccp_geo_zone_id');
         $plugin_data[SETTING_PREFIX . 'status'] = $this->getPostValue('apirone_mccp_status');
         $plugin_data[SETTING_PREFIX . 'sort_order'] = $this->getPostValue('apirone_mccp_sort_order');

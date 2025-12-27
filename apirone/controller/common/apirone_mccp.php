@@ -22,7 +22,7 @@ class ControllerExtensionPaymentApironeMccpCommon extends ControllerExtensionPay
     {
         parent::__construct($registry);
 
-        Request::setUserAgent('OC/' . VERSION . ' MCCP/' . PLUGIN_VERSION);
+        Request::userAgent('OpenCart/' . VERSION . ' MCCP/' . PLUGIN_VERSION);
 
         $this->load->model(PATH_TO_RESOURCES);
         $this->model = $this->{'model_' . str_replace('/', '_', PATH_TO_RESOURCES)};
