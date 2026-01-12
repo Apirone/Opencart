@@ -39,7 +39,7 @@ class ModelExtensionPaymentApironeMccpCatalog extends ModelExtensionPaymentApiro
      */
     public function getCoinsAvailable(): ?array
     {
-        if (!$this->getSettings()) {
+        if (!$this->getSettings() || !self::$settings->coins) {
             return null;
         }
         $show_testnet = $this->showTestnet();

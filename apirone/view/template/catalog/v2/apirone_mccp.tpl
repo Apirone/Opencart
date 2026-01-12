@@ -1,13 +1,13 @@
+<link rel="stylesheet" crossorigin href="<?php echo $apirone_path_to_css; ?>coins.min.css">
 <?php if (empty($coins)) : ?>
   	<div class="pull-right">
-        <legend><?php echo $payment_details; ?></legend>
+        <legend class="apirone-mccp-details"><?php echo $payment_details; ?></legend>
     	<p><?php echo $unavailable; ?></p>
   	</div>
 <?php else: ?>
-<link rel="stylesheet" crossorigin href="<?php echo $apirone_path_to_css; ?>coins.min.css">
 <form id="mccp-form">
     <fieldset id="payment">
-        <legend><?php echo $payment_details; ?></legend>
+        <legend class="apirone-mccp-details"><?php echo $payment_details; ?></legend>
         <div class="form-group">
             <div class="col-sm-12">
                 <?php echo $pay_message; ?>

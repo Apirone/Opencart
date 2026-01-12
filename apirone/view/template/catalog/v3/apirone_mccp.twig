@@ -1,13 +1,13 @@
+<link rel="stylesheet" crossorigin href="{{ apirone_path_to_css }}coins.min.css">
 {% if coins is empty %}
   	<div class="pull-right">
-        <legend>{{ payment_details }}</legend>
+        <legend class="apirone-mccp-details">{{ payment_details }}</legend>
     	<p>{{ unavailable }}</p>
   	</div>
 {% else %}
-<link rel="stylesheet" crossorigin href="{{ apirone_path_to_css }}coins.min.css">
 <form id="mccp-form">
     <fieldset id="payment">
-        <legend>{{ payment_details }}</legend>
+        <legend class="apirone-mccp-details">{{ payment_details }}</legend>
         <div class="form-group">
             <div class="col-sm-12">
                 {{ pay_message }}
