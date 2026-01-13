@@ -296,6 +296,7 @@ class ControllerExtensionPaymentApironeMccpCatalog extends \Apirone\Payment\Cont
      */
     public function callback(): void
     {
+        $this->model->initInvoiceModel();
         Invoice::callbackHandler($this->getPaymentProcessor(), $this->getCallbackChecker());
     }
 
