@@ -101,6 +101,7 @@ License MIT
 * For currencies with tokens (USDT, USDC) in the “**Currencies**” tab there are more flexible settings to set visibility of boxes displayed for end customers. The address of the currency must be set in only one input field. Check the boxes below this input field for the main network currency or any token. If no boxes are checked for the currency, even with a filled valid address, the currency will not appear in the currency selector.
 * Default status mapping was changed. The order has the “**Complete**” status in Opencart if the invoice has “**Paid**”, “**Overpaid**”, or “**Completed**” status. Yet the mapping can be changed.
 * The currency selector now has an image for every currency. If fees are not included in the total amount, the text for a currency contains only its name. If included, the total amount in fiat (plus the fees), is added to the text.
+* The order history comments contain a hyperlink to the corresponding cryptocurrency explorer.
 
 ### Version 1.2.6 ###
 

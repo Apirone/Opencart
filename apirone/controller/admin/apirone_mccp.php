@@ -9,11 +9,6 @@ require_once((version_compare(VERSION, 4, '<')
 
 require_once(PATH_TO_LIBRARY . 'controller/apirone_mccp.php');
 
-use Apirone\SDK\Service\Utils;
-
-define('EVENT_CODE', 'order_histories_comments');
-define('ANCHOR_PATTERN', '<a href="%s" target="_blank">%s</a>');
-
 class ControllerExtensionPaymentApironeMccpAdmin extends \Apirone\Payment\Controller\ControllerExtensionPaymentApironeMccpCommon
 {
     protected array $data = [];
@@ -338,68 +333,58 @@ class ControllerExtensionPaymentApironeMccpAdmin extends \Apirone\Payment\Contro
         return $this->{'model_' . $prefix . '_event'};
     }
 
-	private function setOrderHistoryEvent(): void {
-		$model = $this->loadEventModel();
+    private const EVENTS_DEFS = [
+        [
+            'code' => 'admin_order_histories_comments',
+            'trigger_prefix' => 'admin/model/sale/order/',
+        ],
+        [
+            'code' => 'catalog_order_histories_comments',
+            'trigger_prefix' => 'catalog/model/account/order/',
+        ],
+    ];
 
-        $trigger = 'admin/model/sale/order/' . (OC_MAJOR_VERSION < 4 ? 'getOrderHistories' : 'getHistories') . '/after';
-        $action = PATH_TO_RESOURCES . (OC_MAJOR_VERSION < 4 ? '/' : '.') . 'afterGetHistories';
+	private function setOrderHistoryEvent(): void
+    {
+        $model = $this->loadEventModel();
 
-        if (OC_MAJOR_VERSION < 3 && $model->getEvent(EVENT_CODE, $trigger, $action)
-            || OC_MAJOR_VERSION >= 3 && $model->getEventByCode(EVENT_CODE)
-        ) {
-            return;
-        }
-        if (OC_MAJOR_VERSION < 4) {
-            $model->addEvent(EVENT_CODE, $trigger, $action);
-            return;
-        }
-        $model->addEvent(array(
-            'code' => EVENT_CODE,
-            'description' => 'admin model sale/order getHistories() after',
-            'trigger' => $trigger,
-            'action' => $action,
-            'status' => true,
-            'sort_order' => 1,
-        ));
+        foreach(self::EVENTS_DEFS as $event_def) {
+            $code = $event_def['code'];
+            $trigger = $event_def['trigger_prefix'] . (OC_MAJOR_VERSION < 4 ? 'getOrderHistories' : 'getHistories') . '/after';
+            $action = PATH_TO_RESOURCES . (OC_MAJOR_VERSION < 4 ? '/' : '.') . 'afterGetHistories';
+
+            if (OC_MAJOR_VERSION < 3 && $model->getEvent($code, $trigger, $action)
+                || OC_MAJOR_VERSION >= 3 && $model->getEventByCode($code)
+            ) {
+                continue;
+            }
+            if (OC_MAJOR_VERSION < 4) {
+                $model->addEvent($code, $trigger, $action);
+                continue;
+            }
+            $model->addEvent(array(
+                'code' => $code,
+                'description' => '',
+                'trigger' => $trigger,
+                'action' => $action,
+                'status' => true,
+                'sort_order' => 1,
+            ));
+    	}
 	}
 
-    private function clearOrderHistoryEvent(): void {
+    private function clearOrderHistoryEvent(): void
+    {
 		$model = $this->loadEventModel();
 
-        if (OC_MAJOR_VERSION < 3) {
-    		$model->deleteEvent(EVENT_CODE);
-            return;
-        }
-		$model->deleteEventByCode(EVENT_CODE);
-	}
+        foreach(self::EVENTS_DEFS as $event_def) {
+            $code = $event_def['code'];
 
-    /**
-     * Action for event with trigger admin/model/sale/order/getHistories/after
-     * @param array &$output order history records from getHistories() method output
-     */
-	public function afterGetHistories(string &$_route, array &$_data, array &$output): void {
-        foreach($output as &$history) {
-            $comment = json_decode($history['comment']);
-            if (!(is_object($comment) && property_exists($comment, 'abbr') && property_exists($comment, 'status'))) {
+            if (OC_MAJOR_VERSION < 3) {
+                $model->deleteEvent($code);
                 continue;
             }
-            $this->load->language(PATH_TO_RESOURCES);
-            if (property_exists($comment, 'address')) {
-                $history['comment'] = sprintf($this->language->get('order_history_address'),
-                    $comment->status,
-                    Utils::getCoin($comment->abbr)->alias,
-                    sprintf(ANCHOR_PATTERN, Utils::getAddressLink($comment->abbr, $comment->address), $comment->address)
-                );
-                continue;
-            }
-            if (property_exists($comment, 'txid')) {
-                $history['comment'] = sprintf($this->language->get('order_history_txid'),
-                    $comment->status,
-                    sprintf(ANCHOR_PATTERN, Utils::getTransactionLink($comment->abbr, $comment->txid), $comment->txid)
-                );
-                continue;
-            }
-            $history['comment'] = sprintf($this->language->get('order_history'), $comment->status);
+            $model->deleteEventByCode($code);
         }
 	}
 }
