@@ -47,6 +47,17 @@ define('DEFAULT_STATUS_IDS', [
     'expired' => 16,
 ]);
 
+define('EVENTS_DEFS', [
+    [
+        'code' => 'admin_order_histories_comments',
+        'trigger_prefix' => 'admin/model/sale/order/',
+    ],
+    [
+        'code' => 'catalog_order_histories_comments',
+        'trigger_prefix' => 'catalog/model/account/order/',
+    ],
+]);
+
 /**
  * Debug output
  * @param mixed $mixed

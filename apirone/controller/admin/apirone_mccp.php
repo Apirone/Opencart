@@ -333,22 +333,11 @@ class ControllerExtensionPaymentApironeMccpAdmin extends \Apirone\Payment\Contro
         return $this->{'model_' . $prefix . '_event'};
     }
 
-    private const EVENTS_DEFS = [
-        [
-            'code' => 'admin_order_histories_comments',
-            'trigger_prefix' => 'admin/model/sale/order/',
-        ],
-        [
-            'code' => 'catalog_order_histories_comments',
-            'trigger_prefix' => 'catalog/model/account/order/',
-        ],
-    ];
-
 	private function setOrderHistoryEvent(): void
     {
         $model = $this->loadEventModel();
 
-        foreach(self::EVENTS_DEFS as $event_def) {
+        foreach(EVENTS_DEFS as $event_def) {
             $code = $event_def['code'];
             $trigger = $event_def['trigger_prefix'] . (OC_MAJOR_VERSION < 4 ? 'getOrderHistories' : 'getHistories') . '/after';
             $action = PATH_TO_RESOURCES . (OC_MAJOR_VERSION < 4 ? '/' : '.') . 'afterGetHistories';
@@ -377,7 +366,7 @@ class ControllerExtensionPaymentApironeMccpAdmin extends \Apirone\Payment\Contro
     {
 		$model = $this->loadEventModel();
 
-        foreach(self::EVENTS_DEFS as $event_def) {
+        foreach(EVENTS_DEFS as $event_def) {
             $code = $event_def['code'];
 
             if (OC_MAJOR_VERSION < 3) {

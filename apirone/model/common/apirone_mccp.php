@@ -317,6 +317,8 @@ class ModelExtensionPaymentApironeMccpCommon extends ModelExtensionPaymentCommon
 
         $this->update_invoice_table_1__2();
 
+        $this->update_events_1__2();
+
         return $version;
     }
 
@@ -342,6 +344,35 @@ class ModelExtensionPaymentApironeMccpCommon extends ModelExtensionPaymentCommon
         }
         if (!$this->db->query("ALTER TABLE ".DB_DATABASE.".".$table_name_new." ADD `meta` TEXT;")) {
             $this->logError('Can not add column to '.$table_name_new.' table in DB schema '.DB_DATABASE);
+        }
+    }
+
+    /**
+     * Updates events DB table
+     */
+    private function update_events_1__2(): void
+    {
+        $table_name = DB_PREFIX.'event';
+        $sort_order = OC_MAJOR_VERSION < 4 ? 0 : 1;
+
+        foreach(EVENTS_DEFS as $event_def) {
+            $code = $event_def['code'];
+            $trigger = $event_def['trigger_prefix'] . (OC_MAJOR_VERSION < 4 ? 'getOrderHistories' : 'getHistories') . '/after';
+            $action = PATH_TO_RESOURCES . (OC_MAJOR_VERSION < 4 ? '/' : '.') . 'afterGetHistories';
+
+            $query = "INSERT INTO `" . $table_name . "` SET `code` = '" . $this->db->escape($code) . "', `trigger` = '" . $this->db->escape($trigger) . "', `action` = '" . $this->db->escape($action) . "', `status` = '1'";
+            if (OC_MAJOR_VERSION < 3) {
+                $query .= ", `date_added` = now()";
+            }
+            else {
+                $query .= ", `sort_order` = '" . $sort_order . "'";
+            }
+            if (OC_MAJOR_VERSION > 3) {
+                $query .= ", `description` = ''";
+            }
+            if (!$this->db->query($query)) {
+                $this->logError('Can not add events definitions to '.$table_name.' table in DB schema '.DB_DATABASE);
+            }
         }
     }
 
