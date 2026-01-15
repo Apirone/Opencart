@@ -1,0 +1,70 @@
+<link rel="stylesheet" crossorigin href="{{ apirone_path_to_css }}coins.min.css">
+{% if coins is empty %}
+  	<div class="float-end">
+        <legend class="apirone-mccp-details">{{ payment_details }}</legend>
+    	<p>{{ unavailable }}</p>
+  	</div>
+{% else %}
+<form id="mccp-form">
+    <fieldset id="payment">
+        <legend class="apirone-mccp-details">{{ payment_details }}</legend>
+        <div class="row mb-3">
+            <div class="col-sm-12">
+                {{ pay_message }}
+                <div id="apirone_mccp_dropdown" class="dropdown">
+                    <button type="button" onclick="mccpDropdownToggle(event)"></button>
+                    <div class="dropdown-menu"><div class="dropdown-inner">
+                        <ul class="list-unstyled">
+                            {% for coin in coins %}
+                            <li><button type="button" onclick="mccpDropdownSelect(event, '{{ coin.abbr }}')">
+                                <img src="{{ apirone_path_to_images }}currencies/{{ coin.token ?? coin.network }}.svg" width="50" height="30" class="apirone-mccp-img">
+                                {% if coin.token %}
+                                    <img src="{{ apirone_path_to_images }}currencies/{{ coin.network }}.svg" width="20" class="apirone-mccp-img-small">
+                                {% endif %}
+                                <span class="coin-alias">{{ coin.alias }}</span>
+                                {% if coin.with_fee %}
+                                    <span class="with-fee">{{ coin.with_fee }}</span>
+                                {% endif %}
+                            </button></li>
+                            {% endfor %}
+                        </ul>
+                    </div></div>
+                </div>
+            </div>
+        </div>
+    </fieldset>
+    <div class="buttons">
+        <div class="float-end">
+            <button type="button" id="button-confirm" onclick="mccpConfirm(event)" class="btn btn-primary">{{ button_confirm }}</button>
+        </div>
+    </div>
+</form>
+<script type="text/javascript">
+    window.mccp_currency = '{{ coin_first }}';
+    $('#apirone_mccp_dropdown>button').html($('#apirone_mccp_dropdown ul li:first-child button').html());
+
+    function mccpDropdownToggle(event) {
+        event.preventDefault();
+
+        $('#apirone_mccp_dropdown>.dropdown-menu').toggleClass('show');
+    }
+    function mccpDropdownSelect(event, currency) {
+        event.preventDefault();
+
+        $('#apirone_mccp_dropdown>.dropdown-menu').removeClass('show');
+
+        if (button = event.target.closest('button')) {
+            $('#apirone_mccp_dropdown>button').html(button.innerHTML);
+            window.mccp_currency = currency;
+        }
+    }
+    function mccpConfirm(event) {
+        event.preventDefault();
+
+        currencyVal = window.mccp_currency;
+        if (!currencyVal) return;
+
+        location = '{{ url_redirect }}&currency=' + currencyVal + '&key={{ order_key }}&order={{ order_id }}';
+    }
+</script>
+{% endif %}

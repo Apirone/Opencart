@@ -1,0 +1,89 @@
+<?php
+// Heading
+$_['heading_title'] = 'Apirone Crypto Payments';
+$_['heading_testnet_hint'] = 'How to use testnet';
+$_['heading_plugin_info'] = 'Plugin info';
+
+// Text
+$_['text_extension'] = 'Extensions';
+$_['text_success'] = 'Success: You have modified Apirone account details!';
+$_['text_edit'] = 'Edit Apirone Crypto Payments';
+
+$PATH_TO_IMAGES = version_compare(VERSION, 4, '<')
+    ? 'view/image/payment/apirone/'
+    : '../extension/apirone/admin/view/image/payment/';
+$_['text_apirone_mccp'] = '<a href="https://apirone.com/" target="_blank"><img src="'. $PATH_TO_IMAGES .'logo-primary.svg" alt="' . $_['heading_title'] . '" title="' . $_['heading_title'] . '" width="128"/></a>';
+
+$_['text_test_currency'] = 'WARNING: Test currency';
+$_['text_test_currency_tooltip'] = 'Use this currency for testing purposes only! It is displayed on the front end for `Test currency customer`.';
+$_['text_with_fee_tooltip'] = 'Adds service and network fees to total. Final amount per coin is shown in selector.';
+$_['text_factor_tooltip'] = 'If you want to add/subtract percent to/from the payment amount, use the following  price adjustment factor multiplied by the amount. For example: 100% * 0.99 = 99%, 100% * 1.01 = 101%';
+$_['text_logo_tooltip'] = 'Show the Apirone logo on the invoice page.';
+$_['text_test_currency_customer'] = 'Enter an email of the registered customer to whom the test currencies will be shown.';
+$_['text_missing'] = 'Missing status';
+$_['text_plugin_version'] = 'Plugin version';
+$_['text_php_version'] = 'PHP version';
+$_['text_apirone_account'] = 'Apirone account';
+$_['text_processing_fee_fixed'] = 'Fixed';
+$_['text_processing_fee_percentage'] = 'Percentage';
+$_['text_oc_version'] = 'OpenCart version';
+$_['text_testnet_hint'] = "Please do not spend real crypto if you want to test the plugin. Testnet is free and such coins will not be stuck in case the network fee will be too high. Free faucets to get testnet coins are as follows:";
+$_['text_read_more'] = "Read more";
+$_['text_apirone_support'] = "Apirone support";
+$_['text_apirone_survey'] = 'Please <a href="https://www.smartsurvey.co.uk/s/YAWKC7/" target="_blank">fill-up</a> our survey to improve the Opencart plugin. The results will help us shape a road map for the future.';
+$_['text_account_not_exist'] = "Not exist";
+
+// Tabs
+$_['tab_settings'] = 'Settings';
+$_['tab_currencies'] = 'Currencies';
+$_['tab_statuses'] = 'Statuses';
+$_['tab_info'] = 'Tips & Info';
+
+// Entry
+// Common settings
+$_['entry_merchant'] = 'Merchant Name';
+$_['entry_testcustomer'] = 'Test currency customer';
+$_['entry_testcustomer_placeholder'] = 'example.customer@example.com';
+$_['entry_timeout'] = 'Payment timeout';
+$_['entry_processing_fee'] = 'Processing fee plan';
+$_['entry_with_fee'] = 'Include fees';
+$_['entry_factor'] = 'Payment adjustment factor';
+$_['entry_logo'] = 'Apirone logo';
+$_['entry_debug'] = 'Debug mode';
+
+$_['entry_geo_zone'] = 'Geo Zone';
+$_['entry_status'] = 'Status';
+$_['entry_sort_order'] = 'Sort Order';
+
+// Currencies
+$_['entry_network_name'] = '%s Blockchain';
+$_['currency_activate_tooltip'] = 'Enter valid address to activate %s currency';
+$_['currency_deactivate_tooltip'] = 'Remove address to deactivate %s currency';
+$_['token_tooltip'] = 'Show/hide %s from currency selector';
+
+// Status ids
+$_['entry_invoice_created'] = 'Invoice Created';
+$_['entry_invoice_paid'] = 'Invoice Paid';
+$_['entry_invoice_partpaid'] = 'Invoice Partpaid';
+$_['entry_invoice_overpaid'] = 'Invoice Overpaid';
+$_['entry_invoice_completed'] = 'Invoice Completed';
+$_['entry_invoice_expired'] = 'Invoice Expired';
+
+// Order history comments
+$_['order_history'] = 'Invoice %s';
+$_['order_history_address'] = $_['order_history'] . ' in %s. Payment address: %s';
+$_['order_history_txid'] = $_['order_history'] . '. Transaction hash: %s';
+
+// Warning
+// Error
+$_['error_update'] = 'Can\'t update plugin DB.';
+$_['error_service_not_available'] = 'Can\'t get plugin settings. Service unavailable or DB is corrupted. Please, try later.';
+$_['error_warning'] = 'Warning: Please check the form carefully for errors!';
+$_['error_currency_save'] = '%s has error: %s';
+$_['error_cant_get_currencies'] = 'Can\'t get list of currencies. Service unavailable. Please, try later.';
+$_['error_empty_currencies'] = 'At least one of the addresses is required.';
+$_['error_permission'] = 'Warning: You do not have permission to modify payment Apirone!';
+$_['error_apirone_mccp_timeout'] = 'The required field. Please, specify value in seconds.';
+$_['error_apirone_mccp_timeout_positive'] = 'Value must be positive. Please, specify value in seconds.';
+$_['error_apirone_mccp_factor'] = 'Value must be positive. See tooltip for details.';
+$_['error_account_not_exist'] = "The account does not exist. Please reinstall the plugin. If the account cannot be created again, contact our support team.";

@@ -1,0 +1,126 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+        "This file is @generated automatically"
+    ],
+    "content-hash": "e2383f4cd35527b6d95fd154a8cd06a4",
+    "packages": [
+        {
+            "name": "apirone/apirone-api-php",
+            "version": "2.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Apirone/apirone-api-php.git",
+                "reference": "af10c08f3993876bd7b47d325e5dfd5d0af6f183"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Apirone/apirone-api-php/zipball/af10c08f3993876bd7b47d325e5dfd5d0af6f183",
+                "reference": "af10c08f3993876bd7b47d325e5dfd5d0af6f183",
+                "shasum": ""
+            },
+            "require": {
+                "ext-curl": "*",
+                "ext-json": "*",
+                "php": ">=7.4"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Apirone\\API\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "alex",
+                    "email": "alex.zaytseff@gmail.com"
+                }
+            ],
+            "description": "Apirone API Client",
+            "homepage": "https://github.com/Apirone/apirone-api-php",
+            "keywords": [
+                "Apirone",
+                "DOGE",
+                "api",
+                "bch",
+                "bitcoin",
+                "btc",
+                "crypto",
+                "cryptocurrency",
+                "ltc"
+            ],
+            "support": {
+                "issues": "https://github.com/Apirone/apirone-api-php/issues",
+                "source": "https://github.com/Apirone/apirone-api-php/tree/2.0.0"
+            },
+            "time": "2025-12-09T13:19:16+00:00"
+        },
+        {
+            "name": "apirone/apirone-sdk-php",
+            "version": "2.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Apirone/apirone-sdk-php.git",
+                "reference": "c42f2b26ebc232d701cc434c8608c608ebaed132"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Apirone/apirone-sdk-php/zipball/c42f2b26ebc232d701cc434c8608c608ebaed132",
+                "reference": "c42f2b26ebc232d701cc434c8608c608ebaed132",
+                "shasum": ""
+            },
+            "require": {
+                "apirone/apirone-api-php": "^2.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Apirone\\SDK\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "alex",
+                    "email": "alex.zaytseff@gmail.com"
+                }
+            ],
+            "description": "Apirone SDK",
+            "homepage": "https://github.com/Apirone/apirone-sdk-php",
+            "keywords": [
+                "Apirone",
+                "DOGE",
+                "api",
+                "bch",
+                "bitcoin",
+                "btc",
+                "crypto",
+                "cryptocurrency",
+                "ltc",
+                "sdk"
+            ],
+            "support": {
+                "issues": "https://github.com/Apirone/apirone-sdk-php/issues",
+                "source": "https://github.com/Apirone/apirone-sdk-php/tree/2.0.1"
+            },
+            "time": "2025-12-27T12:53:47+00:00"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "RC",
+    "stability-flags": {},
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": {},
+    "platform-dev": {},
+    "plugin-api-version": "2.6.0"
+}
