@@ -12,6 +12,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Install composer dependencies
+        run: composer update --no-dev --prefer-dist
+
       - name: Build artifacts
         run: make
 
