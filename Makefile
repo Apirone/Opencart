@@ -1,4 +1,4 @@
-TAG := $(shell test -d .git && git tag --sort=taggerdate | tail -1 || echo dev)
+TAG := $(shell test -d .git && git tag --points-at HEAD)
 PWD := $(shell pwd)
 
 all: v2 v3 v4
