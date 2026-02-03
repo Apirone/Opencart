@@ -4,7 +4,7 @@ VER=$2
 TAG=$3
 SRC_PATH=${ROOT_PATH}
 BUILD_PATH="${ROOT_PATH}/build"
-ARC_PATH=${ROOT_PATH}/apirone-crypto-payments.oc${VER}.${TAG}.ocmod.zip
+ARC_PATH=${ROOT_PATH}/apirone-crypto-payments.oc${VER}.${TAG:-dev}.ocmod.zip
 
 rm -rf ${BUILD_PATH}
 
