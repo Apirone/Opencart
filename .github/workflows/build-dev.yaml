@@ -40,7 +40,7 @@ jobs:
             })
 
       - name: Upload OC2 asset
-        run: gh release upload dev apirone-crypto-payments.oc2.dev.ocmod.zip#"apirone-crypto-payments.oc2.dev.ocmod.zip"
+        run: gh release upload tags/dev apirone-crypto-payments.oc2.dev.ocmod.zip#"apirone-crypto-payments.oc2.dev.ocmod.zip"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
