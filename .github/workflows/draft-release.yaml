@@ -27,17 +27,17 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # - name: Clean existing assets
-      #   shell: bash
-      #   run: |
-      #     curl -fsSL https://github.com/github/hub/raw/master/script/get | bash -s 2.14.1
-      #     assets=`bin/hub api -t repos/${{ github.repository }}/releases/${{ steps.draft_release.outputs.id }}/assets | awk '/\].url/ { print $2 }'`
-      #     for asset in $assets
-      #     do
-      #       bin/hub api -X DELETE $asset
-      #     done
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Clean existing assets
+        shell: bash
+        run: |
+          curl -fsSL https://github.com/github/hub/raw/master/script/get | bash -s 2.14.1
+          assets=`bin/hub api -t repos/${{ github.repository }}/releases/${{ steps.draft_release.outputs.id }}/assets | awk '/\].url/ { print $2 }'`
+          for asset in $assets
+          do
+            bin/hub api -X DELETE $asset
+          done
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Release OC2
         uses: actions/upload-release-asset@v1
