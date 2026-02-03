@@ -38,6 +38,12 @@ jobs:
                 sha: context.sha
               });
             })
+
+      - name: Upload OC2 asset
+        run: gh release upload ${{ github.ref_name }} apirone-crypto-payments.oc2.${{ github.ref_name }}.ocmod.zip#"apirone-crypto-payments.oc2.${{ github.ref_name }}.ocmod.zip"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}      
+
       # - name: Clean existing assets
       #   shell: bash
       #   run: |
