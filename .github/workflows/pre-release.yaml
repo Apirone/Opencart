@@ -1,0 +1,44 @@
+name: 'Pre-release build'
+on:
+  workflow_dispatch:
+    inputs:
+      branches:
+        description: "Development branch"
+        required: true
+        default: 'dev'
+  push:
+    branches:
+      - 'dev'
+
+jobs:
+  build_dev:
+    runs-on: ubuntu-latest
+    steps:
+    
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install composer dependencies
+        run: composer update --no-dev --prefer-dist
+
+      - name: Build artifacts
+        run: make
+
+      - name: Update pre-release
+        uses: andelf/nightly-release@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: pre-release
+          name: 'pre-release'
+          prerelease: true
+          body: 'This is a development build. Do not use in production.'
+          files: |
+            ./*.zip
+
+      - name: Send notification
+        if: ${{ always() }}
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          description: 'OpenCart pre-release created.'
