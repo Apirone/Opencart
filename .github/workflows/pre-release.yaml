@@ -1,4 +1,4 @@
-name: 'Build dev'
+name: 'Pre-release build'
 on:
   workflow_dispatch:
     inputs:
