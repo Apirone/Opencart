@@ -1,6 +1,11 @@
-name: 'Development build'
+name: 'Build dev'
 on:
   workflow_dispatch:
+    # inputs:
+    #   branches:
+    #     description: "Development branch"
+    #     required: true
+    #     default: 'dev'
   push:
     branches:
       - 'dev'
@@ -19,30 +24,42 @@ jobs:
       - name: Build artifacts
         run: make
 
-      - name: Development tag updater
-        id: tag_updater
-        uses: actions/github-script@v5
-        with:
-          script: |
-            github.rest.git.createRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: 'refs/tags/dev',
-              sha: context.sha
-            }).catch(err => {
-              if (err.status !== 422) throw err;
-              github.rest.git.updateRef({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                ref: 'tags/dev',
-                sha: context.sha
-              });
-            })
-
-      - name: Upload OC2 asset
-        run: gh release upload tags/dev apirone-crypto-payments.oc2.dev.ocmod.zip#"apirone-crypto-payments.oc2.dev.ocmod.zip"
+      - name: Update development Release
+        uses: andelf/nightly-release@main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: dev
+          name: 'Development build'
+          prerelease: true
+          body: 'TODO: Add release notes'
+          files: |
+            ./*.zip
+
+      # - name: Development tag updater
+      #   id: tag_updater
+      #   uses: actions/github-script@v5
+      #   with:
+      #     script: |
+      #       github.rest.git.createRef({
+      #         owner: context.repo.owner,
+      #         repo: context.repo.repo,
+      #         ref: 'refs/tags/dev',
+      #         sha: context.sha
+      #       }).catch(err => {
+      #         if (err.status !== 422) throw err;
+      #         github.rest.git.updateRef({
+      #           owner: context.repo.owner,
+      #           repo: context.repo.repo,
+      #           ref: 'tags/dev',
+      #           sha: context.sha
+      #         });
+      #       })
+
+      # - name: Upload OC2 asset
+      #   run: gh release upload tags/dev apirone-crypto-payments.oc2.dev.ocmod.zip#"apirone-crypto-payments.oc2.dev.ocmod.zip"
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # - name: Clean existing assets
       #   shell: bash
