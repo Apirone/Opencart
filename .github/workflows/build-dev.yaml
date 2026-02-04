@@ -24,88 +24,21 @@ jobs:
       - name: Build artifacts
         run: make
 
-      - name: Update development Release
+      - name: Update pre-release
         uses: andelf/nightly-release@main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: rft
-          name: 'Development build'
+          tag_name: pre-release
+          name: 'pre-release'
           prerelease: true
-          body: 'TODO: Add release notes'
+          body: 'This is a development build. Do not use in production.'
           files: |
             ./*.zip
 
-      # - name: Development tag updater
-      #   id: tag_updater
-      #   uses: actions/github-script@v5
-      #   with:
-      #     script: |
-      #       github.rest.git.createRef({
-      #         owner: context.repo.owner,
-      #         repo: context.repo.repo,
-      #         ref: 'refs/tags/dev',
-      #         sha: context.sha
-      #       }).catch(err => {
-      #         if (err.status !== 422) throw err;
-      #         github.rest.git.updateRef({
-      #           owner: context.repo.owner,
-      #           repo: context.repo.repo,
-      #           ref: 'tags/dev',
-      #           sha: context.sha
-      #         });
-      #       })
-
-      # - name: Upload OC2 asset
-      #   run: gh release upload tags/dev apirone-crypto-payments.oc2.dev.ocmod.zip#"apirone-crypto-payments.oc2.dev.ocmod.zip"
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # - name: Clean existing assets
-      #   shell: bash
-      #   run: |
-      #     curl -fsSL https://github.com/github/hub/raw/master/script/get | bash -s 2.14.1
-      #     assets=`bin/hub api -t repos/${{ github.repository }}/releases/${{ steps.build_dev.outputs.id }}/assets | awk '/\].url/ { print $2 }'`
-      #     for asset in $assets
-      #     do
-      #       bin/hub api -X DELETE $asset
-      #     done
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # - name: Release OC2
-      #   uses: actions/upload-release-asset@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     upload_url: ${{ steps.build_dev.outputs.upload_url }}
-      #     asset_path: apirone-crypto-payments.oc2.${{ github.ref_name }}.ocmod.zip
-      #     asset_name: apirone-crypto-payments.oc2.${{ github.ref_name }}.ocmod.zip
-      #     asset_content_type: application/zip
-
-      # - name: Release OC3
-      #   uses: actions/upload-release-asset@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     upload_url: ${{ steps.build_dev.outputs.upload_url }}
-      #     asset_path: apirone-crypto-payments.oc3.${{ github.ref_name }}.ocmod.zip
-      #     asset_name: apirone-crypto-payments.oc3.${{ github.ref_name }}.ocmod.zip
-      #     asset_content_type: application/zip
-
-      # - name: Release OC4
-      #   uses: actions/upload-release-asset@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     upload_url: ${{ steps.build_dev.outputs.upload_url }}
-      #     asset_path: apirone-crypto-payments.oc4.${{ github.ref_name }}.ocmod.zip
-      #     asset_name: apirone-crypto-payments.oc4.${{ github.ref_name }}.ocmod.zip
-      #     asset_content_type: application/zip
-
-      # - name: Send notification
-      #   if: ${{ always() }}
-      #   uses: sarisia/actions-status-discord@v1
-      #   with:
-      #     webhook: ${{ secrets.discord_webhook_url }}
-      #     description: 'Opencart plugin ${{  github.ref_name }} draft released now.'
+      - name: Send notification
+        if: ${{ always() }}
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          description: 'OpenCart pre-release created.'
