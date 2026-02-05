@@ -13,8 +13,8 @@ on:
 jobs:
   build_dev:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+    # permissions:
+    #   contents: write
     steps:
     
       - name: Checkout code
