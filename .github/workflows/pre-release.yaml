@@ -19,7 +19,7 @@ jobs:
       - name: Build pre-release artifacts
         run: |
           echo "VERSION=dev.${GITHUB_SHA:0:7}" >> $GITHUB_ENV
-          make TAG="${VERSION}"
+          make TAG="${{ env.VERSION }}"
 
       - name: Update pre-release
         uses: andelf/nightly-release@main
