@@ -1,11 +1,6 @@
 name: 'Pre-release build'
 on:
   workflow_dispatch:
-    inputs:
-      branches:
-        description: "Development branch"
-        required: true
-        default: 'dev'
   push:
     branches:
       - 'dev'
@@ -14,15 +9,17 @@ jobs:
   build_dev:
     runs-on: ubuntu-latest
     steps:
-    
+
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Install composer dependencies
         run: composer update --no-dev --prefer-dist
 
-      - name: Build artifacts
-        run: make
+      - name: Build pre-release artifacts
+        run: |
+          echo "VERSION=dev.${GITHUB_SHA:0:7}" >> $GITHUB_ENV
+          make TAG="${VERSION}"
 
       - name: Update pre-release
         uses: andelf/nightly-release@main
@@ -36,9 +33,17 @@ jobs:
           files: |
             ./*.zip
 
-      - name: Send notification
-        if: ${{ always() }}
-        uses: sarisia/actions-status-discord@v1
+      - name: Examples dev-build dispatch
+        uses: peter-evans/repository-dispatch@v4
         with:
-          webhook: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          description: 'OpenCart pre-release created.'
+          token: ${{ secrets.REPOSITORY_DISPATCH_TOKEN }}
+          repository: Apirone/examples-site
+          event-type: pre-release
+          client-payload: '{"tag": "pre-release", "version": "${{ env.VERSION }}"}'
+
+      # - name: Send notification
+      #   if: ${{ always() }}
+      #   uses: sarisia/actions-status-discord@v1
+      #   with:
+      #     webhook: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      #     description: 'OpenCart ${{ env.VERSION }} created.'
