@@ -16,9 +16,12 @@ jobs:
       - name: Install composer dependencies
         run: composer update --no-dev --prefer-dist
 
-      - name: Build pre-release artifacts
+      - name: Get file version
         run: |
           echo "VERSION=dev.${GITHUB_SHA:0:7}" >> $GITHUB_ENV
+
+      - name: Build pre-release artifacts
+        run: |
           make TAG="${{ env.VERSION }}"
 
       - name: Update pre-release
