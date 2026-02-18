@@ -18,7 +18,7 @@ jobs:
 
       - name: Get file version
         run: |
-          echo "VERSION=dev.${GITHUB_SHA:0:7}" >> $GITHUB_ENV
+          echo "VERSION=${GITHUB_SHA:0:7}" >> $GITHUB_ENV
 
       - name: Build pre-release artifacts
         run: |
