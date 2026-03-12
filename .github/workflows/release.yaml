@@ -17,7 +17,7 @@ jobs:
         with:
           token: ${{ secrets.REPOSITORY_DISPATCH_TOKEN }}
           repository: Apirone/examples-site
-          event-type: release
+          event-type: deploy-opencart
           client-payload: '{"tag": "${{ github.ref_name }}", "version": "${{ github.ref_name }}"}'
 
       # - name: Send notification
