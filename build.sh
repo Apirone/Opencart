@@ -1,7 +1,12 @@
 #!/bin/bash
-ROOT_PATH=$1
+ROOT_PATH=$([[ -n "$1" ]] && echo "$1" || echo $(pwd))
 VER=$2
-TAG=$3
+
+TAG=$([[ -d .git && -n $(git tag --points-at HEAD) ]] && echo $(git tag --points-at HEAD) || echo $(git rev-parse --short HEAD ))
+if [[ -n "$3" ]]; then
+  TAG=$3
+fi
+
 SRC_PATH=${ROOT_PATH}
 BUILD_PATH="${ROOT_PATH}/build"
 ARC_PATH=${ROOT_PATH}/apirone-crypto-payments.oc${VER}.${TAG:-dev}.ocmod.zip
