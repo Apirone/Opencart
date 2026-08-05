@@ -1,6 +1,6 @@
 ### Version 2.1.0
-* The SDK updated to 2.1.1
 * Support for GRAM coin
+* The SDK updated to 2.1.2
 
 ### Version 2.0.0 ###
 * The plugin source code for all Opencart versions is a single, non-repeating code base.
