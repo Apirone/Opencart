@@ -224,6 +224,9 @@ class ModelExtensionPaymentApironeMccpCommon extends ModelExtensionPaymentCommon
         if ($version == '1.2.6') {
             $version = $this->upd_1_2_6__2_0_0();
         }
+        if ($version == '2.0.0') {
+            $version = $this->upd_version('2.1.0');
+        }
         return $updated;
     }
 

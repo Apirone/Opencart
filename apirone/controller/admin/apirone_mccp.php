@@ -9,6 +9,8 @@ require_once((version_compare(VERSION, 4, '<')
 
 require_once(PATH_TO_LIBRARY . 'controller/apirone_mccp.php');
 
+use Apirone\SDK\Service\Utils;
+
 class ControllerExtensionPaymentApironeMccpAdmin extends \Apirone\Payment\Controller\ControllerExtensionPaymentApironeMccpCommon
 {
     protected array $data = [];
@@ -43,13 +45,22 @@ class ControllerExtensionPaymentApironeMccpAdmin extends \Apirone\Payment\Contro
      * Each result array item is DTO with icon, name, tooltip, address and tokens array.
      * Each token array item is DTO with icon, visibility state and tooltip.
      */
-    protected function getNetworksViewModel(): array
+    protected function getNetworksViewModel()
     {
+        try {
+            $networks = $this->settings->networks;
+        }
+        catch (\Exception $e) {
+            return $e->getMessage();
+        }
         $coins = $this->settings->coins;
 
-        foreach ($this->settings->networks as $network) {
+        $TESTNET_WARNING = $this->language->get('text_test_currency_tooltip');
+
+        foreach ($networks as $network) {
+            $abbr = $network->abbr;
             $network_abbr = $network->network;
-            $name = $network->name;
+            $name = Utils::getChain($network->name);
             $address = $network->address;
             $testnet = $network->isTestnet();
             $tokens = $network->tokens;
@@ -65,19 +76,19 @@ class ControllerExtensionPaymentApironeMccpAdmin extends \Apirone\Payment\Contro
             $network_dto->error = $network->error;
 
             if ($testnet) {
-                $network_dto->test_tooltip = $this->language->get('text_test_currency_tooltip');
+                $network_dto->test_tooltip = $TESTNET_WARNING;
             }
             if (!$has_tokens) {
                 continue;
             }
             $tokens_dto = [];
 
-            $tokens_dto[$network_abbr] = $token_dto = new \stdClass();
+            $tokens_dto[$abbr] = $token_dto = new \stdClass();
 
-            $token_dto->checkbox_id = 'state_'.$network_abbr;
-            $token_dto->icon = $network_abbr;
-            $token_dto->name = $alias = strtoupper($name);
-            $token_dto->state = $address && in_array($network_abbr, $coins);
+            $token_dto->checkbox_id = 'state_'.$abbr;
+            $token_dto->icon = $abbr;
+            $token_dto->name = $alias = strtoupper($network->name);
+            $token_dto->state = $address && is_array($coins) && in_array($abbr, $coins);
             $token_dto->tooltip = sprintf($this->language->get('token_tooltip'), $alias);
 
             foreach ($tokens as $abbr => $token) {
@@ -170,11 +181,9 @@ class ControllerExtensionPaymentApironeMccpAdmin extends \Apirone\Payment\Contro
         $address_from_post = $this->getPostValue('address');
         $visible_from_post = $this->getPostValue('visible');
 
-        foreach ($networks as $network) {
-            $abbr = $network->abbr;
-
-            $address = !empty($address_from_post) && array_key_exists($abbr, $address_from_post)
-                ? trim($address_from_post[$abbr])
+        foreach ($networks as $network_abbr => $network) {
+            $address = !empty($address_from_post) && array_key_exists($network_abbr, $address_from_post)
+                ? trim($address_from_post[$network_abbr])
                 : null;
             $network->address($address);
             if (!$address) {
@@ -182,6 +191,7 @@ class ControllerExtensionPaymentApironeMccpAdmin extends \Apirone\Payment\Contro
             }
             $network->policy($processing_fee);
 
+            $abbr = $network->abbr;
             if (!count($network->tokens)) {
                 $coins[] = $abbr;
                 continue;
@@ -247,7 +257,18 @@ class ControllerExtensionPaymentApironeMccpAdmin extends \Apirone\Payment\Contro
      */
     protected function setPageData(): void
     {
-        $this->data['networks'] = $this->getNetworksViewModel();
+        $networksViewModel = $this->getNetworksViewModel();
+        if (empty($networksViewModel)) {
+            $this->data['error'] = $this->language->get('error_cant_get_currencies_service_unavailable');
+            $this->setCommonPageData();
+            return;
+        }
+        if (!is_array($networksViewModel)) {
+            $this->data['error'] = sprintf($this->language->get('error_cant_get_currencies'), $networksViewModel);
+            $this->setCommonPageData();
+            return;
+        }
+        $this->data['networks'] = $networksViewModel;
 
         $this->data['apirone_mccp_invoice_status_ids'] = (array)$this->settings->status_ids;
 
@@ -321,9 +342,10 @@ class ControllerExtensionPaymentApironeMccpAdmin extends \Apirone\Payment\Contro
         $this->data['cancel'] = $extensions_url;
     }
 
-    protected function setErrorPageData($error_message_key): void
+    protected function setErrorPageData($error_message_key, $arg = null): void
     {
-        $this->error['warning'] = $this->data['error'] = $this->language->get($error_message_key);
+        $error_message_pattern = $this->language->get($error_message_key);
+        $this->error['warning'] = $this->data['error'] = $arg ? sprintf($error_message_pattern, $arg) : $error_message_pattern;
         $this->setCommonPageData();
     }
 

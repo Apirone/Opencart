@@ -30,12 +30,12 @@ class ControllerExtensionPaymentApironeMccp extends ControllerExtensionPaymentAp
 
         try {
             $networks = $this->settings->networks;
-        } catch (\Throwable $ignore) {
-            $this->setErrorPageData('error_cant_get_currencies');
+        } catch (\Exception $e) {
+            $this->setErrorPageData('error_cant_get_currencies', $e->getMessage());
             return;
         }
         if (!count($networks)) {
-            $this->setErrorPageData('error_cant_get_currencies');
+            $this->setErrorPageData('error_cant_get_currencies_service_unavailable');
             return;
         }
         $networks_errors = $this->checkAndSetValues();
