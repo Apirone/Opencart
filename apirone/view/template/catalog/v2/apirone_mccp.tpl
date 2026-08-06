@@ -17,7 +17,7 @@
                         <ul class="list-unstyled">
                             <?php foreach($coins as $coin) : ?>
                             <li><button type="button" onclick="mccpDropdownSelect(event, '<?php echo $coin->abbr; ?>')">
-                                <img src="<?php echo $apirone_path_to_images; ?>currencies/<?php echo $coin->token ?? $coin->network; ?>.svg" width="50" height="30" class="apirone-mccp-img">
+                                <img src="<?php echo $apirone_path_to_images; ?>currencies/<?php echo $coin->token ?? $coin->abbr; ?>.svg" width="50" height="30" class="apirone-mccp-img">
                                 <?php if ($coin->token) : ?>
                                     <img src="<?php echo $apirone_path_to_images; ?>currencies/<?php echo $coin->network; ?>.svg" width="20" class="apirone-mccp-img-small">
                                 <?php endif; ?>

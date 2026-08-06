@@ -32,12 +32,12 @@ class ApironeMccp extends ControllerExtensionPaymentApironeMccpAdmin
 
         try {
             $networks = $this->settings->networks;
-        } catch (\Throwable $ignore) {
-            $this->errorResponse('error_cant_get_currencies');
+        } catch (\Exception $e) {
+            $this->errorResponse('error_cant_get_currencies', $e->getMessage());
             return;
         }
         if (!count($networks)) {
-            $this->errorResponse('error_cant_get_currencies');
+            $this->errorResponse('error_cant_get_currencies_service_unavailable');
             return;
         }
         $networks_errors = $this->checkAndSetValues();
@@ -79,18 +79,19 @@ class ApironeMccp extends ControllerExtensionPaymentApironeMccpAdmin
         $this->response->setOutput(json_encode($data));
     }
 
-    protected function errorPostResponse($error_message_key): void
+    protected function errorPostResponse($error_message_key, $arg = null): void
     {
-        $post_response['error']['warning'] = $this->language->get($error_message_key);
+        $error_message_pattern = $this->language->get($error_message_key);
+        $post_response['error']['warning'] = $arg ? sprintf($error_message_pattern, $arg) : $error_message_pattern;
         $this->postResponse($post_response);
     }
 
-    protected function errorResponse($error_message_key): void
+    protected function errorResponse($error_message_key, $arg = null): void
     {
         if ($this->request->server['REQUEST_METHOD'] == 'POST') {
-            $this->errorPostResponse($error_message_key);
+            $this->errorPostResponse($error_message_key, $arg);
             return;
         }
-        $this->setErrorPageData($error_message_key);
+        $this->setErrorPageData($error_message_key, $arg);
     }
 }
