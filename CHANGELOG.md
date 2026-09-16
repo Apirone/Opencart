@@ -1,3 +1,6 @@
+### Version 2.2.0
+* The SDK updated to 2.2.0 - CRITICAL SECURITY UPDATE
+
 ### Version 2.1.0
 * Support for GRAM coin
 * The SDK updated to 2.1.2
