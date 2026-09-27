@@ -20,6 +20,33 @@ use Apirone\SDK\Service\Utils;
 class ControllerExtensionPaymentApironeMccpCatalog extends \Apirone\Payment\Controller\ControllerExtensionPaymentApironeMccpCommon
 {
     /**
+     * @param string $key the key in the query param from request URL
+     * @return string the string value of the query param with the given key or empty string
+     */
+    protected function getStringQueryParamOrEmpty(string $key)
+    {
+        $params = $this->request->get;
+        if (empty($params) || !array_key_exists($key, $params)) {
+            return '';
+        }
+        return $params[$key] ?? '';
+    }
+
+    /**
+     * @param string $key the key in the query param from request URL
+     * @return string the integer value of the query param with the given key or zero
+     */
+    protected function getIntegerQueryParamOrZero(string $key)
+    {
+        $params = $this->request->get;
+        if (empty($params) || !array_key_exists($key, $params)) {
+            return 0;
+        }
+        $value = $params[$key];
+        return $value ? (int) $value : 0;
+    }
+
+    /**
      * @param float $amount total order amount
      * @param string $fiat fiat currency of amount specified
      * @return array associative array of coins (as stdClass) to display in currency selector with abbr as key
@@ -140,19 +167,24 @@ class ControllerExtensionPaymentApironeMccpCatalog extends \Apirone\Payment\Cont
             $this->backToCart();
             return;
         }
-        $currency_crypto = isset($this->request->get['currency']) ? (string) $this->request->get['currency'] : '';
-        $order_key = isset($this->request->get['key']) ? (string) $this->request->get['key'] : '';
-        $order_id = isset($this->request->get['order']) ? (int) $this->request->get['order'] : 0;
+        $currency_crypto = $this->getStringQueryParamOrEmpty('currency');
+        if (!preg_match("/^(\w{1,9}@)?\w{1,9}$/", $currency_crypto)) {
+            $this->model->logInfo('Invalid currency: '.$currency_crypto);
+            $this->backToCart();
+            return;
+        }
+        $order_key = $this->getStringQueryParamOrEmpty('key');
+        $order_id = $this->getIntegerQueryParamOrZero('order');
 
         $this->load->model('checkout/order');
         $order = $this->model_checkout_order->getOrder($order_id);
-
+        if (!$order) {
+            $this->model->logInfo('Order not found: key:'.$order_key.', order:'.$order_id);
+            $this->backToCart();
+            return;
+        }
         if ($this->model->hashInvalid($order['total'], $order_key)) {
-            $message = 'Key not valid';
-            $this->model->logInfo($message
-                .': key:'.$order_key
-                .', order:'.$order_id
-            );
+            $this->model->logInfo('Key not valid: key:'.$order_key.', order:'.$order_id);
             $this->backToCart();
             return;
         }
@@ -254,7 +286,7 @@ class ControllerExtensionPaymentApironeMccpCatalog extends \Apirone\Payment\Cont
             $order_id = $invoice->order;
             $status = $invoice->status;
 
-            $callback_key = key_exists('key', $this->request->get) ? (string) $this->request->get['key'] : '';
+            $callback_key = $this->getStringQueryParamOrEmpty('key');
             if (!$callback_key) {
                 $message = 'Wrong params received';
                 $this->model->logInfo($message
@@ -269,10 +301,10 @@ class ControllerExtensionPaymentApironeMccpCatalog extends \Apirone\Payment\Cont
             if ($this->model->hashInvalid($order_id, $callback_key)) {
                 $message = 'Key not valid';
                 $this->model->logInfo($message
+                    .': '.$callback_key
                     .', invoice:'.$invoice_id
                     .', status:'.$status
                     .', order:'.$order_id
-                    .': key:'.$callback_key
                 );
                 Utils::sendJson($message, 403);
                 exit;
@@ -309,8 +341,8 @@ class ControllerExtensionPaymentApironeMccpCatalog extends \Apirone\Payment\Cont
             Utils::sendJson('Can not get settings', 500);
             return;
         }
-        $invoice_key = key_exists('key', $this->request->get) ? (string) $this->request->get['key'] : '';
-        $order_id = key_exists('order', $this->request->get) ? (int) $this->request->get['order'] : 0;
+        $invoice_key = $this->getStringQueryParamOrEmpty('key');
+        $order_id = $this->getIntegerQueryParamOrZero('order');
 
         if (!($invoice_key && $order_id)) {
             $message = 'Wrong params received';
@@ -334,9 +366,9 @@ class ControllerExtensionPaymentApironeMccpCatalog extends \Apirone\Payment\Cont
         if ($this->model->hashInvalid($amount, $invoice_key)) {
             $message = 'Key not valid';
             $this->model->logInfo($message
+                .': '.$invoice_key
                 .', invoice:'.$invoice->invoice
                 .', amount:'.$amount
-                .': key:'.$invoice_key
             );
             Utils::sendJson($message, 403);
             return;
@@ -353,14 +385,14 @@ class ControllerExtensionPaymentApironeMccpCatalog extends \Apirone\Payment\Cont
     }
 
     /**
-     * API proxy endpoint to get invoice data with invoice ID in path
+     * API proxy endpoint to get invoice data with invoice ID in query param
      */
     public function invoices(): void
     {
         // settings not need, but update need
         $this->model->update();
 
-        $invoice_id = key_exists('id', $this->request->get) ? (string) $this->request->get['id'] : '';
+        $invoice_id = $this->getStringQueryParamOrEmpty('id');
         if (!$invoice_id) {
             $message = 'Invoice id not specified';
             $this->model->logInfo($message);
